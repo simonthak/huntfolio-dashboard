@@ -7,7 +7,6 @@ import Layout from "./components/layout/Layout";
 import Index from "./pages/Index";
 import Calendar from "./pages/Calendar";
 import Login from "./pages/Login";
-import NoTeam from "./pages/NoTeam";
 
 const queryClient = new QueryClient();
 
@@ -20,7 +19,6 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/no-team" element={<NoTeam />} />
             <Route path="/" element={<Layout><Index /></Layout>} />
             <Route path="/calendar" element={<Layout><Calendar /></Layout>} />
           </Routes>

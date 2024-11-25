@@ -9,7 +9,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkUserAndTeams = async () => {
+    const checkUser = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
@@ -18,32 +18,14 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        // Check if user is a member of any team
-        const { data: teamMemberships, error } = await supabase
-          .from('team_members')
-          .select('team_id')
-          .eq('profile_id', session.user.id)
-          .limit(1);
-
-        if (error) {
-          console.error('Error checking team membership:', error);
-          toast.error('Error checking team membership');
-          return;
-        }
-
-        if (!teamMemberships || teamMemberships.length === 0) {
-          navigate("/no-team");
-          return;
-        }
-
         setIsLoading(false);
       } catch (error) {
-        console.error('Error in checkUserAndTeams:', error);
+        console.error('Error in checkUser:', error);
         toast.error('An error occurred while checking your session');
       }
     };
 
-    checkUserAndTeams();
+    checkUser();
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -51,7 +33,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         if (!session) {
           navigate("/login");
         } else {
-          checkUserAndTeams();
+          setIsLoading(false);
         }
       }
     );
