@@ -21,6 +21,12 @@ const data = [
   { month: "Apr", count: 45 },
   { month: "May", count: 38 },
   { month: "Jun", count: 29 },
+  { month: "Jul", count: 35 },
+  { month: "Aug", count: 42 },
+  { month: "Sep", count: 28 },
+  { month: "Oct", count: 33 },
+  { month: "Nov", count: 26 },
+  { month: "Dec", count: 21 },
 ];
 
 const GameChart = () => {
