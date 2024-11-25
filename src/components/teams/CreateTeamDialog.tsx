@@ -31,15 +31,19 @@ export function CreateTeamDialog() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsLoading(true);
-      console.log("Starting team creation with values:", values);
+      console.log("[CreateTeam] Starting team creation with values:", values);
 
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log("Current session:", session);
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log("[CreateTeam] Current session:", session);
+      console.log("[CreateTeam] Session error:", sessionError);
 
       if (!session) {
+        console.error("[CreateTeam] No session found");
         toast.error("You must be logged in to create a team");
         return;
       }
+
+      console.log("[CreateTeam] Attempting to create team with user ID:", session.user.id);
 
       // Create the team
       const { data: team, error: teamError } = await supabase
@@ -54,11 +58,16 @@ export function CreateTeamDialog() {
         .single();
 
       if (teamError) {
-        console.error('Team creation error:', teamError);
+        console.error('[CreateTeam] Team creation error:', teamError);
+        console.log('[CreateTeam] Error details:', {
+          message: teamError.message,
+          details: teamError.details,
+          hint: teamError.hint
+        });
         throw new Error(teamError.message);
       }
 
-      console.log("Team created successfully:", team);
+      console.log("[CreateTeam] Team created successfully:", team);
 
       // Add the creator as a team member
       const { error: memberError } = await supabase
@@ -69,17 +78,22 @@ export function CreateTeamDialog() {
         });
 
       if (memberError) {
-        console.error('Team member creation error:', memberError);
+        console.error('[CreateTeam] Team member creation error:', memberError);
+        console.log('[CreateTeam] Member error details:', {
+          message: memberError.message,
+          details: memberError.details,
+          hint: memberError.hint
+        });
         throw new Error(memberError.message);
       }
 
-      console.log("Team member added successfully");
+      console.log("[CreateTeam] Team member added successfully");
       toast.success("Team created successfully!");
       setOpen(false);
       form.reset();
       window.location.reload();
     } catch (error: any) {
-      console.error('Error in team creation:', error);
+      console.error('[CreateTeam] Error in team creation:', error);
       toast.error(error.message || "Failed to create team");
     } finally {
       setIsLoading(false);
