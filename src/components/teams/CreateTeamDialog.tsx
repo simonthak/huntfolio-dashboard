@@ -34,6 +34,8 @@ export function CreateTeamDialog() {
       console.log("Starting team creation with values:", values);
 
       const { data: { session } } = await supabase.auth.getSession();
+      console.log("Current session:", session);
+
       if (!session) {
         toast.error("You must be logged in to create a team");
         return;
@@ -53,7 +55,7 @@ export function CreateTeamDialog() {
 
       if (teamError) {
         console.error('Team creation error:', teamError);
-        throw teamError;
+        throw new Error(teamError.message);
       }
 
       console.log("Team created successfully:", team);
@@ -68,7 +70,7 @@ export function CreateTeamDialog() {
 
       if (memberError) {
         console.error('Team member creation error:', memberError);
-        throw memberError;
+        throw new Error(memberError.message);
       }
 
       console.log("Team member added successfully");
