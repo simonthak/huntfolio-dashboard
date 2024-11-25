@@ -71,21 +71,27 @@ export type Database = {
       }
       teams: {
         Row: {
+          areal_ha: number
           created_at: string
           created_by: string
           id: string
+          location: string
           name: string
         }
         Insert: {
+          areal_ha: number
           created_at?: string
           created_by: string
           id?: string
+          location: string
           name: string
         }
         Update: {
+          areal_ha?: number
           created_at?: string
           created_by?: string
           id?: string
+          location?: string
           name?: string
         }
         Relationships: [
