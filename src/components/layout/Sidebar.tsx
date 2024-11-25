@@ -1,12 +1,16 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import {
   LayoutDashboard,
   Calendar,
   FileText,
   Users,
   Settings,
+  LogOut,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -18,6 +22,18 @@ const menuItems = [
 
 const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success("Logged out successfully");
+      navigate("/login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+      toast.error("Error logging out");
+    }
+  };
 
   return (
     <div className="h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
@@ -40,6 +56,17 @@ const Sidebar = () => {
           </Link>
         ))}
       </nav>
+
+      <div className="p-4 mt-auto border-t">
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+          onClick={handleLogout}
+        >
+          <LogOut className="w-5 h-5 mr-3" />
+          Logout
+        </Button>
+      </div>
     </div>
   );
 };
