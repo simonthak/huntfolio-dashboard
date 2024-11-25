@@ -1,33 +1,70 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import Sidebar from "./Sidebar";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/login");
+    const checkUserAndTeams = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          navigate("/login");
+          return;
+        }
+
+        // Check if user is a member of any team
+        const { data: teamMemberships, error } = await supabase
+          .from('team_members')
+          .select('team_id')
+          .eq('profile_id', session.user.id)
+          .limit(1);
+
+        if (error) {
+          console.error('Error checking team membership:', error);
+          toast.error('Error checking team membership');
+          return;
+        }
+
+        if (!teamMemberships || teamMemberships.length === 0) {
+          toast.warning('You are not a member of any hunting team yet');
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error in checkUserAndTeams:', error);
+        toast.error('An error occurred while checking your session');
       }
     };
 
-    checkUser();
+    checkUserAndTeams();
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         if (!session) {
           navigate("/login");
+        } else {
+          checkUserAndTeams();
         }
       }
     );
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
