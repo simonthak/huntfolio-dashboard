@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Users, Calendar, Target, Trophy } from "lucide-react";
 import GameChart from "@/components/dashboard/GameChart";
+import SpeciesChart from "@/components/dashboard/SpeciesChart";
 
 const stats = [
   { label: "Active Teams", value: "12", icon: Users, change: "+2" },
@@ -37,8 +38,9 @@ const Index = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-8 gap-6">
         <GameChart />
+        <SpeciesChart />
       </div>
     </div>
   );
