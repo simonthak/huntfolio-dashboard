@@ -17,6 +17,7 @@ const formSchema = z.object({
 
 export function CreateTeamDialog() {
   const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -29,6 +30,9 @@ export function CreateTeamDialog() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      setIsLoading(true);
+      console.log("Starting team creation with values:", values);
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast.error("You must be logged in to create a team");
@@ -47,7 +51,12 @@ export function CreateTeamDialog() {
         .select()
         .single();
 
-      if (teamError) throw teamError;
+      if (teamError) {
+        console.error('Team creation error:', teamError);
+        throw teamError;
+      }
+
+      console.log("Team created successfully:", team);
 
       // Add the creator as a team member
       const { error: memberError } = await supabase
@@ -57,14 +66,21 @@ export function CreateTeamDialog() {
           profile_id: session.user.id,
         });
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error('Team member creation error:', memberError);
+        throw memberError;
+      }
 
+      console.log("Team member added successfully");
       toast.success("Team created successfully!");
       setOpen(false);
-      window.location.reload(); // Refresh to update the team status
-    } catch (error) {
-      console.error('Error creating team:', error);
-      toast.error("Failed to create team");
+      form.reset();
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Error in team creation:', error);
+      toast.error(error.message || "Failed to create team");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -124,7 +140,9 @@ export function CreateTeamDialog() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">Create Team</Button>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Creating..." : "Create Team"}
+            </Button>
           </form>
         </Form>
       </DialogContent>
