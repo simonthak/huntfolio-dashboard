@@ -34,7 +34,20 @@ const Sidebar = () => {
           .from('logos')
           .getPublicUrl('symbol.svg');
         
+        if (!publicUrl?.publicUrl) {
+          console.error("No public URL returned from Supabase");
+          return;
+        }
+
         console.log("Logo URL:", publicUrl.publicUrl);
+        
+        // Test if the image is accessible
+        const response = await fetch(publicUrl.publicUrl);
+        if (!response.ok) {
+          console.error("Failed to load image:", response.status, response.statusText);
+          return;
+        }
+
         setLogoUrl(publicUrl.publicUrl);
       } catch (error) {
         console.error("Error fetching logo:", error);
