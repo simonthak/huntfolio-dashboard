@@ -23,7 +23,7 @@ const CreateEventDialog = ({
   selectedDate, 
   onEventCreated 
 }: CreateEventDialogProps) => {
-  const [type, setType] = useState<HuntType>(HUNT_TYPES[0]);
+  const [type, setType] = useState<string>(HUNT_TYPES[0]);
   const [description, setDescription] = useState("");
   const [participantLimit, setParticipantLimit] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,6 +53,8 @@ const CreateEventDialog = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No user found");
 
+      console.log("Creating event with type:", type);
+
       // Create the event
       const { error: eventError, data: eventData } = await supabase
         .from("events")
@@ -66,7 +68,10 @@ const CreateEventDialog = ({
         .select()
         .single();
 
-      if (eventError) throw eventError;
+      if (eventError) {
+        console.error("Error creating event:", eventError);
+        throw eventError;
+      }
 
       // Automatically add the creator as a participant
       const { error: participantError } = await supabase
@@ -76,7 +81,10 @@ const CreateEventDialog = ({
           user_id: user.id,
         });
 
-      if (participantError) throw participantError;
+      if (participantError) {
+        console.error("Error adding participant:", participantError);
+        throw participantError;
+      }
 
       onEventCreated();
       onOpenChange(false);
@@ -116,7 +124,7 @@ const CreateEventDialog = ({
             <Label>Hunt Type</Label>
             <RadioGroup 
               value={type} 
-              onValueChange={(value: string) => setType(value as HuntType)} 
+              onValueChange={setType}
               className="flex flex-wrap gap-4"
             >
               {HUNT_TYPES.map((huntType) => (
