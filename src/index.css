@@ -94,7 +94,7 @@
 }
 
 .fc .fc-day-today {
-  @apply bg-primary/5;
+  @apply bg-green-50;
 }
 
 .fc .fc-day-today .fc-daygrid-day-number {
