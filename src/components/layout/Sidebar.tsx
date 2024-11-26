@@ -8,6 +8,7 @@ import {
   Users,
   Settings,
   LogOut,
+  UserCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +19,7 @@ const menuItems = [
   { icon: Calendar, label: "Calendar", path: "/calendar" },
   { icon: FileText, label: "Reports", path: "/reports" },
   { icon: Users, label: "Teams", path: "/teams" },
+  { icon: UserCircle, label: "Profile", path: "/profile" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
