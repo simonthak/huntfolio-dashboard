@@ -43,6 +43,11 @@ const EventForm = ({
       return;
     }
 
+    if (!HUNT_TYPES.includes(type)) {
+      toast.error("Please select a valid hunt type");
+      return;
+    }
+
     await onSubmit({
       type,
       description,

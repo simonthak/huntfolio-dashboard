@@ -8,12 +8,18 @@ interface EventTypeSelectorProps {
 }
 
 const EventTypeSelector = ({ value, onChange }: EventTypeSelectorProps) => {
+  console.log("Current hunt type:", value);
+  console.log("Available hunt types:", HUNT_TYPES);
+  
   return (
     <div className="space-y-2">
       <Label>Hunt Type</Label>
       <RadioGroup 
         value={value} 
-        onValueChange={(value) => onChange(value as HuntType)}
+        onValueChange={(value) => {
+          console.log("Selected hunt type:", value);
+          onChange(value as HuntType);
+        }}
         className="flex flex-wrap gap-4"
       >
         {HUNT_TYPES.map((huntType) => (
