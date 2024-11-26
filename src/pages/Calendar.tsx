@@ -28,7 +28,7 @@ const Calendar = () => {
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-  const { data: events, refetch: refetchEvents } = useQuery({
+  const { data: events = [], refetch: refetchEvents } = useQuery({
     queryKey: ["events"],
     queryFn: async () => {
       console.log("Fetching events...");
@@ -48,7 +48,7 @@ const Calendar = () => {
       }
 
       console.log("Events fetched successfully:", data);
-      return data;
+      return data || [];
     },
   });
 
@@ -71,13 +71,13 @@ const Calendar = () => {
     }
   };
 
-  const handleEventUpdate = () => {
+  const handleEventUpdate = async () => {
     console.log("Refreshing events after update...");
-    refetchEvents();
+    await refetchEvents();
     setSelectedEvent(null);
   };
 
-  const calendarEvents = events?.map(event => ({
+  const calendarEvents = events.map(event => ({
     id: event.id,
     title: event.type,
     date: event.date,
@@ -87,7 +87,7 @@ const Calendar = () => {
       currentParticipants: event.event_participants.length,
       createdBy: event.created_by_profile.full_name
     }
-  })) || [];
+  }));
 
   return (
     <div className="space-y-8">
@@ -150,7 +150,7 @@ const Calendar = () => {
 
         <div className="col-span-12 lg:col-span-3">
           <EventsList 
-            events={events || []} 
+            events={events} 
             onEventJoin={handleEventUpdate}
           />
         </div>

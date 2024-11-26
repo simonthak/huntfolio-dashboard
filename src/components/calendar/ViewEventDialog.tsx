@@ -102,13 +102,20 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
     
     setIsDeleting(true);
     try {
+      console.log("Starting event deletion process...");
+      
       // First delete all participants
       const { error: participantsError } = await supabase
         .from("event_participants")
         .delete()
         .eq("event_id", event.id);
 
-      if (participantsError) throw participantsError;
+      if (participantsError) {
+        console.error("Error deleting participants:", participantsError);
+        throw participantsError;
+      }
+
+      console.log("Successfully deleted participants, now deleting event...");
 
       // Then delete the event
       const { error: eventError } = await supabase
@@ -116,13 +123,17 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
         .delete()
         .eq("id", event.id);
 
-      if (eventError) throw eventError;
+      if (eventError) {
+        console.error("Error deleting event:", eventError);
+        throw eventError;
+      }
 
-      onEventJoin();
+      console.log("Event deleted successfully");
+      onEventJoin(); // This will trigger a calendar refresh
       toast.success("Event deleted successfully");
       onOpenChange(false);
     } catch (error) {
-      console.error("Error deleting event:", error);
+      console.error("Error in deletion process:", error);
       toast.error("Failed to delete event");
     } finally {
       setIsDeleting(false);
