@@ -113,7 +113,11 @@ const CreateEventDialog = ({
 
           <div className="space-y-2">
             <Label>Hunt Type</Label>
-            <RadioGroup value={type} onValueChange={setType} className="flex flex-wrap gap-4">
+            <RadioGroup 
+              value={type} 
+              onValueChange={(value: string) => setType(value as HuntType)} 
+              className="flex flex-wrap gap-4"
+            >
               {HUNT_TYPES.map((huntType) => (
                 <div key={huntType} className="flex items-center space-x-2">
                   <RadioGroupItem value={huntType} id={huntType} />
