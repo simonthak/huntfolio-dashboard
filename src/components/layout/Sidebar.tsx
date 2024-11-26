@@ -71,19 +71,19 @@ const Sidebar = () => {
 
   return (
     <div className="h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
-      <div className="p-6 flex items-center gap-3">
+      <div className="p-6 flex items-center gap-2">
         {logoUrl && (
           <img
             src={logoUrl}
             alt="Antlers Logo"
-            className="w-8 h-8 object-contain"
+            className="w-6 h-6 object-contain"
             onError={(e) => {
               console.error("Error loading logo image");
               e.currentTarget.style.display = 'none';
             }}
           />
         )}
-        <h1 className="text-xl font-bold text-secondary">Antlers</h1>
+        <h1 className="text-xl font-bold text-gray-900">Antlers</h1>
       </div>
       
       <nav className="flex-1 px-4">
