@@ -31,14 +31,14 @@ const EventForm = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submission started with type:", type);
     
     if (!selectedDate) {
       toast.error("Please select a date");
       return;
     }
 
-    if (!participantLimit || parseInt(participantLimit) < 1) {
+    const limit = parseInt(participantLimit);
+    if (!participantLimit || limit < 1) {
       toast.error("Please enter a valid participant limit");
       return;
     }
@@ -48,10 +48,11 @@ const EventForm = ({
       return;
     }
 
+    console.log("Submitting form with type:", type);
     await onSubmit({
       type,
       description,
-      participantLimit: parseInt(participantLimit),
+      participantLimit: limit,
     });
   };
 

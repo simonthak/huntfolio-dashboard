@@ -35,16 +35,11 @@ const CreateEventDialog = ({
     const formattedDate = format(selectedDate, "yyyy-MM-dd");
 
     try {
-      console.log("Starting event creation process...");
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       
-      if (authError) {
-        console.error("Auth error:", authError);
-        throw authError;
-      }
       if (!user) {
-        console.error("No user found");
-        throw new Error("No user found");
+        toast.error("You must be logged in to create events");
+        return;
       }
 
       console.log("Creating event with data:", {
@@ -55,6 +50,7 @@ const CreateEventDialog = ({
         userId: user.id
       });
 
+      // Create the event
       const { error: eventError, data: eventData } = await supabase
         .from("events")
         .insert({
@@ -74,6 +70,7 @@ const CreateEventDialog = ({
 
       console.log("Event created successfully:", eventData);
 
+      // Add creator as first participant
       const { error: participantError } = await supabase
         .from("event_participants")
         .insert({
@@ -92,11 +89,7 @@ const CreateEventDialog = ({
       toast.success("Event created successfully");
     } catch (error) {
       console.error("Error in event creation process:", error);
-      if (error instanceof Error) {
-        toast.error(`Failed to create event: ${error.message}`);
-      } else {
-        toast.error("Failed to create event");
-      }
+      toast.error("Failed to create event");
     } finally {
       setIsSubmitting(false);
     }

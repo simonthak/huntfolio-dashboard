@@ -6,4 +6,4 @@ export const HUNT_TYPES = [
   "Fågeljakt"
 ] as const;
 
-export type HuntType = (typeof HUNT_TYPES)[number];
+export type HuntType = typeof HUNT_TYPES[number];
