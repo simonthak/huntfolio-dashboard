@@ -35,12 +35,21 @@ const CreateEventDialog = ({
     const formattedDate = format(selectedDate, "yyyy-MM-dd");
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      console.log("Getting authenticated user...");
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
       
+      if (authError) {
+        console.error("Auth error:", authError);
+        throw authError;
+      }
+
       if (!user) {
+        console.error("No authenticated user found");
         toast.error("You must be logged in to create events");
         return;
       }
+
+      console.log("Authenticated user:", user.id);
 
       const eventData = {
         type: data.type,
@@ -52,7 +61,6 @@ const CreateEventDialog = ({
 
       console.log("Attempting to create event with data:", eventData);
 
-      // Create the event
       const { error: eventError, data: createdEvent } = await supabase
         .from("events")
         .insert(eventData)
@@ -64,7 +72,8 @@ const CreateEventDialog = ({
         console.error("Error details:", {
           message: eventError.message,
           details: eventError.details,
-          hint: eventError.hint
+          hint: eventError.hint,
+          code: eventError.code
         });
         throw eventError;
       }
