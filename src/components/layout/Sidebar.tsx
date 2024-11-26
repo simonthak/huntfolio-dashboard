@@ -83,7 +83,7 @@ const Sidebar = () => {
             }}
           />
         )}
-        <h1 className="text-xl font-bold text-gray-900">Antlers</h1>
+        <h1 className="text-xl font-bold text-gray-900">ANTLERS</h1>
       </div>
       
       <nav className="flex-1 px-4">
