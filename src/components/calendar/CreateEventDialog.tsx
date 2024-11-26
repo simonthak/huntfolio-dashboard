@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format, isFuture, startOfToday } from "date-fns";
+import { format, isFuture } from "date-fns";
 import { HUNT_TYPES, HuntType } from "@/constants/huntTypes";
 
 interface CreateEventDialogProps {
@@ -36,7 +36,7 @@ const CreateEventDialog = ({
       return;
     }
 
-    if (!isFuture(startOfToday()) && !isFuture(selectedDate)) {
+    if (!isFuture(selectedDate)) {
       toast.error("You can only create events for future dates");
       return;
     }
@@ -81,6 +81,7 @@ const CreateEventDialog = ({
       onEventCreated();
       onOpenChange(false);
       resetForm();
+      toast.success("Event created successfully");
     } catch (error) {
       console.error("Error creating event:", error);
       toast.error("Failed to create event");

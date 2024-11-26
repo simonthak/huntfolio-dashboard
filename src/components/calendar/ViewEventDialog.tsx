@@ -4,6 +4,7 @@ import { Users, Trash2, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useState, useEffect } from "react";
 
 interface Event {
   id: string;
@@ -24,6 +25,23 @@ interface ViewEventDialogProps {
 }
 
 const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDialogProps) => {
+  const [isUserOrganizer, setIsUserOrganizer] = useState(false);
+  const [isUserParticipant, setIsUserParticipant] = useState(false);
+
+  useEffect(() => {
+    const checkUserRoles = async () => {
+      if (!event) return;
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      setIsUserOrganizer(event.created_by === user.id);
+      setIsUserParticipant(event.event_participants.some(p => p.user_id === user.id));
+    };
+
+    checkUserRoles();
+  }, [event]);
+
   const handleJoinEvent = async () => {
     if (!event) return;
 
@@ -32,7 +50,7 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
       return;
     }
 
-    const user = (await supabase.auth.getUser()).data.user;
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast.error("You must be logged in to join events");
       return;
@@ -57,7 +75,7 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
   const handleLeaveEvent = async () => {
     if (!event) return;
 
-    const user = (await supabase.auth.getUser()).data.user;
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     try {
@@ -98,16 +116,6 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
     }
   };
 
-  const isOrganizer = async () => {
-    const user = (await supabase.auth.getUser()).data.user;
-    return user && event && event.created_by === user.id;
-  };
-
-  const isParticipant = async () => {
-    const user = (await supabase.auth.getUser()).data.user;
-    return user && event && event.event_participants.some(p => p.user_id === user.id);
-  };
-
   if (!event) return null;
 
   return (
@@ -139,7 +147,7 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
           </div>
 
           <div className="flex justify-end gap-2">
-            {isOrganizer() && (
+            {isUserOrganizer && (
               <Button 
                 variant="destructive" 
                 onClick={handleDeleteEvent}
@@ -149,7 +157,7 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
                 Delete Event
               </Button>
             )}
-            {isParticipant() ? (
+            {isUserParticipant ? (
               <Button 
                 variant="outline" 
                 onClick={handleLeaveEvent}
