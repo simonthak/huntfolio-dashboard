@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import CreateEventDialog from "@/components/calendar/CreateEventDialog";
 import EventsList from "@/components/calendar/EventsList";
@@ -70,59 +69,64 @@ const Calendar = () => {
     <div className="space-y-6 h-[calc(100vh-8rem)]">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-secondary">Calendar</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Calendar</h1>
           <p className="text-gray-500 mt-2">Plan and manage your hunting schedule</p>
         </div>
-        <Button onClick={() => setIsCreateEventOpen(true)}>
+        <Button onClick={() => setIsCreateEventOpen(true)} className="bg-emerald-500 hover:bg-emerald-600">
           <Plus className="w-4 h-4 mr-2" />
           Create Event
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100%-5rem)]">
-        <Card className="col-span-2 p-6 overflow-auto">
+      <div className="grid grid-cols-1 gap-6 h-[calc(100%-5rem)]">
+        <div className="bg-white rounded-lg shadow p-6">
           <CalendarComponent
             mode="single"
             selected={selectedDate}
             onSelect={handleDateSelect}
-            className="rounded-md border"
-            modifiers={{
-              booked: (date) => {
-                const formattedDate = format(date, "yyyy-MM-dd");
-                return events?.some(event => event.date === formattedDate) || false;
-              },
-              disabled: (date) => !isFuture(startOfToday()) && !isFuture(date)
-            }}
-            modifiersStyles={{
-              booked: {
-                backgroundColor: "rgb(var(--primary) / 0.1)",
-                borderRadius: "0.375rem"
-              },
-              disabled: {
-                color: "rgb(var(--muted-foreground) / 0.5)",
-                cursor: "not-allowed"
-              }
+            className="w-full"
+            classNames={{
+              months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+              month: "space-y-4 w-full",
+              caption: "flex justify-center pt-1 relative items-center gap-1",
+              caption_label: "text-sm font-medium",
+              nav: "space-x-1 flex items-center",
+              nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+              nav_button_previous: "absolute left-1",
+              nav_button_next: "absolute right-1",
+              table: "w-full border-collapse space-y-1",
+              head_row: "flex w-full",
+              head_cell: "text-gray-500 rounded-md w-full font-normal text-[0.8rem] dark:text-gray-400",
+              row: "flex w-full mt-2",
+              cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-gray-100 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md",
+              day: "h-24 w-full p-2 aria-selected:opacity-100 hover:bg-gray-100 rounded-lg relative",
+              day_today: "bg-gray-50",
+              day_outside: "opacity-50",
+              day_disabled: "opacity-50 cursor-not-allowed",
+              day_range_middle: "aria-selected:bg-gray-100",
+              day_hidden: "invisible",
+              day_selected: "bg-gray-100",
+              day_content: "relative h-full",
             }}
             components={{
               DayContent: ({ date }) => {
                 const formattedDate = format(date, "yyyy-MM-dd");
                 const event = events?.find(e => e.date === formattedDate);
                 return (
-                  <div className="w-full h-full flex flex-col items-center">
-                    <span>{date.getDate()}</span>
+                  <div className="w-full h-full flex flex-col items-start p-1">
+                    <span className="text-sm font-medium">{date.getDate()}</span>
                     {event && (
-                      <span className="text-[10px] text-primary mt-1 font-medium">
-                        {event.type}
-                      </span>
+                      <div className="mt-1 w-full bg-emerald-500 text-white p-1 rounded text-xs">
+                        <div className="font-medium">{event.type}</div>
+                        <div className="text-[10px] opacity-90">by {event.created_by_profile.full_name}</div>
+                      </div>
                     )}
                   </div>
                 );
               }
             }}
           />
-        </Card>
-        
-        <EventsList events={events || []} onEventJoin={refetchEvents} />
+        </div>
       </div>
 
       <CreateEventDialog 
