@@ -105,8 +105,7 @@ const Calendar = () => {
               day_disabled: "opacity-50 cursor-not-allowed",
               day_range_middle: "aria-selected:bg-gray-100",
               day_hidden: "invisible",
-              day_selected: "bg-gray-100",
-              day_content: "relative h-full",
+              day_selected: "bg-gray-100"
             }}
             components={{
               DayContent: ({ date }) => {
