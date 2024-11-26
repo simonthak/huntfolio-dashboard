@@ -64,7 +64,7 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
 
       if (error) throw error;
 
-      onEventJoin();
+      await onEventJoin();
       toast.success("Successfully joined the event");
       onOpenChange(false);
     } catch (error) {
@@ -88,7 +88,7 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
 
       if (error) throw error;
 
-      onEventJoin();
+      await onEventJoin();
       toast.success("Successfully left the event");
       onOpenChange(false);
     } catch (error) {
@@ -129,7 +129,7 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
       }
 
       console.log("Event deleted successfully");
-      onEventJoin(); // This will trigger a calendar refresh
+      await onEventJoin(); // Wait for the calendar refresh to complete
       toast.success("Event deleted successfully");
       onOpenChange(false);
     } catch (error) {

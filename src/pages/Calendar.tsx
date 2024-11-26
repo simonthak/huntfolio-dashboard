@@ -75,6 +75,7 @@ const Calendar = () => {
     console.log("Refreshing events after update...");
     await refetchEvents();
     setSelectedEvent(null);
+    setIsCreateEventOpen(false);
   };
 
   const calendarEvents = events.map(event => ({
