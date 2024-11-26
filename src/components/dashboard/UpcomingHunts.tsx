@@ -5,25 +5,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Calendar, MapPin, Users } from "lucide-react";
+import { Calendar, Users } from "lucide-react";
 
 const upcomingHunts = [
   {
     id: 1,
     date: "Mar 15, 2024",
-    location: "Black Forest Reserve",
+    type: "Drevjakt",
     participants: 4,
   },
   {
     id: 2,
     date: "Mar 18, 2024",
-    location: "Pine Valley",
+    type: "Smygjakt",
     participants: 3,
   },
   {
     id: 3,
     date: "Mar 22, 2024",
-    location: "Oak Ridge",
+    type: "Vakjakt",
     participants: 5,
   },
 ];
@@ -48,8 +48,7 @@ const UpcomingHunts = () => {
                   <span>{hunt.date}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="w-4 h-4 text-primary" />
-                  <span>{hunt.location}</span>
+                  <span className="text-primary font-medium">{hunt.type}</span>
                 </div>
               </div>
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
