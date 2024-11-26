@@ -8,11 +8,23 @@ import EventsList from "@/components/calendar/EventsList";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, isFuture, startOfToday } from "date-fns";
+import ViewEventDialog from "@/components/calendar/ViewEventDialog";
+
+interface Event {
+  id: string;
+  type: string;
+  date: string;
+  description: string | null;
+  participant_limit: number;
+  created_by_profile: { full_name: string | null };
+  event_participants: { user_id: string }[];
+}
 
 const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const { data: events, refetch: refetchEvents } = useQuery({
     queryKey: ["events"],
@@ -38,19 +50,24 @@ const Calendar = () => {
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
     
+    if (!isFuture(startOfToday()) && !isFuture(date)) {
+      toast.error("You can only create events for future dates");
+      return;
+    }
+    
     setSelectedDate(date);
     const formattedDate = format(date, "yyyy-MM-dd");
     const existingEvent = events?.find(event => event.date === formattedDate);
 
     if (existingEvent) {
-      toast.error("An event is already scheduled for this date");
+      setSelectedEvent(existingEvent);
     } else {
       setIsCreateEventOpen(true);
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-[calc(100vh-8rem)]">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-secondary">Calendar</h1>
@@ -62,8 +79,8 @@ const Calendar = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="col-span-2 p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100%-5rem)]">
+        <Card className="col-span-2 p-6 overflow-auto">
           <CalendarComponent
             mode="single"
             selected={selectedDate}
@@ -73,12 +90,33 @@ const Calendar = () => {
               booked: (date) => {
                 const formattedDate = format(date, "yyyy-MM-dd");
                 return events?.some(event => event.date === formattedDate) || false;
-              }
+              },
+              disabled: (date) => !isFuture(startOfToday()) && !isFuture(date)
             }}
             modifiersStyles={{
               booked: {
                 backgroundColor: "rgb(var(--primary) / 0.1)",
                 borderRadius: "0.375rem"
+              },
+              disabled: {
+                color: "rgb(var(--muted-foreground) / 0.5)",
+                cursor: "not-allowed"
+              }
+            }}
+            components={{
+              DayContent: ({ date }) => {
+                const formattedDate = format(date, "yyyy-MM-dd");
+                const event = events?.find(e => e.date === formattedDate);
+                return (
+                  <div className="w-full h-full flex flex-col items-center">
+                    <span>{date.getDate()}</span>
+                    {event && (
+                      <span className="text-[10px] text-primary mt-1 font-medium">
+                        {event.type}
+                      </span>
+                    )}
+                  </div>
+                );
               }
             }}
           />
@@ -95,6 +133,13 @@ const Calendar = () => {
           refetchEvents();
           toast.success("Event created successfully");
         }}
+      />
+
+      <ViewEventDialog
+        event={selectedEvent}
+        open={!!selectedEvent}
+        onOpenChange={(open) => !open && setSelectedEvent(null)}
+        onEventJoin={refetchEvents}
       />
     </div>
   );

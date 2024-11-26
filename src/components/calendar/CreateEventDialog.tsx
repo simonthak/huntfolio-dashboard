@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, isFuture, startOfToday } from "date-fns";
 
 interface CreateEventDialogProps {
   open: boolean;
@@ -31,8 +31,19 @@ const CreateEventDialog = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!selectedDate) {
       toast.error("Please select a date");
+      return;
+    }
+
+    if (!isFuture(startOfToday()) && !isFuture(selectedDate)) {
+      toast.error("You can only create events for future dates");
+      return;
+    }
+
+    if (!participantLimit || parseInt(participantLimit) < 1) {
+      toast.error("Please enter a valid participant limit");
       return;
     }
 
@@ -43,15 +54,30 @@ const CreateEventDialog = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No user found");
 
-      const { error } = await supabase.from("events").insert({
-        type,
-        date: formattedDate,
-        description,
-        participant_limit: parseInt(participantLimit),
-        created_by: user.id,
-      });
+      // Create the event
+      const { error: eventError, data: eventData } = await supabase
+        .from("events")
+        .insert({
+          type,
+          date: formattedDate,
+          description,
+          participant_limit: parseInt(participantLimit),
+          created_by: user.id,
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (eventError) throw eventError;
+
+      // Automatically add the creator as a participant
+      const { error: participantError } = await supabase
+        .from("event_participants")
+        .insert({
+          event_id: eventData.id,
+          user_id: user.id,
+        });
+
+      if (participantError) throw participantError;
 
       onEventCreated();
       onOpenChange(false);
