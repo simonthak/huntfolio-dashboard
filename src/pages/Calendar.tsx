@@ -6,7 +6,7 @@ import EventsList from "@/components/calendar/EventsList";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format, isFuture, startOfToday } from "date-fns";
+import { format, isFuture, startOfToday, isPast } from "date-fns";
 import ViewEventDialog from "@/components/calendar/ViewEventDialog";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -101,6 +101,7 @@ const Calendar = () => {
             <FullCalendar
               plugins={[dayGridPlugin, interactionPlugin]}
               initialView="dayGridMonth"
+              firstDay={1}
               dateClick={handleDateSelect}
               events={calendarEvents}
               eventClick={(info) => {
@@ -108,11 +109,14 @@ const Calendar = () => {
                 if (event) setSelectedEvent(event);
               }}
               headerToolbar={{
-                left: 'prev,next today',
+                left: 'prev,next',
                 center: 'title',
-                right: 'dayGridMonth'
+                right: ''
               }}
               height="auto"
+              dayCellClassNames={(arg) => {
+                return isPast(arg.date) && !arg.isPast ? 'text-gray-400 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50';
+              }}
               eventContent={(eventInfo) => (
                 <div className="p-1 w-full">
                   <div className="bg-primary text-white p-2 rounded-md text-sm">

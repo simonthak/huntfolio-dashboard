@@ -70,7 +70,6 @@
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
   }
@@ -128,4 +127,12 @@
 
 .fc td, .fc th {
   @apply border border-gray-200;
+}
+
+.fc .fc-day-past {
+  @apply bg-gray-50;
+}
+
+.fc .fc-day-future {
+  @apply cursor-pointer hover:bg-gray-50 transition-colors duration-200;
 }
