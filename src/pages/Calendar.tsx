@@ -31,6 +31,7 @@ const Calendar = () => {
   const { data: events, refetch: refetchEvents } = useQuery({
     queryKey: ["events"],
     queryFn: async () => {
+      console.log("Fetching events...");
       const { data, error } = await supabase
         .from("events")
         .select(`
@@ -41,10 +42,12 @@ const Calendar = () => {
         .order("date", { ascending: true });
 
       if (error) {
+        console.error("Error fetching events:", error);
         toast.error("Failed to load events");
         throw error;
       }
 
+      console.log("Events fetched successfully:", data);
       return data;
     },
   });
@@ -66,6 +69,12 @@ const Calendar = () => {
     } else {
       setIsCreateEventOpen(true);
     }
+  };
+
+  const handleEventUpdate = () => {
+    console.log("Refreshing events after update...");
+    refetchEvents();
+    setSelectedEvent(null);
   };
 
   const calendarEvents = events?.map(event => ({
@@ -142,7 +151,7 @@ const Calendar = () => {
         <div className="col-span-12 lg:col-span-3">
           <EventsList 
             events={events || []} 
-            onEventJoin={refetchEvents}
+            onEventJoin={handleEventUpdate}
           />
         </div>
       </div>
@@ -151,17 +160,14 @@ const Calendar = () => {
         open={isCreateEventOpen} 
         onOpenChange={setIsCreateEventOpen}
         selectedDate={selectedDate}
-        onEventCreated={() => {
-          refetchEvents();
-          toast.success("Event created successfully");
-        }}
+        onEventCreated={handleEventUpdate}
       />
 
       <ViewEventDialog
         event={selectedEvent}
         open={!!selectedEvent}
         onOpenChange={(open) => !open && setSelectedEvent(null)}
-        onEventJoin={refetchEvents}
+        onEventJoin={handleEventUpdate}
       />
     </div>
   );
