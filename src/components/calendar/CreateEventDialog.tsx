@@ -42,39 +42,40 @@ const CreateEventDialog = ({
         return;
       }
 
-      console.log("Creating event with data:", {
+      const eventData = {
         type: data.type,
         date: formattedDate,
         description: data.description,
-        participantLimit: data.participantLimit,
-        userId: user.id
-      });
+        participant_limit: data.participantLimit,
+        created_by: user.id,
+      };
+
+      console.log("Attempting to create event with data:", eventData);
 
       // Create the event
-      const { error: eventError, data: eventData } = await supabase
+      const { error: eventError, data: createdEvent } = await supabase
         .from("events")
-        .insert({
-          type: data.type,
-          date: formattedDate,
-          description: data.description,
-          participant_limit: data.participantLimit,
-          created_by: user.id,
-        })
+        .insert(eventData)
         .select()
         .single();
 
       if (eventError) {
         console.error("Event creation error:", eventError);
+        console.error("Error details:", {
+          message: eventError.message,
+          details: eventError.details,
+          hint: eventError.hint
+        });
         throw eventError;
       }
 
-      console.log("Event created successfully:", eventData);
+      console.log("Event created successfully:", createdEvent);
 
       // Add creator as first participant
       const { error: participantError } = await supabase
         .from("event_participants")
         .insert({
-          event_id: eventData.id,
+          event_id: createdEvent.id,
           user_id: user.id,
         });
 
