@@ -52,7 +52,7 @@ const CreateEventDialog = ({
       console.log("Authenticated user:", user.id);
 
       const eventData = {
-        type: data.type.toString(), // Convert type to string explicitly
+        type: data.type, // Remove toString() as it's already a string literal type
         date: formattedDate,
         description: data.description,
         participant_limit: data.participantLimit,
