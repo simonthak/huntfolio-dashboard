@@ -5,23 +5,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
-
-interface Event {
-  id: string;
-  type: string;
-  date: string;
-  description: string | null;
-  participant_limit: number;
-  created_by: string;
-  created_by_profile: { full_name: string | null };
-  event_participants: { user_id: string }[];
-}
+import { handleEventDeletion } from "./eventHandlers";
+import { handleEventParticipation } from "./eventParticipation";
+import { Event } from "./types";
 
 interface ViewEventDialogProps {
   event: Event | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onEventJoin: () => void;
+  onEventJoin: () => Promise<void>;
 }
 
 const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDialogProps) => {
@@ -45,89 +37,20 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
 
   const handleJoinEvent = async () => {
     if (!event) return;
-
-    if (event.event_participants.length >= event.participant_limit) {
-      toast.error("This event is already full");
-      return;
-    }
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast.error("You must be logged in to join events");
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from("event_participants")
-        .insert({ event_id: event.id, user_id: user.id });
-
-      if (error) throw error;
-
-      await onEventJoin();
-      toast.success("Successfully joined the event");
-      onOpenChange(false);
-    } catch (error) {
-      console.error("Error joining event:", error);
-      toast.error("Failed to join event");
-    }
+    await handleEventParticipation.join(event, onEventJoin, onOpenChange);
   };
 
   const handleLeaveEvent = async () => {
     if (!event) return;
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from("event_participants")
-        .delete()
-        .eq("event_id", event.id)
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-
-      await onEventJoin();
-      toast.success("Successfully left the event");
-      onOpenChange(false);
-    } catch (error) {
-      console.error("Error leaving event:", error);
-      toast.error("Failed to leave event");
-    }
+    await handleEventParticipation.leave(event, onEventJoin, onOpenChange);
   };
 
   const handleDeleteEvent = async () => {
     if (!event) return;
-    
     setIsDeleting(true);
+    
     try {
-      console.log("Starting event deletion process...");
-      
-      // First delete all participants
-      const { error: participantsError } = await supabase
-        .from("event_participants")
-        .delete()
-        .eq("event_id", event.id);
-
-      if (participantsError) {
-        console.error("Error deleting participants:", participantsError);
-        throw participantsError;
-      }
-
-      console.log("Successfully deleted participants, now deleting event...");
-
-      // Then delete the event
-      const { error: eventError } = await supabase
-        .from("events")
-        .delete()
-        .eq("id", event.id);
-
-      if (eventError) {
-        console.error("Error deleting event:", eventError);
-        throw eventError;
-      }
-
+      await handleEventDeletion(event.id);
       console.log("Event deleted successfully");
       await onEventJoin(); // Wait for the calendar refresh to complete
       toast.success("Event deleted successfully");

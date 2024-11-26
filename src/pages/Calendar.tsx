@@ -11,17 +11,7 @@ import ViewEventDialog from "@/components/calendar/ViewEventDialog";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-
-interface Event {
-  id: string;
-  type: string;
-  date: string;
-  description: string | null;
-  participant_limit: number;
-  created_by: string;
-  created_by_profile: { full_name: string | null };
-  event_participants: { user_id: string }[];
-}
+import { Event } from "@/components/calendar/types";
 
 const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
