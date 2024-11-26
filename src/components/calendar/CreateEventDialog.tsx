@@ -35,12 +35,19 @@ const CreateEventDialog = ({
     const formattedDate = format(selectedDate, "yyyy-MM-dd");
 
     try {
+      console.log("Starting event creation process...");
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       
-      if (authError) throw authError;
-      if (!user) throw new Error("No user found");
+      if (authError) {
+        console.error("Auth error:", authError);
+        throw authError;
+      }
+      if (!user) {
+        console.error("No user found");
+        throw new Error("No user found");
+      }
 
-      console.log("Creating event with:", {
+      console.log("Creating event with data:", {
         type: data.type,
         date: formattedDate,
         description: data.description,
@@ -60,7 +67,10 @@ const CreateEventDialog = ({
         .select()
         .single();
 
-      if (eventError) throw eventError;
+      if (eventError) {
+        console.error("Event creation error:", eventError);
+        throw eventError;
+      }
 
       console.log("Event created successfully:", eventData);
 
@@ -71,10 +81,13 @@ const CreateEventDialog = ({
           user_id: user.id,
         });
 
-      if (participantError) throw participantError;
+      if (participantError) {
+        console.error("Participant creation error:", participantError);
+        throw participantError;
+      }
 
       console.log("Successfully added creator as participant");
-      onEventCreated();
+      await onEventCreated();
       onOpenChange(false);
       toast.success("Event created successfully");
     } catch (error) {

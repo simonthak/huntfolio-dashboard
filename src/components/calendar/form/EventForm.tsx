@@ -30,12 +30,15 @@ const EventForm = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Form submission started with type:", type);
     
     if (!selectedDate) {
+      toast.error("Please select a date");
       return;
     }
 
     if (!participantLimit || parseInt(participantLimit) < 1) {
+      toast.error("Please enter a valid participant limit");
       return;
     }
 
