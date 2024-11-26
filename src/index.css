@@ -106,7 +106,7 @@
 }
 
 .fc .fc-event {
-  @apply border-0 cursor-pointer;
+  @apply border-0 cursor-pointer bg-transparent;
 }
 
 .fc .fc-more-link {
