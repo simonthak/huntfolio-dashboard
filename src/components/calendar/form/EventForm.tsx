@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { HUNT_TYPES, HuntType } from "@/constants/huntTypes";
 import EventTypeSelector from "./EventTypeSelector";
+import { toast } from "sonner";
 
 interface EventFormProps {
   selectedDate?: Date;
