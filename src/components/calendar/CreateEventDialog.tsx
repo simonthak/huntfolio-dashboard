@@ -65,11 +65,11 @@ const CreateEventDialog = ({
         userId: user.id
       });
 
-      // Create the event
+      // Create the event with explicit type casting
       const { error: eventError, data: eventData } = await supabase
         .from("events")
         .insert({
-          type,
+          type: type,
           date: formattedDate,
           description,
           participant_limit: parseInt(participantLimit),
