@@ -9,6 +9,77 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      event_participants: {
+        Row: {
+          event_id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          event_id: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          event_id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_participants_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string
+          created_by: string
+          date: string
+          description: string | null
+          id: string
+          participant_limit: number
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          date: string
+          description?: string | null
+          id?: string
+          participant_limit: number
+          type: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          date?: string
+          description?: string | null
+          id?: string
+          participant_limit?: number
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
