@@ -48,27 +48,27 @@ export type Database = {
           created_by: string
           date: string
           description: string | null
+          hunt_type_id: number
           id: string
           participant_limit: number
-          type: string
         }
         Insert: {
           created_at?: string
           created_by: string
           date: string
           description?: string | null
+          hunt_type_id: number
           id?: string
           participant_limit: number
-          type: string
         }
         Update: {
           created_at?: string
           created_by?: string
           date?: string
           description?: string | null
+          hunt_type_id?: number
           id?: string
           participant_limit?: number
-          type?: string
         }
         Relationships: [
           {
@@ -78,7 +78,32 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_hunt_type"
+            columns: ["hunt_type_id"]
+            isOneToOne: false
+            referencedRelation: "hunt_types"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      hunt_types: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          name?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {

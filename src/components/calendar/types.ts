@@ -1,6 +1,7 @@
 export interface Event {
   id: string;
-  type: string;
+  hunt_type_id: number;
+  hunt_type: { name: string };
   date: string;
   description: string | null;
   participant_limit: number;

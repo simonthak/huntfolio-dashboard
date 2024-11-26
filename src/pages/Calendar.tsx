@@ -24,6 +24,7 @@ const Calendar = () => {
         .from("events")
         .select(`
           *,
+          hunt_type:hunt_types(name),
           created_by_profile:profiles!events_created_by_fkey(full_name),
           event_participants(user_id)
         `)
@@ -69,7 +70,7 @@ const Calendar = () => {
 
   const calendarEvents = events.map(event => ({
     id: event.id,
-    title: event.type,
+    title: event.hunt_type.name,
     date: event.date,
     extendedProps: {
       description: event.description,

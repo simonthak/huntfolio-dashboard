@@ -2,16 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarIcon, Users } from "lucide-react";
 import { format } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-interface Event {
-  id: string;
-  type: string;
-  date: string;
-  description: string | null;
-  participant_limit: number;
-  created_by_profile: { full_name: string | null };
-  event_participants: { user_id: string }[];
-}
+import { Event } from "./types";
 
 interface EventsListProps {
   events: Event[];
@@ -46,7 +37,7 @@ const EventsList = ({ events }: EventsListProps) => {
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-medium text-gray-900">{event.type}</h3>
+                      <h3 className="font-medium text-gray-900">{event.hunt_type.name}</h3>
                       <p className="text-sm text-gray-500">
                         {format(new Date(event.date), "MMMM d, yyyy")}
                       </p>

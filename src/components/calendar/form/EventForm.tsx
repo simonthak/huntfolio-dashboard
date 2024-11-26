@@ -4,14 +4,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
-import { HUNT_TYPES, HuntType } from "@/constants/huntTypes";
 import EventTypeSelector from "./EventTypeSelector";
 import { toast } from "sonner";
 
 interface EventFormProps {
   selectedDate?: Date;
   onSubmit: (data: {
-    type: HuntType;
+    hunt_type_id: number;
     description: string;
     participantLimit: number;
   }) => Promise<void>;
@@ -25,7 +24,7 @@ const EventForm = ({
   onCancel, 
   isSubmitting 
 }: EventFormProps) => {
-  const [type, setType] = useState<HuntType>(HUNT_TYPES[0]);
+  const [huntTypeId, setHuntTypeId] = useState<number>(0);
   const [description, setDescription] = useState("");
   const [participantLimit, setParticipantLimit] = useState("");
 
@@ -43,14 +42,14 @@ const EventForm = ({
       return;
     }
 
-    if (!HUNT_TYPES.includes(type)) {
-      toast.error("Please select a valid hunt type");
+    if (!huntTypeId) {
+      toast.error("Please select a hunt type");
       return;
     }
 
-    console.log("Submitting form with type:", type);
+    console.log("Submitting form with hunt type id:", huntTypeId);
     await onSubmit({
-      type,
+      hunt_type_id: huntTypeId,
       description,
       participantLimit: limit,
     });
@@ -67,7 +66,7 @@ const EventForm = ({
         />
       </div>
 
-      <EventTypeSelector value={type} onChange={setType} />
+      <EventTypeSelector value={huntTypeId} onChange={setHuntTypeId} />
 
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>

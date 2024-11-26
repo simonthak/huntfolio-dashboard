@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { HuntType } from "@/constants/huntTypes";
 import EventForm from "./form/EventForm";
 
 interface CreateEventDialogProps {
@@ -22,7 +21,7 @@ const CreateEventDialog = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (data: {
-    type: HuntType;
+    hunt_type_id: number;
     description: string;
     participantLimit: number;
   }) => {
@@ -52,7 +51,7 @@ const CreateEventDialog = ({
       console.log("Authenticated user:", user.id);
 
       const eventData = {
-        type: data.type, // Remove toString() as it's already a string literal type
+        hunt_type_id: data.hunt_type_id,
         date: formattedDate,
         description: data.description,
         participant_limit: data.participantLimit,
@@ -69,12 +68,6 @@ const CreateEventDialog = ({
 
       if (eventError) {
         console.error("Event creation error:", eventError);
-        console.error("Error details:", {
-          message: eventError.message,
-          details: eventError.details,
-          hint: eventError.hint,
-          code: eventError.code
-        });
         throw eventError;
       }
 

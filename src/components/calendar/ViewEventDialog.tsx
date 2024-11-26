@@ -52,7 +52,7 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
     try {
       await handleEventDeletion(event.id);
       console.log("Event deleted successfully");
-      await onEventJoin(); // Wait for the calendar refresh to complete
+      await onEventJoin();
       toast.success("Event deleted successfully");
       onOpenChange(false);
     } catch (error) {
@@ -69,7 +69,7 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{event.type}</DialogTitle>
+          <DialogTitle>{event.hunt_type.name}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div>
