@@ -4,21 +4,7 @@ export const handleEventDeletion = async (eventId: string) => {
   console.log("Starting event deletion process for event:", eventId);
   
   try {
-    // First delete all participants
-    const { data: deletedParticipants, error: participantsError } = await supabase
-      .from("event_participants")
-      .delete()
-      .eq("event_id", eventId)
-      .select();
-
-    if (participantsError) {
-      console.error("Error deleting participants:", participantsError);
-      throw participantsError;
-    }
-
-    console.log("Successfully deleted participants:", deletedParticipants);
-
-    // Then delete the event
+    // Delete the event (participants will be cascade deleted due to foreign key)
     const { data: deletedEvent, error: eventError } = await supabase
       .from("events")
       .delete()
