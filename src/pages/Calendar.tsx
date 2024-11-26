@@ -4,7 +4,7 @@ import EventsList from "@/components/calendar/EventsList";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format, isFuture, startOfToday } from "date-fns";
+import { format, isBefore, startOfDay } from "date-fns";
 import ViewEventDialog from "@/components/calendar/ViewEventDialog";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -42,9 +42,10 @@ const Calendar = () => {
 
   const handleDateSelect = (selectInfo: { date: Date }) => {
     const date = selectInfo.date;
+    const today = startOfDay(new Date());
     
-    if (!isFuture(startOfToday()) && !isFuture(date)) {
-      toast.error("You can only create events for future dates");
+    if (isBefore(date, today)) {
+      toast.error("You can only create events for today or future dates");
       return;
     }
     
