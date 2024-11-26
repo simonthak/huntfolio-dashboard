@@ -27,6 +27,7 @@ interface ViewEventDialogProps {
 const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDialogProps) => {
   const [isUserOrganizer, setIsUserOrganizer] = useState(false);
   const [isUserParticipant, setIsUserParticipant] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const checkUserRoles = async () => {
@@ -98,14 +99,24 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
 
   const handleDeleteEvent = async () => {
     if (!event) return;
-
+    
+    setIsDeleting(true);
     try {
-      const { error } = await supabase
+      // First delete all participants
+      const { error: participantsError } = await supabase
+        .from("event_participants")
+        .delete()
+        .eq("event_id", event.id);
+
+      if (participantsError) throw participantsError;
+
+      // Then delete the event
+      const { error: eventError } = await supabase
         .from("events")
         .delete()
         .eq("id", event.id);
 
-      if (error) throw error;
+      if (eventError) throw eventError;
 
       onEventJoin();
       toast.success("Event deleted successfully");
@@ -113,6 +124,8 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
     } catch (error) {
       console.error("Error deleting event:", error);
       toast.error("Failed to delete event");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -151,10 +164,11 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
               <Button 
                 variant="destructive" 
                 onClick={handleDeleteEvent}
+                disabled={isDeleting}
                 className="flex items-center gap-2"
               >
                 <Trash2 className="w-4 h-4" />
-                Delete Event
+                {isDeleting ? "Deleting..." : "Delete Event"}
               </Button>
             )}
             {isUserParticipant ? (
