@@ -3,7 +3,8 @@ export const HUNT_TYPES = [
   "Smygjakt",
   "Vakjakt",
   "Skyddsjakt",
-  "Fågeljakt"
+  "Fågeljakt",
+  "Arbetsdag"
 ] as const;
 
 export type HuntType = typeof HUNT_TYPES[number];
