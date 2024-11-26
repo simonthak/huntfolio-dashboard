@@ -37,8 +37,13 @@ const Sidebar = () => {
 
   return (
     <div className="h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
-      <div className="p-6">
-        <h1 className="text-xl font-bold text-secondary">Hunt Manager</h1>
+      <div className="p-6 flex items-center gap-3">
+        <img
+          src={`${supabase.storage.from('logos').getPublicUrl('antlers-logo.png').data.publicUrl}`}
+          alt="Antlers Logo"
+          className="w-8 h-8 object-contain"
+        />
+        <h1 className="text-xl font-bold text-secondary">Antlers</h1>
       </div>
       
       <nav className="flex-1 px-4">
