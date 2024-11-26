@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { CalendarIcon, Users } from "lucide-react";
 import { format } from "date-fns";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Event {
   id: string;
@@ -31,39 +31,43 @@ const EventsList = ({ events }: EventsListProps) => {
           Upcoming Hunts
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {upcomingEvents.length === 0 ? (
-          <p className="text-muted-foreground text-sm text-center py-4">
-            No upcoming hunts scheduled
-          </p>
-        ) : (
-          upcomingEvents.map((event) => (
-            <div
-              key={event.id}
-              className="p-4 bg-gray-50 rounded-lg space-y-2 hover:bg-gray-100 transition-colors"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-medium text-gray-900">{event.type}</h3>
-                  <p className="text-sm text-gray-500">
-                    {format(new Date(event.date), "MMMM d, yyyy")}
-                  </p>
+      <CardContent>
+        <ScrollArea className="h-[600px] pr-4">
+          <div className="space-y-4">
+            {upcomingEvents.length === 0 ? (
+              <p className="text-muted-foreground text-sm text-center py-4">
+                No upcoming hunts scheduled
+              </p>
+            ) : (
+              upcomingEvents.map((event) => (
+                <div
+                  key={event.id}
+                  className="p-4 bg-gray-50 rounded-lg space-y-2 hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium text-gray-900">{event.type}</h3>
+                      <p className="text-sm text-gray-500">
+                        {format(new Date(event.date), "MMMM d, yyyy")}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                      <Users className="w-4 h-4" />
+                      <span>
+                        {event.event_participants.length}/{event.participant_limit}
+                      </span>
+                    </div>
+                  </div>
+                  {event.description && (
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      {event.description}
+                    </p>
+                  )}
                 </div>
-                <div className="flex items-center gap-1 text-sm text-gray-500">
-                  <Users className="w-4 h-4" />
-                  <span>
-                    {event.event_participants.length}/{event.participant_limit}
-                  </span>
-                </div>
-              </div>
-              {event.description && (
-                <p className="text-sm text-gray-600 line-clamp-2">
-                  {event.description}
-                </p>
-              )}
-            </div>
-          ))
-        )}
+              ))
+            )}
+          </div>
+        </ScrollArea>
       </CardContent>
     </Card>
   );

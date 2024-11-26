@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import CreateEventDialog from "@/components/calendar/CreateEventDialog";
 import EventsList from "@/components/calendar/EventsList";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format, isFuture, startOfToday, isPast } from "date-fns";
+import { format, isFuture, startOfToday } from "date-fns";
 import ViewEventDialog from "@/components/calendar/ViewEventDialog";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -82,18 +80,9 @@ const Calendar = () => {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Hunt Calendar</h1>
-          <p className="text-gray-500 mt-1">Schedule and manage your hunting events</p>
-        </div>
-        <Button 
-          onClick={() => setIsCreateEventOpen(true)}
-          className="bg-primary hover:bg-primary/90"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          New Hunt
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Hunt Calendar</h1>
+        <p className="text-gray-500 mt-1">Schedule and manage your hunting events</p>
       </div>
 
       <div className="grid grid-cols-12 gap-8">
@@ -116,7 +105,7 @@ const Calendar = () => {
               }}
               height="auto"
               dayCellClassNames={(arg) => {
-                return isPast(arg.date) && !arg.isPast ? 'text-gray-400 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50';
+                return 'cursor-pointer hover:bg-gray-50';
               }}
               eventContent={(eventInfo) => (
                 <div className="p-1 w-full">
