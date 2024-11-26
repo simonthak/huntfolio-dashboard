@@ -32,7 +32,7 @@ const Sidebar = () => {
         console.log("Fetching logo URL...");
         const { data: publicUrl } = supabase.storage
           .from('logos')
-          .getPublicUrl('antlers-logo.png');
+          .getPublicUrl('symbol.svg');
         
         console.log("Logo URL:", publicUrl.publicUrl);
         setLogoUrl(publicUrl.publicUrl);
