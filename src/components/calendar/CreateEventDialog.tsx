@@ -7,8 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format, isFuture } from "date-fns";
-import { HUNT_TYPES } from "@/constants/huntTypes";
+import { format } from "date-fns";
+import { HUNT_TYPES, HuntType } from "@/constants/huntTypes";
 
 interface CreateEventDialogProps {
   open: boolean;
@@ -23,7 +23,7 @@ const CreateEventDialog = ({
   selectedDate, 
   onEventCreated 
 }: CreateEventDialogProps) => {
-  const [type, setType] = useState<string>(HUNT_TYPES[0]);
+  const [type, setType] = useState<HuntType>(HUNT_TYPES[0]);
   const [description, setDescription] = useState("");
   const [participantLimit, setParticipantLimit] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -141,7 +141,7 @@ const CreateEventDialog = ({
             <Label>Hunt Type</Label>
             <RadioGroup 
               value={type} 
-              onValueChange={setType}
+              onValueChange={(value) => setType(value as HuntType)}
               className="flex flex-wrap gap-4"
             >
               {HUNT_TYPES.map((huntType) => (
