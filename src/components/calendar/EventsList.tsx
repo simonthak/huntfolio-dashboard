@@ -21,7 +21,12 @@ interface EventsListProps {
 }
 
 const EventsList = ({ events, onEventJoin }: EventsListProps) => {
-  const handleJoinEvent = async (eventId: string) => {
+  const handleJoinEvent = async (eventId: string, participantCount: number, participantLimit: number) => {
+    if (participantCount >= participantLimit) {
+      toast.error("This event is already full");
+      return;
+    }
+
     const user = (await supabase.auth.getUser()).data.user;
     if (!user) {
       toast.error("You must be logged in to join events");
@@ -84,10 +89,16 @@ const EventsList = ({ events, onEventJoin }: EventsListProps) => {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => handleJoinEvent(event.id)}
+                  onClick={() => handleJoinEvent(
+                    event.id,
+                    event.event_participants.length,
+                    event.participant_limit
+                  )}
                   disabled={event.event_participants.length >= event.participant_limit}
                 >
-                  Join Hunt
+                  {event.event_participants.length >= event.participant_limit
+                    ? "Event Full"
+                    : "Join Hunt"}
                 </Button>
               </div>
             </div>

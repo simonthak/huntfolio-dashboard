@@ -1,39 +1,54 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 interface CreateEventDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  selectedDate?: Date;
   onEventCreated: () => void;
 }
 
-const HUNT_TYPES = ["Drevjakt", "smygjakt", "vakjakt"];
+const HUNT_TYPES = ["Drevjakt", "Smygjakt", "Vakjakt"];
 
-const CreateEventDialog = ({ open, onOpenChange, onEventCreated }: CreateEventDialogProps) => {
+const CreateEventDialog = ({ 
+  open, 
+  onOpenChange, 
+  selectedDate, 
+  onEventCreated 
+}: CreateEventDialogProps) => {
   const [type, setType] = useState(HUNT_TYPES[0]);
-  const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
   const [participantLimit, setParticipantLimit] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedDate) {
+      toast.error("Please select a date");
+      return;
+    }
+
     setIsSubmitting(true);
+    const formattedDate = format(selectedDate, "yyyy-MM-dd");
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
       const { error } = await supabase.from("events").insert({
         type,
-        date,
+        date: formattedDate,
         description,
         participant_limit: parseInt(participantLimit),
-        created_by: (await supabase.auth.getUser()).data.user?.id,
+        created_by: user.id,
       });
 
       if (error) throw error;
@@ -51,7 +66,6 @@ const CreateEventDialog = ({ open, onOpenChange, onEventCreated }: CreateEventDi
 
   const resetForm = () => {
     setType(HUNT_TYPES[0]);
-    setDate("");
     setDescription("");
     setParticipantLimit("");
   };
@@ -63,6 +77,15 @@ const CreateEventDialog = ({ open, onOpenChange, onEventCreated }: CreateEventDi
           <DialogTitle>Create New Hunt Event</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label>Selected Date</Label>
+            <Input
+              value={selectedDate ? format(selectedDate, "MMMM d, yyyy") : ""}
+              disabled
+              className="bg-muted"
+            />
+          </div>
+
           <div className="space-y-2">
             <Label>Hunt Type</Label>
             <RadioGroup value={type} onValueChange={setType} className="flex gap-4">
@@ -76,22 +99,12 @@ const CreateEventDialog = ({ open, onOpenChange, onEventCreated }: CreateEventDi
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
-            <Input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description (Optional)</Label>
+            <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              placeholder="Add details about the hunt..."
               rows={3}
             />
           </div>
@@ -105,6 +118,7 @@ const CreateEventDialog = ({ open, onOpenChange, onEventCreated }: CreateEventDi
               value={participantLimit}
               onChange={(e) => setParticipantLimit(e.target.value)}
               required
+              placeholder="Enter maximum number of participants"
             />
           </div>
 

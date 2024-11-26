@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar as CalendarIcon, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,10 @@ import EventsList from "@/components/calendar/EventsList";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 const Calendar = () => {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
 
   const { data: events, refetch: refetchEvents } = useQuery({
@@ -34,6 +35,20 @@ const Calendar = () => {
     },
   });
 
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    
+    setSelectedDate(date);
+    const formattedDate = format(date, "yyyy-MM-dd");
+    const existingEvent = events?.find(event => event.date === formattedDate);
+
+    if (existingEvent) {
+      toast.error("An event is already scheduled for this date");
+    } else {
+      setIsCreateEventOpen(true);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -51,9 +66,21 @@ const Calendar = () => {
         <Card className="col-span-2 p-6">
           <CalendarComponent
             mode="single"
-            selected={date}
-            onSelect={setDate}
+            selected={selectedDate}
+            onSelect={handleDateSelect}
             className="rounded-md border"
+            modifiers={{
+              booked: (date) => {
+                const formattedDate = format(date, "yyyy-MM-dd");
+                return events?.some(event => event.date === formattedDate) || false;
+              }
+            }}
+            modifiersStyles={{
+              booked: {
+                backgroundColor: "rgb(var(--primary) / 0.1)",
+                borderRadius: "0.375rem"
+              }
+            }}
           />
         </Card>
         
@@ -63,6 +90,7 @@ const Calendar = () => {
       <CreateEventDialog 
         open={isCreateEventOpen} 
         onOpenChange={setIsCreateEventOpen}
+        selectedDate={selectedDate}
         onEventCreated={() => {
           refetchEvents();
           toast.success("Event created successfully");
