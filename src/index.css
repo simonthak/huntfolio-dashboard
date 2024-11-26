@@ -94,7 +94,7 @@
 }
 
 .fc .fc-day-today {
-  @apply bg-green-50;
+  @apply bg-green-50/80;
 }
 
 .fc .fc-day-today .fc-daygrid-day-number {
@@ -121,6 +121,6 @@
   @apply bg-gray-50;
 }
 
-.fc .fc-day-future {
+.fc .fc-day-future, .fc .fc-day-today {
   @apply cursor-pointer hover:bg-gray-50 transition-colors duration-200;
 }
