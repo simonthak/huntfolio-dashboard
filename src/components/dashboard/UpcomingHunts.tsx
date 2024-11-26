@@ -21,7 +21,8 @@ const UpcomingHunts = () => {
         .from("events")
         .select(`
           *,
-          event_participants(user_id)
+          event_participants(user_id),
+          hunt_type:hunt_types(name)
         `)
         .gte('date', today)
         .order('date', { ascending: true })
@@ -61,7 +62,7 @@ const UpcomingHunts = () => {
                     <span>{format(new Date(hunt.date), "MMM d, yyyy")}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <span className="text-primary font-medium">{hunt.type}</span>
+                    <span className="text-primary font-medium">{hunt.hunt_type.name}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
