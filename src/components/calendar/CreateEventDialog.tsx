@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, isFuture } from "date-fns";
-import { HUNT_TYPES, HuntType } from "@/constants/huntTypes";
+import { HUNT_TYPES } from "@/constants/huntTypes";
 
 interface CreateEventDialogProps {
   open: boolean;
@@ -36,11 +36,6 @@ const CreateEventDialog = ({
       return;
     }
 
-    if (!isFuture(selectedDate)) {
-      toast.error("You can only create events for future dates");
-      return;
-    }
-
     if (!participantLimit || parseInt(participantLimit) < 1) {
       toast.error("Please enter a valid participant limit");
       return;
@@ -51,9 +46,18 @@ const CreateEventDialog = ({
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
+      if (!user) {
+        console.error("No user found");
+        throw new Error("No user found");
+      }
 
-      console.log("Creating event with type:", type);
+      console.log("Creating event with:", {
+        type,
+        date: formattedDate,
+        description,
+        participantLimit: parseInt(participantLimit),
+        userId: user.id
+      });
 
       // Create the event
       const { error: eventError, data: eventData } = await supabase
@@ -70,8 +74,15 @@ const CreateEventDialog = ({
 
       if (eventError) {
         console.error("Error creating event:", eventError);
+        console.error("Error details:", {
+          message: eventError.message,
+          details: eventError.details,
+          hint: eventError.hint
+        });
         throw eventError;
       }
+
+      console.log("Event created successfully:", eventData);
 
       // Automatically add the creator as a participant
       const { error: participantError } = await supabase
@@ -83,15 +94,21 @@ const CreateEventDialog = ({
 
       if (participantError) {
         console.error("Error adding participant:", participantError);
+        console.error("Error details:", {
+          message: participantError.message,
+          details: participantError.details,
+          hint: participantError.hint
+        });
         throw participantError;
       }
 
+      console.log("Successfully added creator as participant");
       onEventCreated();
       onOpenChange(false);
       resetForm();
       toast.success("Event created successfully");
     } catch (error) {
-      console.error("Error creating event:", error);
+      console.error("Error in event creation process:", error);
       toast.error("Failed to create event");
     } finally {
       setIsSubmitting(false);
@@ -165,7 +182,7 @@ const CreateEventDialog = ({
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              Create Event
+              {isSubmitting ? "Creating..." : "Create Event"}
             </Button>
           </div>
         </form>
