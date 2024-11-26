@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import CreateEventDialog from "@/components/calendar/CreateEventDialog";
 import EventsList from "@/components/calendar/EventsList";
@@ -9,6 +8,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, isFuture, startOfToday } from "date-fns";
 import ViewEventDialog from "@/components/calendar/ViewEventDialog";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
 
 interface Event {
   id: string;
@@ -46,8 +48,8 @@ const Calendar = () => {
     },
   });
 
-  const handleDateSelect = (date: Date | undefined) => {
-    if (!date) return;
+  const handleDateSelect = (selectInfo: { date: Date }) => {
+    const date = selectInfo.date;
     
     if (!isFuture(startOfToday()) && !isFuture(date)) {
       toast.error("You can only create events for future dates");
@@ -64,6 +66,18 @@ const Calendar = () => {
       setIsCreateEventOpen(true);
     }
   };
+
+  const calendarEvents = events?.map(event => ({
+    id: event.id,
+    title: event.type,
+    date: event.date,
+    extendedProps: {
+      description: event.description,
+      participantLimit: event.participant_limit,
+      currentParticipants: event.event_participants.length,
+      createdBy: event.created_by_profile.full_name
+    }
+  })) || [];
 
   return (
     <div className="space-y-8">
@@ -84,61 +98,38 @@ const Calendar = () => {
       <div className="grid grid-cols-12 gap-8">
         <div className="col-span-12 lg:col-span-9">
           <div className="bg-white rounded-xl shadow-sm border p-6">
-            <CalendarComponent
-              mode="single"
-              selected={selectedDate}
-              onSelect={handleDateSelect}
-              className="w-full"
-              classNames={{
-                months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-                month: "space-y-4 w-full",
-                caption: "flex justify-center pt-1 relative items-center mb-8",
-                caption_label: "text-lg font-semibold",
-                nav: "space-x-1 flex items-center",
-                nav_button: "h-8 w-8 bg-transparent p-0 hover:bg-gray-100 rounded-full transition-colors",
-                nav_button_previous: "absolute left-1",
-                nav_button_next: "absolute right-1",
-                table: "w-full border-collapse",
-                head_row: "flex w-full",
-                head_cell: "text-gray-500 rounded-md w-full font-medium text-sm uppercase tracking-wider pb-4",
-                row: "flex w-full mt-2",
-                cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-gray-50 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md",
-                day: "h-32 w-full p-1 hover:bg-gray-50 rounded-lg transition-colors relative",
-                day_today: "bg-primary/5 font-semibold text-primary",
-                day_outside: "opacity-50",
-                day_disabled: "opacity-50 cursor-not-allowed",
-                day_range_middle: "aria-selected:bg-gray-50",
-                day_hidden: "invisible",
-                day_selected: "bg-gray-50"
+            <FullCalendar
+              plugins={[dayGridPlugin, interactionPlugin]}
+              initialView="dayGridMonth"
+              dateClick={handleDateSelect}
+              events={calendarEvents}
+              eventClick={(info) => {
+                const event = events?.find(e => e.id === info.event.id);
+                if (event) setSelectedEvent(event);
               }}
-              components={{
-                DayContent: ({ date }) => {
-                  const formattedDate = format(date, "yyyy-MM-dd");
-                  const event = events?.find(e => e.date === formattedDate);
-                  return (
-                    <div className="w-full h-full flex flex-col items-start p-1">
-                      <span className="text-sm font-medium">{date.getDate()}</span>
-                      {event && (
-                        <div 
-                          className="mt-1 w-full bg-primary text-white p-2 rounded-md cursor-pointer hover:bg-primary/90 transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedEvent(event);
-                          }}
-                        >
-                          <div className="font-medium text-xs">{event.type}</div>
-                          <div className="text-[10px] opacity-90 truncate">
-                            by {event.created_by_profile.full_name || 'Unknown'}
-                          </div>
-                          <div className="text-[10px] mt-1 flex items-center justify-between">
-                            <span>{event.event_participants.length}/{event.participant_limit}</span>
-                          </div>
-                        </div>
-                      )}
+              headerToolbar={{
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth'
+              }}
+              height="auto"
+              eventContent={(eventInfo) => (
+                <div className="p-1 w-full">
+                  <div className="bg-primary text-white p-2 rounded-md text-sm">
+                    <div className="font-medium truncate">{eventInfo.event.title}</div>
+                    <div className="text-xs opacity-90">
+                      {eventInfo.event.extendedProps.currentParticipants}/
+                      {eventInfo.event.extendedProps.participantLimit} participants
                     </div>
-                  );
-                }
-              }}
+                  </div>
+                </div>
+              )}
+              dayMaxEvents={3}
+              moreLinkContent={(args) => (
+                <div className="text-xs text-primary font-medium">
+                  +{args.num} more
+                </div>
+              )}
             />
           </div>
         </div>
