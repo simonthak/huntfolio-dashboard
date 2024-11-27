@@ -134,7 +134,7 @@ const Reports = () => {
         </Button>
       </div>
 
-      <Card className="p-6">
+      <Card>
         <ReportsTable 
           reports={reports}
           currentUserId={currentUserId}
