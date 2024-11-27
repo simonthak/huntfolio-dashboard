@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2, Upload } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 const formSchema = z.object({
   firstname: z.string().min(2, "First name must be at least 2 characters"),
@@ -150,88 +151,92 @@ const Profile = () => {
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-8">Profile Settings</h1>
       
-      <div className="mb-8 flex flex-col items-center space-y-4">
-        <Avatar className="h-32 w-32">
-          <AvatarImage src={avatarUrl || undefined} />
-          <AvatarFallback>
-            {form.watch("firstname")?.[0]?.toUpperCase() || "?"}
-            {form.watch("lastname")?.[0]?.toUpperCase() || "?"}
-          </AvatarFallback>
-        </Avatar>
-        
-        <div className="flex items-center space-x-2">
-          <Input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            id="avatar-upload"
-            onChange={handleAvatarUpload}
-            disabled={uploadingAvatar}
-          />
-          <Button
-            variant="outline"
-            onClick={() => document.getElementById("avatar-upload")?.click()}
-            disabled={uploadingAvatar}
-          >
-            {uploadingAvatar ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : (
-              <Upload className="h-4 w-4 mr-2" />
-            )}
-            Change Picture
-          </Button>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="mb-8 flex flex-col items-center space-y-4">
+            <Avatar className="h-32 w-32">
+              <AvatarImage src={avatarUrl || undefined} />
+              <AvatarFallback>
+                {form.watch("firstname")?.[0]?.toUpperCase() || "?"}
+                {form.watch("lastname")?.[0]?.toUpperCase() || "?"}
+              </AvatarFallback>
+            </Avatar>
+            
+            <div className="flex items-center space-x-2">
+              <Input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                id="avatar-upload"
+                onChange={handleAvatarUpload}
+                disabled={uploadingAvatar}
+              />
+              <Button
+                variant="outline"
+                onClick={() => document.getElementById("avatar-upload")?.click()}
+                disabled={uploadingAvatar}
+              >
+                {uploadingAvatar ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Upload className="h-4 w-4 mr-2" />
+                )}
+                Change Picture
+              </Button>
+            </div>
+          </div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="firstname"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>First Name</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="firstname"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>First Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <FormField
-            control={form.control}
-            name="lastname"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Last Name</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="lastname"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Last Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <FormField
-            control={form.control}
-            name="phone_number"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Phone Number</FormLabel>
-                <FormControl>
-                  <Input {...field} type="tel" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="phone_number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="tel" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <Button type="submit" className="w-full">
-            Save Changes
-          </Button>
-        </form>
-      </Form>
+              <Button type="submit" className="w-full">
+                Save Changes
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 };
