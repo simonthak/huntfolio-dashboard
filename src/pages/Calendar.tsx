@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CreateEventDialog from "@/components/calendar/CreateEventDialog";
 import EventsList from "@/components/calendar/EventsList";
 import { useQuery } from "@tanstack/react-query";
@@ -16,6 +16,15 @@ const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id || null);
+    };
+    getCurrentUser();
+  }, []);
 
   const { data: events = [], refetch: refetchEvents } = useQuery({
     queryKey: ["events"],
@@ -72,8 +81,7 @@ const Calendar = () => {
   };
 
   const calendarEvents = events.map(event => {
-    const { data: { user } } = await supabase.auth.getUser();
-    const isParticipating = event.event_participants.some(p => p.user_id === user?.id);
+    const isParticipating = event.event_participants.some(p => p.user_id === currentUserId);
 
     return {
       id: event.id,
