@@ -197,19 +197,7 @@ const ReportFormFields = ({ onChange, initialData }: ReportFormFieldsProps) => {
       </div>
 
       <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <Label>Animals</Label>
-          <Button 
-            type="button" 
-            variant="outline" 
-            size="sm" 
-            onClick={handleAddAnimal}
-            style={{ borderColor: '#13B67F', color: '#13B67F' }}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Animal
-          </Button>
-        </div>
+        <Label>Animals</Label>
         <div className="space-y-4">
           {animals.map((animal, index) => (
             <AnimalEntry
@@ -221,6 +209,17 @@ const ReportFormFields = ({ onChange, initialData }: ReportFormFieldsProps) => {
               onChange={(data) => handleAnimalChange(index, data)}
             />
           ))}
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="sm" 
+            onClick={handleAddAnimal}
+            className="w-full"
+            style={{ borderColor: '#13B67F', color: '#13B67F' }}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Animal
+          </Button>
         </div>
       </div>
 
