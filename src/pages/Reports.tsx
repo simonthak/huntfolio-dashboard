@@ -27,6 +27,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+// Move interfaces to a separate types file
 interface ReportAnimal {
   animal_type: { name: string };
   animal_subtype?: { name: string };
@@ -44,14 +45,141 @@ interface Report {
   report_animals: ReportAnimal[];
 }
 
-const Reports = () => {
+// Move dialog state management to a separate component
+const useReportDialogs = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
+  return {
+    createDialogOpen,
+    setCreateDialogOpen,
+    viewDialogOpen,
+    setViewDialogOpen,
+    editDialogOpen,
+    setEditDialogOpen,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    selectedReport,
+    setSelectedReport,
+  };
+};
+
+// Move the delete functionality to a separate component
+const useReportDeletion = (refetch: () => void) => {
+  const handleDelete = async (report: Report) => {
+    try {
+      console.log("Deleting report:", report.id);
+      const { error } = await supabase
+        .from("hunting_reports")
+        .delete()
+        .eq('id', report.id);
+
+      if (error) throw error;
+
+      toast.success("Report deleted successfully");
+      refetch();
+    } catch (error) {
+      console.error("Error deleting report:", error);
+      toast.error("Failed to delete report");
+    }
+  };
+
+  return { handleDelete };
+};
+
+// Create a separate component for the table
+const ReportsTable = ({ 
+  reports, 
+  currentUserId,
+  onView,
+  onEdit,
+  onDelete
+}: { 
+  reports: Report[], 
+  currentUserId: string | null,
+  onView: (report: Report) => void,
+  onEdit: (report: Report) => void,
+  onDelete: (report: Report) => void
+}) => {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Date</TableHead>
+          <TableHead>Hunt Type</TableHead>
+          <TableHead>Animals</TableHead>
+          <TableHead>Participants</TableHead>
+          <TableHead>Reported By</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {reports.length === 0 ? (
+          <TableRow>
+            <TableCell colSpan={6} className="text-center text-muted-foreground">
+              No reports found
+            </TableCell>
+          </TableRow>
+        ) : (
+          reports.map((report) => (
+            <TableRow key={report.id}>
+              <TableCell>{format(new Date(report.date), "MMM d, yyyy")}</TableCell>
+              <TableCell>{report.hunt_type.name}</TableCell>
+              <TableCell>
+                {report.report_animals.map((animal, index) => (
+                  <div key={index}>
+                    {animal.quantity}x {animal.animal_type.name}
+                    {animal.animal_subtype?.name && ` (${animal.animal_subtype.name})`}
+                  </div>
+                ))}
+              </TableCell>
+              <TableCell>{report.participant_count}</TableCell>
+              <TableCell>{report.created_by_profile.full_name}</TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onView(report)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  {report.created_by === currentUserId && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onEdit(report)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onDelete(report)}
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </TableCell>
+            </TableRow>
+          ))
+        )}
+      </TableBody>
+    </Table>
+  );
+};
+
+const Reports = () => {
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const dialogState = useReportDialogs();
+  
   useEffect(() => {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -64,7 +192,6 @@ const Reports = () => {
     queryKey: ["hunting-reports"],
     queryFn: async () => {
       console.log("Fetching hunting reports...");
-      const { data: { user } } = await supabase.auth.getUser();
       
       const { data, error } = await supabase
         .from("hunting_reports")
@@ -92,43 +219,7 @@ const Reports = () => {
     },
   });
 
-  const handleDelete = async () => {
-    if (!selectedReport) return;
-
-    try {
-      console.log("Deleting report:", selectedReport.id);
-      const { error } = await supabase
-        .from("hunting_reports")
-        .delete()
-        .eq('id', selectedReport.id);
-
-      if (error) throw error;
-
-      toast.success("Report deleted successfully");
-      refetch();
-    } catch (error) {
-      console.error("Error deleting report:", error);
-      toast.error("Failed to delete report");
-    } finally {
-      setDeleteDialogOpen(false);
-      setSelectedReport(null);
-    }
-  };
-
-  const handleView = (report: Report) => {
-    setSelectedReport(report);
-    setViewDialogOpen(true);
-  };
-
-  const handleEdit = (report: Report) => {
-    setSelectedReport(report);
-    setEditDialogOpen(true);
-  };
-
-  const handleDeleteClick = (report: Report) => {
-    setSelectedReport(report);
-    setDeleteDialogOpen(true);
-  };
+  const { handleDelete } = useReportDeletion(refetch);
 
   if (isLoading) {
     return (
@@ -145,105 +236,59 @@ const Reports = () => {
           <h1 className="text-3xl font-bold text-gray-900">Hunting Reports</h1>
           <p className="text-gray-500 mt-1">View all hunting reports and their details</p>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)} style={{ backgroundColor: '#13B67F' }}>
+        <Button 
+          onClick={() => dialogState.setCreateDialogOpen(true)} 
+          style={{ backgroundColor: '#13B67F' }}
+        >
           <Plus className="mr-2 h-4 w-4" />
           New Report
         </Button>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Hunt Type</TableHead>
-              <TableHead>Animals</TableHead>
-              <TableHead>Participants</TableHead>
-              <TableHead>Reported By</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {reports.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
-                  No reports found
-                </TableCell>
-              </TableRow>
-            ) : (
-              reports.map((report) => (
-                <TableRow key={report.id}>
-                  <TableCell>{format(new Date(report.date), "MMM d, yyyy")}</TableCell>
-                  <TableCell>{report.hunt_type.name}</TableCell>
-                  <TableCell>
-                    {report.report_animals.map((animal, index) => (
-                      <div key={index}>
-                        {animal.quantity}x {animal.animal_type.name}
-                        {animal.animal_subtype?.name && ` (${animal.animal_subtype.name})`}
-                      </div>
-                    ))}
-                  </TableCell>
-                  <TableCell>{report.participant_count}</TableCell>
-                  <TableCell>{report.created_by_profile.full_name}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleView(report)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      {report.created_by === currentUserId && (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEdit(report)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeleteClick(report)}
-                            className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+        <ReportsTable 
+          reports={reports}
+          currentUserId={currentUserId}
+          onView={(report) => {
+            dialogState.setSelectedReport(report);
+            dialogState.setViewDialogOpen(true);
+          }}
+          onEdit={(report) => {
+            dialogState.setSelectedReport(report);
+            dialogState.setEditDialogOpen(true);
+          }}
+          onDelete={(report) => {
+            dialogState.setSelectedReport(report);
+            dialogState.setDeleteDialogOpen(true);
+          }}
+        />
       </div>
 
       <CreateReportDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
+        open={dialogState.createDialogOpen}
+        onOpenChange={dialogState.setCreateDialogOpen}
         onReportCreated={refetch}
       />
 
       <ViewReportDialog
-        report={selectedReport}
-        open={viewDialogOpen}
-        onOpenChange={setViewDialogOpen}
+        report={dialogState.selectedReport}
+        open={dialogState.viewDialogOpen}
+        onOpenChange={dialogState.setViewDialogOpen}
       />
 
-      {selectedReport && (
+      {dialogState.selectedReport && (
         <EditReportDialog
-          report={selectedReport}
-          open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
+          report={dialogState.selectedReport}
+          open={dialogState.editDialogOpen}
+          onOpenChange={dialogState.setEditDialogOpen}
           onReportUpdated={refetch}
         />
       )}
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <AlertDialog 
+        open={dialogState.deleteDialogOpen} 
+        onOpenChange={dialogState.setDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
@@ -253,7 +298,16 @@ const Reports = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600">
+            <AlertDialogAction 
+              onClick={() => {
+                if (dialogState.selectedReport) {
+                  handleDelete(dialogState.selectedReport);
+                  dialogState.setDeleteDialogOpen(false);
+                  dialogState.setSelectedReport(null);
+                }
+              }} 
+              className="bg-red-500 hover:bg-red-600"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
