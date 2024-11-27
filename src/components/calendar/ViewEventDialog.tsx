@@ -94,7 +94,7 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
               <div className="space-y-1">
                 {event.event_participants.map((participant) => (
                   <div key={participant.user_id} className="text-sm">
-                    {participant.profile?.full_name || 'Anonymous Hunter'}
+                    {participant.profile?.full_name || participant.user_id}
                   </div>
                 ))}
               </div>
