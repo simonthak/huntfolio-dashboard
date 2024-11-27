@@ -234,7 +234,7 @@ const Reports = () => {
   }
 
   return (
-    <div className="space-y-6 px-6">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Hunting Reports</h1>
@@ -249,84 +249,23 @@ const Reports = () => {
         </Button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-        <div className="px-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Hunt Type</TableHead>
-                <TableHead>Animals</TableHead>
-                <TableHead>Participants</TableHead>
-                <TableHead>Reported By</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {reports.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
-                    No reports found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                reports.map((report) => {
-                  console.log("Rendering report:", report);
-                  console.log("Profile data:", report.created_by_profile);
-                  const fullName = report.created_by_profile?.firstname && report.created_by_profile?.lastname
-                    ? `${report.created_by_profile.firstname} ${report.created_by_profile.lastname}`
-                    : "Unknown";
-                  return (
-                    <TableRow key={report.id}>
-                      <TableCell>{format(new Date(report.date), "MMM d, yyyy")}</TableCell>
-                      <TableCell>{report.hunt_type.name}</TableCell>
-                      <TableCell>
-                        {report.report_animals.map((animal, index) => (
-                          <div key={index}>
-                            {animal.quantity}x {animal.animal_type.name}
-                            {animal.animal_subtype?.name && ` (${animal.animal_subtype.name})`}
-                          </div>
-                        ))}
-                      </TableCell>
-                      <TableCell>{report.participant_count}</TableCell>
-                      <TableCell>{fullName}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => dialogState.setViewDialogOpen(true)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          {report.created_by === currentUserId && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => dialogState.setEditDialogOpen(true)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => dialogState.setDeleteDialogOpen(true)}
-                                className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </div>
+      <div className="bg-white rounded-xl shadow-sm border">
+        <ReportsTable 
+          reports={reports}
+          currentUserId={currentUserId}
+          onView={(report) => {
+            dialogState.setSelectedReport(report);
+            dialogState.setViewDialogOpen(true);
+          }}
+          onEdit={(report) => {
+            dialogState.setSelectedReport(report);
+            dialogState.setEditDialogOpen(true);
+          }}
+          onDelete={(report) => {
+            dialogState.setSelectedReport(report);
+            dialogState.setDeleteDialogOpen(true);
+          }}
+        />
       </div>
 
       <CreateReportDialog
