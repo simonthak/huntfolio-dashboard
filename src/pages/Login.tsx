@@ -50,29 +50,18 @@ const Login = () => {
           }}
           providers={["google"]}
           redirectTo={`${window.location.origin}/`}
-          options={{
-            emailRedirectTo: `${window.location.origin}/`,
-            meta: {
-              fields: [
-                {
-                  name: 'firstname',
-                  type: 'text',
-                  required: true,
-                  label: 'First Name',
-                },
-                {
-                  name: 'lastname',
-                  type: 'text',
-                  required: true,
-                  label: 'Last Name',
-                },
-                {
-                  name: 'phone_number',
-                  type: 'tel',
-                  required: true,
-                  label: 'Phone Number',
-                },
-              ],
+          additionalData={{
+            firstname: {
+              required: true,
+              label: 'First Name',
+            },
+            lastname: {
+              required: true,
+              label: 'Last Name',
+            },
+            phone_number: {
+              required: true,
+              label: 'Phone Number',
             },
           }}
         />
