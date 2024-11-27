@@ -200,7 +200,9 @@ const Reports = () => {
         .select(`
           *,
           hunt_type:hunt_types(name),
-          created_by_profile:profiles(full_name),
+          created_by_profile:profiles!hunting_reports_created_by_fkey(
+            full_name
+          ),
           report_animals(
             quantity,
             animal_type:animal_types(name),
