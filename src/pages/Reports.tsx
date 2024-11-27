@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -50,6 +50,15 @@ const Reports = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id || null);
+    };
+    getCurrentUser();
+  }, []);
 
   const { data: reports = [], isLoading, refetch } = useQuery({
     queryKey: ["hunting-reports"],
@@ -162,54 +171,52 @@ const Reports = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              reports.map((report) => {
-                return (
-                  <TableRow key={report.id}>
-                    <TableCell>{format(new Date(report.date), "MMM d, yyyy")}</TableCell>
-                    <TableCell>{report.hunt_type.name}</TableCell>
-                    <TableCell>
-                      {report.report_animals.map((animal, index) => (
-                        <div key={index}>
-                          {animal.quantity}x {animal.animal_type.name}
-                          {animal.animal_subtype?.name && ` (${animal.animal_subtype.name})`}
-                        </div>
-                      ))}
-                    </TableCell>
-                    <TableCell>{report.participant_count}</TableCell>
-                    <TableCell>{report.created_by_profile.full_name}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleView(report)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        {report.created_by === supabase.auth.getUser()?.data?.user?.id && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEdit(report)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteClick(report)}
-                              className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
+              reports.map((report) => (
+                <TableRow key={report.id}>
+                  <TableCell>{format(new Date(report.date), "MMM d, yyyy")}</TableCell>
+                  <TableCell>{report.hunt_type.name}</TableCell>
+                  <TableCell>
+                    {report.report_animals.map((animal, index) => (
+                      <div key={index}>
+                        {animal.quantity}x {animal.animal_type.name}
+                        {animal.animal_subtype?.name && ` (${animal.animal_subtype.name})`}
                       </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
+                    ))}
+                  </TableCell>
+                  <TableCell>{report.participant_count}</TableCell>
+                  <TableCell>{report.created_by_profile.full_name}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleView(report)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      {report.created_by === currentUserId && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEdit(report)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteClick(report)}
+                            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
             )}
           </TableBody>
         </Table>
