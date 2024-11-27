@@ -9,6 +9,7 @@ import ViewEventDialog from "@/components/calendar/ViewEventDialog";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import { Users } from "lucide-react";
 import { Event } from "@/components/calendar/types";
 
 const Calendar = () => {
@@ -113,9 +114,10 @@ const Calendar = () => {
                 <div className="p-1 w-full">
                   <div className="bg-primary text-white p-2 rounded-md text-sm">
                     <div className="font-medium truncate">{eventInfo.event.title}</div>
-                    <div className="text-xs opacity-90">
+                    <div className="text-xs opacity-90 flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5" />
                       {eventInfo.event.extendedProps.currentParticipants}/
-                      {eventInfo.event.extendedProps.participantLimit} participants
+                      {eventInfo.event.extendedProps.participantLimit}
                     </div>
                   </div>
                 </div>
