@@ -63,21 +63,24 @@ const CreateReportDialog = ({
         throw reportError;
       }
 
-      console.log("Creating report animals...");
-      const { error: animalsError } = await supabase
-        .from("report_animals")
-        .insert(
-          data.animals.map(animal => ({
-            report_id: report.id,
-            animal_type_id: animal.animal_type_id,
-            animal_subtype_id: animal.animal_subtype_id,
-            quantity: animal.quantity,
-          }))
-        );
+      // Only insert animals if there are any
+      if (data.animals.length > 0) {
+        console.log("Creating report animals...");
+        const { error: animalsError } = await supabase
+          .from("report_animals")
+          .insert(
+            data.animals.map(animal => ({
+              report_id: report.id,
+              animal_type_id: animal.animal_type_id,
+              animal_subtype_id: animal.animal_subtype_id,
+              quantity: animal.quantity,
+            }))
+          );
 
-      if (animalsError) {
-        console.error("Report animals creation error:", animalsError);
-        throw animalsError;
+        if (animalsError) {
+          console.error("Report animals creation error:", animalsError);
+          throw animalsError;
+        }
       }
 
       console.log("Report created successfully");

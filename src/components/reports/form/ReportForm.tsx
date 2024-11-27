@@ -43,18 +43,16 @@ const ReportForm = ({ onSubmit, onCancel, isSubmitting }: ReportFormProps) => {
       return;
     }
 
-    if (formData.animals.length === 0) {
-      toast.error("Please add at least one animal");
-      return;
-    }
+    // Only validate animals if there are any
+    if (formData.animals.length > 0) {
+      const invalidAnimal = formData.animals.find((animal: any) => 
+        !animal.animal_type_id || !animal.quantity || animal.quantity < 1
+      );
 
-    const invalidAnimal = formData.animals.find((animal: any) => 
-      !animal.animal_type_id || !animal.quantity || animal.quantity < 1
-    );
-
-    if (invalidAnimal) {
-      toast.error("Please fill in all animal details correctly");
-      return;
+      if (invalidAnimal) {
+        toast.error("Please fill in all animal details correctly");
+        return;
+      }
     }
 
     await onSubmit(formData);
