@@ -87,9 +87,9 @@ const Calendar = () => {
       id: event.id,
       title: event.hunt_type.name,
       date: event.date,
-      backgroundColor: isParticipating ? '#22c55e' : '#ffffff',
-      borderColor: '#22c55e',
-      textColor: isParticipating ? '#ffffff' : '#22c55e',
+      backgroundColor: isParticipating ? '#13B67F' : '#ffffff',
+      borderColor: '#13B67F',
+      textColor: isParticipating ? '#ffffff' : '#13B67F',
       extendedProps: {
         description: event.description,
         participantLimit: event.participant_limit,
