@@ -42,28 +42,14 @@ const Login = () => {
             variables: {
               default: {
                 colors: {
-                  brand: '#13B67F',
-                  brandAccent: '#13B67F',
+                  brand: '#166534',
+                  brandAccent: '#15803d',
                 }
               }
             }
           }}
           providers={["google"]}
           redirectTo={`${window.location.origin}/`}
-          additionalData={{
-            firstname: {
-              required: true,
-              label: 'First Name',
-            },
-            lastname: {
-              required: true,
-              label: 'Last Name',
-            },
-            phone_number: {
-              required: true,
-              label: 'Phone Number',
-            },
-          }}
         />
       </Card>
     </div>
