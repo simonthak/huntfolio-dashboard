@@ -19,12 +19,14 @@ const CreateReportDialog = ({
 
   const handleSubmit = async (data: {
     hunt_type_id: number;
-    animal_type_id: number;
-    animal_subtype_id?: number;
     date: Date;
-    quantity: number;
     participant_count: number;
     description?: string;
+    animals: Array<{
+      animal_type_id: number;
+      animal_subtype_id?: number;
+      quantity: number;
+    }>;
   }) => {
     setIsSubmitting(true);
 
@@ -43,28 +45,39 @@ const CreateReportDialog = ({
         return;
       }
 
-      console.log("Authenticated user:", user.id);
-
-      const reportData = {
-        hunt_type_id: data.hunt_type_id,
-        animal_type_id: data.animal_type_id,
-        animal_subtype_id: data.animal_subtype_id,
-        date: data.date.toISOString().split('T')[0],
-        quantity: data.quantity,
-        participant_count: data.participant_count,
-        description: data.description,
-        created_by: user.id,
-      };
-
-      console.log("Attempting to create report with data:", reportData);
-
-      const { error: reportError } = await supabase
+      console.log("Creating report...");
+      const { data: report, error: reportError } = await supabase
         .from("hunting_reports")
-        .insert(reportData);
+        .insert({
+          hunt_type_id: data.hunt_type_id,
+          date: data.date.toISOString().split('T')[0],
+          participant_count: data.participant_count,
+          description: data.description,
+          created_by: user.id,
+        })
+        .select()
+        .single();
 
       if (reportError) {
         console.error("Report creation error:", reportError);
         throw reportError;
+      }
+
+      console.log("Creating report animals...");
+      const { error: animalsError } = await supabase
+        .from("report_animals")
+        .insert(
+          data.animals.map(animal => ({
+            report_id: report.id,
+            animal_type_id: animal.animal_type_id,
+            animal_subtype_id: animal.animal_subtype_id,
+            quantity: animal.quantity,
+          }))
+        );
+
+      if (animalsError) {
+        console.error("Report animals creation error:", animalsError);
+        throw animalsError;
       }
 
       console.log("Report created successfully");
