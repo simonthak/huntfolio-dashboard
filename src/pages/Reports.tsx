@@ -40,7 +40,7 @@ interface Report {
   participant_count: number;
   description?: string;
   created_by: string;
-  created_by_profile: { full_name: string; firstname: string; lastname: string };
+  created_by_profile: { firstname: string; lastname: string };
   report_animals: ReportAnimal[];
 }
 
@@ -219,7 +219,7 @@ const Reports = () => {
       }
 
       console.log("Fetched reports data:", data);
-      return (data || []) as Report[];
+      return data as Report[];
     },
   });
 

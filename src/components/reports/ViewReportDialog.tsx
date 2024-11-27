@@ -14,7 +14,7 @@ interface Report {
   hunt_type: { name: string };
   participant_count: number;
   description?: string;
-  created_by_profile: { full_name: string };
+  created_by_profile: { firstname: string; lastname: string };
   report_animals: ReportAnimal[];
 }
 
@@ -26,6 +26,10 @@ interface ViewReportDialogProps {
 
 const ViewReportDialog = ({ report, open, onOpenChange }: ViewReportDialogProps) => {
   if (!report) return null;
+
+  const fullName = report.created_by_profile?.firstname && report.created_by_profile?.lastname
+    ? `${report.created_by_profile.firstname} ${report.created_by_profile.lastname}`
+    : "Unknown";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -52,7 +56,7 @@ const ViewReportDialog = ({ report, open, onOpenChange }: ViewReportDialogProps)
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Reported By</p>
-                  <p>{report.created_by_profile.full_name}</p>
+                  <p>{fullName}</p>
                 </div>
               </div>
             </div>
