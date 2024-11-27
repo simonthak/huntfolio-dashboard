@@ -7,5 +7,10 @@ export interface Event {
   participant_limit: number;
   created_by: string;
   created_by_profile: { full_name: string | null };
-  event_participants: { user_id: string }[];
+  event_participants: {
+    user_id: string;
+    profile?: {
+      full_name: string | null;
+    };
+  }[];
 }
