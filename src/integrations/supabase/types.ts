@@ -152,6 +152,74 @@ export type Database = {
         }
         Relationships: []
       }
+      hunting_reports: {
+        Row: {
+          animal_subtype_id: number | null
+          animal_type_id: number
+          created_at: string
+          created_by: string
+          date: string
+          description: string | null
+          hunt_type_id: number | null
+          id: string
+          participant_count: number
+          quantity: number
+        }
+        Insert: {
+          animal_subtype_id?: number | null
+          animal_type_id: number
+          created_at?: string
+          created_by: string
+          date: string
+          description?: string | null
+          hunt_type_id?: number | null
+          id?: string
+          participant_count: number
+          quantity: number
+        }
+        Update: {
+          animal_subtype_id?: number | null
+          animal_type_id?: number
+          created_at?: string
+          created_by?: string
+          date?: string
+          description?: string | null
+          hunt_type_id?: number | null
+          id?: string
+          participant_count?: number
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hunting_reports_animal_subtype_id_fkey"
+            columns: ["animal_subtype_id"]
+            isOneToOne: false
+            referencedRelation: "animal_subtypes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hunting_reports_animal_type_id_fkey"
+            columns: ["animal_type_id"]
+            isOneToOne: false
+            referencedRelation: "animal_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hunting_reports_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hunting_reports_hunt_type_id_fkey"
+            columns: ["hunt_type_id"]
+            isOneToOne: false
+            referencedRelation: "hunt_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

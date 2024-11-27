@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Calendar from "./pages/Calendar";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
+import Reports from "./pages/Reports";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => {
             <Route path="/" element={<Layout><Index /></Layout>} />
             <Route path="/calendar" element={<Layout><Calendar /></Layout>} />
             <Route path="/profile" element={<Layout><Profile /></Layout>} />
+            <Route path="/reports" element={<Layout><Reports /></Layout>} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
