@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import ReportFormFields from "./ReportFormFields";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ReportFormProps {
   onSubmit: (data: {
@@ -61,9 +62,11 @@ const ReportForm = ({ onSubmit, onCancel, isSubmitting }: ReportFormProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <ReportFormFields onChange={setFormData} />
+      <ScrollArea className="h-[60vh] pr-4">
+        <ReportFormFields onChange={setFormData} />
+      </ScrollArea>
 
-      <div className="flex justify-end gap-2">
+      <div className="flex justify-end gap-2 pt-4 border-t">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
