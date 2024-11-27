@@ -65,7 +65,7 @@ const UpcomingHunts = () => {
                     <span className="text-primary font-medium">{hunt.hunt_type.name}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <Users className="w-4 h-4" />
                   <span>{hunt.event_participants.length}/{hunt.participant_limit}</span>
                 </div>
