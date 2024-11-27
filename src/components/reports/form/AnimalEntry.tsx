@@ -34,7 +34,7 @@ const AnimalEntry = ({
     initialData?.animal_subtype_id?.toString() || ""
   );
   const [quantity, setQuantity] = useState<string>(
-    initialData?.quantity?.toString() || ""
+    initialData?.quantity ? initialData.quantity.toString() : ""
   );
 
   useEffect(() => {
@@ -75,9 +75,9 @@ const AnimalEntry = ({
             </SelectTrigger>
             <SelectContent>
               {animalSubtypes[parseInt(animalTypeId)].map((subtype) => (
-                <Select key={subtype.id} value={subtype.id.toString()}>
+                <SelectItem key={subtype.id} value={subtype.id.toString()}>
                   {subtype.name}
-                </Select>
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
