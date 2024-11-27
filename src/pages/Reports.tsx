@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -8,10 +9,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { Plus } from "lucide-react";
+import CreateReportDialog from "@/components/reports/CreateReportDialog";
 
 const Reports = () => {
-  const { data: reports = [], isLoading } = useQuery({
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+
+  const { data: reports = [], isLoading, refetch } = useQuery({
     queryKey: ["hunting-reports"],
     queryFn: async () => {
       console.log("Fetching hunting reports...");
@@ -46,9 +52,15 @@ const Reports = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Hunting Reports</h1>
-        <p className="text-gray-500 mt-1">View all hunting reports and their details</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Hunting Reports</h1>
+          <p className="text-gray-500 mt-1">View all hunting reports and their details</p>
+        </div>
+        <Button onClick={() => setCreateDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          New Report
+        </Button>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border">
@@ -88,6 +100,12 @@ const Reports = () => {
           </TableBody>
         </Table>
       </div>
+
+      <CreateReportDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onReportCreated={refetch}
+      />
     </div>
   );
 };
