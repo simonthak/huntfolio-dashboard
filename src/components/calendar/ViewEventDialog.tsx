@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { handleEventDeletion } from "./eventHandlers";
 import { handleEventParticipation } from "./eventParticipation";
 import { Event } from "./types";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ViewEventDialogProps {
   event: Event | null;
@@ -81,16 +82,23 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
             )}
           </div>
 
-          <div className="flex items-center justify-between py-2 border-y">
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Users className="w-4 h-4" />
+              <span>
                 {event.event_participants.length}/{event.participant_limit} participants
               </span>
             </div>
-            <span className="text-xs text-muted-foreground">
-              Created by: {event.created_by_profile.full_name || "Unknown"}
-            </span>
+            
+            <ScrollArea className="h-[100px] w-full rounded-md border p-2">
+              <div className="space-y-1">
+                {event.event_participants.map((participant) => (
+                  <div key={participant.user_id} className="text-sm">
+                    {participant.profile?.full_name || 'Anonymous Hunter'}
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
           </div>
 
           <div className="flex justify-end gap-2">
