@@ -39,6 +39,7 @@ interface Report {
   hunt_type: { name: string };
   participant_count: number;
   description?: string;
+  created_by: string;
   created_by_profile: { full_name: string };
   report_animals: ReportAnimal[];
 }
@@ -162,7 +163,6 @@ const Reports = () => {
               </TableRow>
             ) : (
               reports.map((report) => {
-                const isOwner = report.created_by === (supabase.auth.getUser()?.data?.user?.id);
                 return (
                   <TableRow key={report.id}>
                     <TableCell>{format(new Date(report.date), "MMM d, yyyy")}</TableCell>
@@ -186,7 +186,7 @@ const Reports = () => {
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        {isOwner && (
+                        {report.created_by === supabase.auth.getUser()?.data?.user?.id && (
                           <>
                             <Button
                               variant="ghost"
