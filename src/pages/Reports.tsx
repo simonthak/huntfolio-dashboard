@@ -27,7 +27,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-// Move interfaces to a separate types file
 interface ReportAnimal {
   animal_type: { name: string };
   animal_subtype?: { name: string };
@@ -45,7 +44,6 @@ interface Report {
   report_animals: ReportAnimal[];
 }
 
-// Move dialog state management to a separate component
 const useReportDialogs = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -67,7 +65,6 @@ const useReportDialogs = () => {
   };
 };
 
-// Move the delete functionality to a separate component
 const useReportDeletion = (refetch: () => void) => {
   const handleDelete = async (report: Report) => {
     try {
@@ -90,7 +87,6 @@ const useReportDeletion = (refetch: () => void) => {
   return { handleDelete };
 };
 
-// Create a separate component for the table
 const ReportsTable = ({ 
   reports, 
   currentUserId,
@@ -124,52 +120,58 @@ const ReportsTable = ({
             </TableCell>
           </TableRow>
         ) : (
-          reports.map((report) => (
-            <TableRow key={report.id}>
-              <TableCell>{format(new Date(report.date), "MMM d, yyyy")}</TableCell>
-              <TableCell>{report.hunt_type.name}</TableCell>
-              <TableCell>
-                {report.report_animals.map((animal, index) => (
-                  <div key={index}>
-                    {animal.quantity}x {animal.animal_type.name}
-                    {animal.animal_subtype?.name && ` (${animal.animal_subtype.name})`}
+          reports.map((report) => {
+            console.log("Rendering report:", report);
+            console.log("Profile data:", report.created_by_profile);
+            return (
+              <TableRow key={report.id}>
+                <TableCell>{format(new Date(report.date), "MMM d, yyyy")}</TableCell>
+                <TableCell>{report.hunt_type.name}</TableCell>
+                <TableCell>
+                  {report.report_animals.map((animal, index) => (
+                    <div key={index}>
+                      {animal.quantity}x {animal.animal_type.name}
+                      {animal.animal_subtype?.name && ` (${animal.animal_subtype.name})`}
+                    </div>
+                  ))}
+                </TableCell>
+                <TableCell>{report.participant_count}</TableCell>
+                <TableCell>
+                  {report.created_by_profile?.full_name || "Unknown"}
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onView(report)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    {report.created_by === currentUserId && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onEdit(report)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onDelete(report)}
+                          className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                   </div>
-                ))}
-              </TableCell>
-              <TableCell>{report.participant_count}</TableCell>
-              <TableCell>{report.created_by_profile.full_name}</TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onView(report)}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  {report.created_by === currentUserId && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onEdit(report)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onDelete(report)}
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </TableCell>
-            </TableRow>
-          ))
+                </TableCell>
+              </TableRow>
+            );
+          })
         )}
       </TableBody>
     </Table>
@@ -198,7 +200,7 @@ const Reports = () => {
         .select(`
           *,
           hunt_type:hunt_types(name),
-          created_by_profile:profiles!hunting_reports_created_by_fkey(full_name),
+          created_by_profile:profiles(full_name),
           report_animals(
             quantity,
             animal_type:animal_types(name),
@@ -212,7 +214,7 @@ const Reports = () => {
         throw error;
       }
 
-      console.log("Successfully fetched hunting reports:", data);
+      console.log("Fetched reports data:", data);
       return (data || []) as Report[];
     },
   });
