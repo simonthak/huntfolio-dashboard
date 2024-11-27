@@ -14,6 +14,17 @@ import { toast } from "sonner";
 import AnimalEntry from "./AnimalEntry";
 
 interface ReportFormFieldsProps {
+  initialData?: {
+    hunt_type_id: number;
+    date: Date;
+    participant_count: number;
+    description?: string;
+    animals: Array<{
+      animal_type_id: number;
+      animal_subtype_id?: number;
+      quantity: number;
+    }>;
+  };
   onChange: (data: {
     hunt_type_id?: number;
     date?: Date;
@@ -27,16 +38,16 @@ interface ReportFormFieldsProps {
   }) => void;
 }
 
-const ReportFormFields = ({ onChange }: ReportFormFieldsProps) => {
-  const [date, setDate] = useState<Date>();
-  const [huntTypeId, setHuntTypeId] = useState<string>("");
-  const [participantCount, setParticipantCount] = useState("");
-  const [description, setDescription] = useState("");
+const ReportFormFields = ({ onChange, initialData }: ReportFormFieldsProps) => {
+  const [date, setDate] = useState<Date | undefined>(initialData?.date);
+  const [huntTypeId, setHuntTypeId] = useState<string>(initialData?.hunt_type_id?.toString() || "");
+  const [participantCount, setParticipantCount] = useState(initialData?.participant_count?.toString() || "");
+  const [description, setDescription] = useState(initialData?.description || "");
   const [animals, setAnimals] = useState<Array<{
     animal_type_id: number;
     animal_subtype_id?: number;
     quantity: number;
-  }>>([]);
+  }>>(initialData?.animals || []);
   
   const [huntTypes, setHuntTypes] = useState<any[]>([]);
   const [animalTypes, setAnimalTypes] = useState<any[]>([]);
@@ -188,15 +199,22 @@ const ReportFormFields = ({ onChange }: ReportFormFieldsProps) => {
       <div className="space-y-2">
         <div className="flex justify-between items-center">
           <Label>Animals</Label>
-          <Button type="button" variant="outline" size="sm" onClick={handleAddAnimal}>
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="sm" 
+            onClick={handleAddAnimal}
+            style={{ borderColor: '#13B67F', color: '#13B67F' }}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Animal
           </Button>
         </div>
         <div className="space-y-4">
-          {animals.map((_, index) => (
+          {animals.map((animal, index) => (
             <AnimalEntry
               key={index}
+              initialData={animal}
               animalTypes={animalTypes}
               animalSubtypes={animalSubtypes}
               onRemove={() => handleRemoveAnimal(index)}

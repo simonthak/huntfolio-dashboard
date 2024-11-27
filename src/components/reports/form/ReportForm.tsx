@@ -5,6 +5,17 @@ import ReportFormFields from "./ReportFormFields";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ReportFormProps {
+  initialData?: {
+    hunt_type_id: number;
+    date: Date;
+    participant_count: number;
+    description?: string;
+    animals: Array<{
+      animal_type_id: number;
+      animal_subtype_id?: number;
+      quantity: number;
+    }>;
+  };
   onSubmit: (data: {
     hunt_type_id: number;
     date: Date;
@@ -20,8 +31,8 @@ interface ReportFormProps {
   isSubmitting: boolean;
 }
 
-const ReportForm = ({ onSubmit, onCancel, isSubmitting }: ReportFormProps) => {
-  const [formData, setFormData] = useState<any>({
+const ReportForm = ({ initialData, onSubmit, onCancel, isSubmitting }: ReportFormProps) => {
+  const [formData, setFormData] = useState<any>(initialData || {
     animals: []
   });
 
@@ -61,15 +72,19 @@ const ReportForm = ({ onSubmit, onCancel, isSubmitting }: ReportFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <ScrollArea className="h-[60vh] pr-4">
-        <ReportFormFields onChange={setFormData} />
+        <ReportFormFields onChange={setFormData} initialData={initialData} />
       </ScrollArea>
 
       <div className="flex justify-end gap-2 pt-4 border-t">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Creating..." : "Create Report"}
+        <Button 
+          type="submit" 
+          disabled={isSubmitting}
+          style={{ backgroundColor: '#13B67F' }}
+        >
+          {isSubmitting ? "Saving..." : initialData ? "Save Changes" : "Create Report"}
         </Button>
       </div>
     </form>
