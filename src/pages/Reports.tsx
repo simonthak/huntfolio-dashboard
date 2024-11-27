@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { Card } from "@/components/ui/card";
 import CreateReportDialog from "@/components/reports/CreateReportDialog";
 import ViewReportDialog from "@/components/reports/ViewReportDialog";
 import EditReportDialog from "@/components/reports/EditReportDialog";
@@ -133,7 +134,7 @@ const Reports = () => {
         </Button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+      <Card className="p-6">
         <ReportsTable 
           reports={reports}
           currentUserId={currentUserId}
@@ -150,7 +151,7 @@ const Reports = () => {
             dialogState.setDeleteDialogOpen(true);
           }}
         />
-      </div>
+      </Card>
 
       <CreateReportDialog
         open={dialogState.createDialogOpen}

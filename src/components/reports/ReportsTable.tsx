@@ -27,7 +27,7 @@ const ReportsTable = ({
   onDelete 
 }: ReportsTableProps) => {
   return (
-    <div className="-mx-6">
+    <div className="w-full">
       <Table>
         <TableHeader>
           <TableRow>
