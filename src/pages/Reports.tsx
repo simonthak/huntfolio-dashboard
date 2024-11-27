@@ -40,7 +40,7 @@ interface Report {
   participant_count: number;
   description?: string;
   created_by: string;
-  created_by_profile: { full_name: string };
+  created_by_profile: { full_name: string; firstname: string; lastname: string };
   report_animals: ReportAnimal[];
 }
 
@@ -123,6 +123,9 @@ const ReportsTable = ({
           reports.map((report) => {
             console.log("Rendering report:", report);
             console.log("Profile data:", report.created_by_profile);
+            const fullName = report.created_by_profile?.firstname && report.created_by_profile?.lastname
+              ? `${report.created_by_profile.firstname} ${report.created_by_profile.lastname}`
+              : "Unknown";
             return (
               <TableRow key={report.id}>
                 <TableCell>{format(new Date(report.date), "MMM d, yyyy")}</TableCell>
@@ -136,9 +139,7 @@ const ReportsTable = ({
                   ))}
                 </TableCell>
                 <TableCell>{report.participant_count}</TableCell>
-                <TableCell>
-                  {report.created_by_profile?.full_name || "Unknown"}
-                </TableCell>
+                <TableCell>{fullName}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button
@@ -201,7 +202,8 @@ const Reports = () => {
           *,
           hunt_type:hunt_types(name),
           created_by_profile:profiles!hunting_reports_created_by_fkey(
-            full_name
+            firstname,
+            lastname
           ),
           report_animals(
             quantity,
