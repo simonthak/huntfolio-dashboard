@@ -42,14 +42,39 @@ const Login = () => {
             variables: {
               default: {
                 colors: {
-                  brand: '#166534',
-                  brandAccent: '#15803d',
+                  brand: '#13B67F',
+                  brandAccent: '#13B67F',
                 }
               }
             }
           }}
           providers={["google"]}
           redirectTo={`${window.location.origin}/`}
+          options={{
+            emailRedirectTo: `${window.location.origin}/`,
+            meta: {
+              fields: [
+                {
+                  name: 'firstname',
+                  type: 'text',
+                  required: true,
+                  label: 'First Name',
+                },
+                {
+                  name: 'lastname',
+                  type: 'text',
+                  required: true,
+                  label: 'Last Name',
+                },
+                {
+                  name: 'phone_number',
+                  type: 'tel',
+                  required: true,
+                  label: 'Phone Number',
+                },
+              ],
+            },
+          }}
         />
       </Card>
     </div>
