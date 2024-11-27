@@ -63,6 +63,7 @@ const CreateReportDialog = ({
         throw reportError;
       }
 
+      // Only insert animals if there are any
       if (data.animals.length > 0) {
         console.log("Creating report animals...");
         const { error: animalsError } = await supabase
@@ -96,7 +97,7 @@ const CreateReportDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] p-6">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Create New Hunting Report</DialogTitle>
         </DialogHeader>
