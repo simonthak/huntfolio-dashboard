@@ -21,6 +21,8 @@ const Calendar = () => {
     queryKey: ["events"],
     queryFn: async () => {
       console.log("Fetching events...");
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { data, error } = await supabase
         .from("events")
         .select(`
@@ -69,17 +71,25 @@ const Calendar = () => {
     setIsCreateEventOpen(false);
   };
 
-  const calendarEvents = events.map(event => ({
-    id: event.id,
-    title: event.hunt_type.name,
-    date: event.date,
-    extendedProps: {
-      description: event.description,
-      participantLimit: event.participant_limit,
-      currentParticipants: event.event_participants.length,
-      createdBy: event.created_by_profile.full_name
-    }
-  }));
+  const calendarEvents = events.map(event => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const isParticipating = event.event_participants.some(p => p.user_id === user?.id);
+
+    return {
+      id: event.id,
+      title: event.hunt_type.name,
+      date: event.date,
+      backgroundColor: isParticipating ? '#22c55e' : '#ffffff',
+      borderColor: '#22c55e',
+      textColor: isParticipating ? '#ffffff' : '#22c55e',
+      extendedProps: {
+        description: event.description,
+        participantLimit: event.participant_limit,
+        currentParticipants: event.event_participants.length,
+        createdBy: event.created_by_profile.full_name
+      }
+    };
+  });
 
   return (
     <div className="space-y-8">
@@ -112,7 +122,7 @@ const Calendar = () => {
               }}
               eventContent={(eventInfo) => (
                 <div className="p-1 w-full">
-                  <div className="bg-primary text-white p-2 rounded-md text-sm">
+                  <div className={`p-2 rounded-md text-sm border border-green-500`}>
                     <div className="font-medium truncate">{eventInfo.event.title}</div>
                     <div className="text-xs opacity-90 flex items-center gap-1">
                       <Users className="w-3.5 h-3.5" />
