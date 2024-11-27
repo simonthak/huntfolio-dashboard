@@ -14,6 +14,21 @@ import { format } from "date-fns";
 import { Plus } from "lucide-react";
 import CreateReportDialog from "@/components/reports/CreateReportDialog";
 
+interface ReportAnimal {
+  animal_type: { name: string };
+  animal_subtype?: { name: string };
+  quantity: number;
+}
+
+interface Report {
+  id: string;
+  date: string;
+  hunt_type: { name: string };
+  participant_count: number;
+  created_by_profile: { full_name: string };
+  report_animals: ReportAnimal[];
+}
+
 const Reports = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
@@ -26,9 +41,12 @@ const Reports = () => {
         .select(`
           *,
           hunt_type:hunt_types(name),
-          animal_type:animal_types(name),
-          animal_subtype:animal_subtypes(name),
-          created_by_profile:profiles!hunting_reports_created_by_fkey(full_name)
+          created_by_profile:profiles!hunting_reports_created_by_fkey(full_name),
+          report_animals(
+            quantity,
+            animal_type:animal_types(name),
+            animal_subtype:animal_subtypes(name)
+          )
         `)
         .order('date', { ascending: false });
 
@@ -38,7 +56,7 @@ const Reports = () => {
       }
 
       console.log("Successfully fetched hunting reports:", data);
-      return data || [];
+      return (data || []) as Report[];
     },
   });
 
@@ -69,8 +87,7 @@ const Reports = () => {
             <TableRow>
               <TableHead>Date</TableHead>
               <TableHead>Hunt Type</TableHead>
-              <TableHead>Animal</TableHead>
-              <TableHead>Quantity</TableHead>
+              <TableHead>Animals</TableHead>
               <TableHead>Participants</TableHead>
               <TableHead>Reported By</TableHead>
             </TableRow>
@@ -78,7 +95,7 @@ const Reports = () => {
           <TableBody>
             {reports.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <TableCell colSpan={5} className="text-center text-muted-foreground">
                   No reports found
                 </TableCell>
               </TableRow>
@@ -88,10 +105,13 @@ const Reports = () => {
                   <TableCell>{format(new Date(report.date), "MMM d, yyyy")}</TableCell>
                   <TableCell>{report.hunt_type.name}</TableCell>
                   <TableCell>
-                    {report.animal_type.name}
-                    {report.animal_subtype?.name && ` (${report.animal_subtype.name})`}
+                    {report.report_animals.map((animal, index) => (
+                      <div key={index}>
+                        {animal.quantity}x {animal.animal_type.name}
+                        {animal.animal_subtype?.name && ` (${animal.animal_subtype.name})`}
+                      </div>
+                    ))}
                   </TableCell>
-                  <TableCell>{report.quantity}</TableCell>
                   <TableCell>{report.participant_count}</TableCell>
                   <TableCell>{report.created_by_profile.full_name}</TableCell>
                 </TableRow>
