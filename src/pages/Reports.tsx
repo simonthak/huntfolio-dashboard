@@ -201,8 +201,6 @@ const Reports = () => {
           created_by_profile:profiles!hunting_reports_created_by_fkey(full_name),
           report_animals(
             quantity,
-            animal_type_id,
-            animal_subtype_id,
             animal_type:animal_types(name),
             animal_subtype:animal_subtypes(name)
           )
