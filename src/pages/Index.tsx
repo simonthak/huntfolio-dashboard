@@ -3,6 +3,8 @@ import { Users, Calendar, Target, Trophy } from "lucide-react";
 import GameChart from "@/components/dashboard/GameChart";
 import SpeciesChart from "@/components/dashboard/SpeciesChart";
 import UpcomingHunts from "@/components/dashboard/UpcomingHunts";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const stats = [
   { label: "Active Teams", value: "12", icon: Users, change: "+2" },
@@ -12,10 +14,45 @@ const stats = [
 ];
 
 const Index = () => {
+  // Query to check if user has an active team
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['active-team-check'],
+    queryFn: async () => {
+      console.log("Checking active team...");
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log("No user found");
+        return null;
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('active_team_id')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching profile:", error);
+        return null;
+      }
+
+      console.log("Profile data:", data);
+      return data;
+    }
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#13B67F]"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-secondary">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
         <p className="text-gray-500 mt-2">Welcome to your hunting management dashboard</p>
       </div>
 
@@ -25,14 +62,14 @@ const Index = () => {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">{stat.label}</p>
-                <p className="text-2xl font-bold mt-2 text-secondary">{stat.value}</p>
+                <p className="text-2xl font-bold mt-2 text-gray-900">{stat.value}</p>
               </div>
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <stat.icon className="w-5 h-5 text-primary" />
+              <div className="p-2 bg-[#13B67F]/10 rounded-lg">
+                <stat.icon className="w-5 h-5 text-[#13B67F]" />
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
-              <span className="text-green-500 font-medium">{stat.change}</span>
+              <span className="text-[#13B67F] font-medium">{stat.change}</span>
               <span className="text-gray-500 ml-2">vs last month</span>
             </div>
           </Card>
