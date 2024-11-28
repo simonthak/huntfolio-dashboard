@@ -14,11 +14,9 @@ import { toast } from "sonner";
 import JoinTeamDialog from "./JoinTeamDialog";
 import TeamList from "./TeamList";
 
-type TeamResponse = {
-  team: {
-    id: string;
-    name: string;
-  };
+type Team = {
+  id: string;
+  name: string;
 };
 
 export function TeamSwitcher() {
@@ -43,14 +41,10 @@ export function TeamSwitcher() {
     queryFn: async () => {
       console.log('Fetching teams for user:', session?.user?.id);
       const { data, error } = await supabase
-        .from('team_members')
-        .select(`
-          team:team_id (
-            id,
-            name
-          )
-        `)
-        .eq('user_id', session?.user?.id);
+        .from('teams')
+        .select('id, name')
+        .innerJoin('team_members', 'teams.id = team_members.team_id')
+        .eq('team_members.user_id', session?.user?.id);
 
       if (error) {
         console.error('Error fetching teams:', error);
@@ -60,10 +54,10 @@ export function TeamSwitcher() {
       console.log('Teams data received:', data);
       
       // Transform the data to match the expected type
-      const transformedTeams = (data as TeamResponse[])?.map(item => ({
-        id: item.team.id,
-        name: item.team.name
-      })) || [];
+      const transformedTeams = data?.map(({ teams: team }) => ({
+        id: team.id,
+        name: team.name
+      })) as Team[] || [];
 
       console.log('Transformed teams:', transformedTeams);
       return transformedTeams;
