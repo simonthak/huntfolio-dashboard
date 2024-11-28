@@ -29,14 +29,16 @@ const formSchema = z.object({
   name: z.string().min(1, "Team name is required"),
   location: z.string().optional(),
   description: z.string().optional(),
-  areal: z.string().optional().transform(val => val ? Number(val) : null),
+  areal: z.string().optional().transform(val => val ? parseFloat(val) : null),
 });
+
+type FormValues = z.infer<typeof formSchema>;
 
 const CreateTeamDialog = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
@@ -46,7 +48,7 @@ const CreateTeamDialog = () => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormValues) => {
     try {
       setIsCreating(true);
       console.log("Creating team with values:", values);
@@ -152,7 +154,12 @@ const CreateTeamDialog = () => {
                 <FormItem>
                   <FormLabel>Areal (hectares)</FormLabel>
                   <FormControl>
-                    <Input {...field} type="number" step="0.01" placeholder="Enter area in hectares" />
+                    <Input 
+                      {...field} 
+                      type="number" 
+                      step="0.01" 
+                      placeholder="Enter area in hectares" 
+                    />
                   </FormControl>
                   <FormDescription>
                     The size of your hunting area in hectares
