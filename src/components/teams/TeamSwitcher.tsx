@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,6 +8,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandSeparator,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -18,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import JoinTeamDialog from "./JoinTeamDialog";
 
 type TeamMembership = {
   teams: {
@@ -29,6 +31,7 @@ type TeamMembership = {
 
 export function TeamSwitcher() {
   const [open, setOpen] = useState(false);
+  const [showJoinDialog, setShowJoinDialog] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -155,42 +158,59 @@ export function TeamSwitcher() {
   );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between"
-        >
-          <span>{activeTeamData?.name || "Select team..."}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
-        <Command>
-          <CommandInput placeholder="Search team..." />
-          <CommandEmpty>No team found.</CommandEmpty>
-          <CommandGroup>
-            {validTeamMemberships.map((membership) => (
+    <>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between"
+          >
+            <span>{activeTeamData?.name || "Select team..."}</span>
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[200px] p-0">
+          <Command>
+            <CommandInput placeholder="Search team..." />
+            <CommandEmpty>No team found.</CommandEmpty>
+            <CommandGroup heading="Your teams">
+              {validTeamMemberships.map((membership) => (
+                <CommandItem
+                  key={membership.teams.id}
+                  onSelect={() => handleTeamSelect(membership.teams.id)}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      activeTeamData?.id === membership.teams.id
+                        ? "opacity-100"
+                        : "opacity-0"
+                    )}
+                  />
+                  {membership.teams.name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandSeparator />
+            <CommandGroup>
               <CommandItem
-                key={membership.teams.id}
-                onSelect={() => handleTeamSelect(membership.teams.id)}
+                onSelect={() => {
+                  setOpen(false);
+                  setShowJoinDialog(true);
+                }}
               >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    activeTeamData?.id === membership.teams.id
-                      ? "opacity-100"
-                      : "opacity-0"
-                  )}
-                />
-                {membership.teams.name}
+                <Plus className="mr-2 h-4 w-4" />
+                Join Another Team
               </CommandItem>
-            ))}
-          </CommandGroup>
-        </Command>
-      </PopoverContent>
-    </Popover>
+            </CommandGroup>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {showJoinDialog && (
+        <JoinTeamDialog open={showJoinDialog} onOpenChange={setShowJoinDialog} />
+      )}
+    </>
   );
 }

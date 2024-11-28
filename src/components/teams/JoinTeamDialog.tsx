@@ -7,15 +7,18 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
-const JoinTeamDialog = () => {
+interface JoinTeamDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+const JoinTeamDialog = ({ open, onOpenChange }: JoinTeamDialogProps) => {
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
   const [isJoining, setIsJoining] = useState(false);
 
@@ -46,6 +49,25 @@ const JoinTeamDialog = () => {
         return;
       }
 
+      // Check if user is already a member of this team
+      const { data: existingMembership, error: membershipError } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('team_id', team.id)
+        .eq('user_id', user.id)
+        .single();
+
+      if (existingMembership) {
+        toast.error("You are already a member of this team");
+        return;
+      }
+
+      if (membershipError && membershipError.code !== 'PGRST116') {
+        console.error("Error checking team membership:", membershipError);
+        toast.error("Failed to check team membership");
+        return;
+      }
+
       // Join the team
       const { error: joinError } = await supabase
         .from('team_members')
@@ -57,9 +79,21 @@ const JoinTeamDialog = () => {
 
       if (joinError) throw joinError;
 
+      // Set as active team
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ active_team_id: team.id })
+        .eq('id', user.id);
+
+      if (updateError) {
+        console.error("Error setting active team:", updateError);
+        toast.error("Failed to set active team");
+        return;
+      }
+
       toast.success("Successfully joined team");
-      setIsOpen(false);
-      navigate("/");
+      onOpenChange(false);
+      navigate("/", { replace: true });
     } catch (error) {
       console.error("Error joining team:", error);
       toast.error("Failed to join team");
@@ -69,12 +103,7 @@ const JoinTeamDialog = () => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button className="w-full bg-[#13B67F] hover:bg-[#0ea16f]">
-          Join Existing Team
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Join Team</DialogTitle>
