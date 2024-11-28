@@ -38,9 +38,10 @@ export function TeamSwitcher() {
       const { data, error } = await supabase
         .from('team_members')
         .select(`
-          teams:team_id (
+          team:team_id (
             id,
-            name
+            name,
+            description
           )
         `)
         .eq('user_id', session?.user?.id);
@@ -50,8 +51,16 @@ export function TeamSwitcher() {
         throw error;
       }
 
+      console.log('Teams data received:', data);
+      
       // Transform the data to match the expected type
-      return data?.map(item => item.teams) || [];
+      const transformedTeams = data?.map(item => ({
+        id: item.team.id,
+        name: item.team.name
+      })) || [];
+
+      console.log('Transformed teams:', transformedTeams);
+      return transformedTeams;
     },
   });
 
@@ -88,6 +97,7 @@ export function TeamSwitcher() {
         throw teamError;
       }
 
+      console.log('Active team found:', team);
       return team;
     },
   });
