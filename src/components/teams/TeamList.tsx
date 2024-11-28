@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   CommandEmpty,
@@ -6,7 +6,6 @@ import {
   CommandItem,
   CommandSeparator,
 } from "@/components/ui/command";
-import { Plus } from "lucide-react";
 
 interface TeamListProps {
   teams: Array<{ teams: { id: string; name: string } }>;
@@ -32,7 +31,7 @@ const TeamList = ({ teams = [], activeTeamId, onTeamSelect, onJoinTeam }: TeamLi
             <CommandItem
               key={membership.teams.id}
               onSelect={() => onTeamSelect(membership.teams.id)}
-              className="cursor-pointer"
+              className="cursor-pointer hover:bg-accent"
             >
               <Check
                 className={cn(
@@ -49,7 +48,10 @@ const TeamList = ({ teams = [], activeTeamId, onTeamSelect, onJoinTeam }: TeamLi
       )}
       <CommandSeparator />
       <CommandGroup>
-        <CommandItem onSelect={onJoinTeam} className="cursor-pointer">
+        <CommandItem 
+          onSelect={onJoinTeam} 
+          className="cursor-pointer hover:bg-accent"
+        >
           <Plus className="mr-2 h-4 w-4" />
           Join Another Team
         </CommandItem>

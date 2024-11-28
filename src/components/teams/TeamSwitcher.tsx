@@ -12,6 +12,7 @@ import { useState } from "react";
 import JoinTeamDialog from "./JoinTeamDialog";
 import TeamList from "./TeamList";
 import { useTeamSwitch } from "@/hooks/useTeamSwitch";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type TeamMembership = {
   teams: {
@@ -110,12 +111,7 @@ export function TeamSwitcher() {
   const isLoading = isTeamMembershipsLoading || isActiveTeamLoading;
 
   if (isLoading) {
-    return (
-      <Button variant="outline" className="w-full justify-between">
-        <span>Loading teams...</span>
-        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-      </Button>
-    );
+    return <Skeleton className="h-10 w-full" />;
   }
 
   const validTeamMemberships = (teamMemberships || []).filter(
@@ -134,12 +130,12 @@ export function TeamSwitcher() {
             aria-expanded={open}
             className="w-full justify-between"
           >
-            <span>{activeTeamData?.name || "Select a team..."}</span>
+            <span>{activeTeamData?.name || "No team selected"}</span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0" align="start">
-          <Command>
+        <PopoverContent className="w-[200px] p-0" align="start" side="bottom">
+          <Command className="w-full">
             <TeamList
               teams={validTeamMemberships}
               activeTeamId={activeTeamData?.id}
