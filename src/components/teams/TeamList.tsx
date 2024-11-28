@@ -8,14 +8,14 @@ import {
 } from "@/components/ui/command";
 
 interface TeamListProps {
-  teams: Array<{ teams: { id: string; name: string } }>;
+  teams: Array<{ teams: { id: string; name: string } }> | undefined;
   activeTeamId?: string;
   onTeamSelect: (teamId: string) => void;
   onJoinTeam: () => void;
 }
 
 const TeamList = ({ teams = [], activeTeamId, onTeamSelect, onJoinTeam }: TeamListProps) => {
-  const validTeams = teams.filter(
+  const validTeams = (teams || []).filter(
     (membership): membership is { teams: { id: string; name: string } } => 
       membership?.teams?.id !== undefined && 
       membership?.teams?.name !== undefined

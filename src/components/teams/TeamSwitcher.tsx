@@ -144,12 +144,6 @@ export function TeamSwitcher() {
     );
   }
 
-  const validTeamMemberships = (teamMemberships || []).filter(
-    (membership): membership is TeamMembership => 
-      membership?.teams?.id !== undefined && 
-      membership?.teams?.name !== undefined
-  );
-
   return (
     <>
       <Popover open={open} onOpenChange={handleDropdownOpen}>
@@ -167,7 +161,7 @@ export function TeamSwitcher() {
         <PopoverContent className="w-[200px] p-0" align="start" side="bottom">
           <Command className="w-full">
             <TeamList
-              teams={validTeamMemberships}
+              teams={teamMemberships}
               activeTeamId={activeTeamData?.id}
               onTeamSelect={handleTeamSelect}
               onJoinTeam={() => {
