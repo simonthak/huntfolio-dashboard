@@ -20,14 +20,14 @@ const UpcomingHunts = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('active_team_id')
-        .eq('id', user.id)
+      const { data: teamMember } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', user.id)
         .single();
 
-      if (!profile?.active_team_id) {
-        console.log("No active team found");
+      if (!teamMember?.team_id) {
+        console.log("No team found");
         return [];
       }
 
@@ -38,7 +38,7 @@ const UpcomingHunts = () => {
           event_participants(user_id),
           hunt_type:hunt_types(name)
         `)
-        .eq('team_id', profile.active_team_id)
+        .eq('team_id', teamMember.team_id)
         .gte('date', today)
         .order('date', { ascending: true })
         .limit(3);

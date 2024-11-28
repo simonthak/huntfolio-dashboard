@@ -219,7 +219,6 @@ export type Database = {
       }
       profiles: {
         Row: {
-          active_team_id: string | null
           avatar_url: string | null
           created_at: string | null
           email: string | null
@@ -231,7 +230,6 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          active_team_id?: string | null
           avatar_url?: string | null
           created_at?: string | null
           email?: string | null
@@ -243,7 +241,6 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          active_team_id?: string | null
           avatar_url?: string | null
           created_at?: string | null
           email?: string | null
@@ -254,15 +251,7 @@ export type Database = {
           phone_number?: string | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_active_team_id_fkey"
-            columns: ["active_team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       report_animals: {
         Row: {

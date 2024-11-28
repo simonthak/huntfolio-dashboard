@@ -44,22 +44,16 @@ const CreateEventDialog = ({ open, onOpenChange, selectedDate, onEventCreated }:
         return;
       }
 
-      console.log("Getting user's active team...");
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('active_team_id')
-        .eq('id', user.id)
+      console.log("Getting user's team...");
+      const { data: teamMember, error: teamError } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', user.id)
         .single();
 
-      if (profileError) {
-        console.error("Profile error:", profileError);
-        toast.error("Error fetching user profile. Please try again.");
-        return;
-      }
-
-      if (!profile?.active_team_id) {
-        console.error("No active team found");
-        toast.error("You must be part of a team to create events");
+      if (teamError) {
+        console.error("Team error:", teamError);
+        toast.error("Error fetching user's team. Please try again.");
         return;
       }
 
@@ -69,7 +63,7 @@ const CreateEventDialog = ({ open, onOpenChange, selectedDate, onEventCreated }:
         description: data.description,
         participant_limit: data.participantLimit,
         created_by: user.id,
-        team_id: profile.active_team_id
+        team_id: teamMember.team_id
       };
 
       console.log("Creating event with data:", eventData);

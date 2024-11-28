@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Command } from "@/components/ui/command";
@@ -23,7 +23,6 @@ type Team = {
 export function TeamSwitcher() {
   const [open, setOpen] = useState(false);
   const [showJoinDialog, setShowJoinDialog] = useState(false);
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   // Fetch current user
@@ -72,79 +71,10 @@ export function TeamSwitcher() {
     },
   });
 
-  // Fetch active team
-  const { data: activeTeam, isLoading: isActiveTeamLoading } = useQuery({
-    queryKey: ['active-team', session?.user?.id],
-    enabled: !!session?.user?.id,
-    queryFn: async () => {
-      console.log('Fetching active team for user:', session?.user?.id);
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('active_team_id')
-        .eq('id', session?.user?.id)
-        .single();
+  // Get the first team as default
+  const defaultTeam = teams?.[0];
 
-      if (profileError) {
-        console.error('Error fetching profile:', profileError);
-        throw profileError;
-      }
-
-      if (!profile?.active_team_id) {
-        console.log('No active team found');
-        return null;
-      }
-
-      const { data: team, error: teamError } = await supabase
-        .from('teams')
-        .select('id, name')
-        .eq('id', profile.active_team_id)
-        .single();
-
-      if (teamError) {
-        console.error('Error fetching team:', teamError);
-        throw teamError;
-      }
-
-      console.log('Active team found:', team);
-      return team;
-    },
-  });
-
-  const handleTeamSelect = async (teamId: string) => {
-    try {
-      console.log('Switching to team:', teamId);
-      const { error } = await supabase
-        .from('profiles')
-        .update({ active_team_id: teamId })
-        .eq('id', session?.user?.id);
-
-      if (error) {
-        console.error('Error switching team:', error);
-        toast.error('Failed to switch team');
-        return;
-      }
-
-      // Invalidate queries to refresh data
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['active-team'] }),
-        queryClient.invalidateQueries({ queryKey: ['teams'] }),
-        queryClient.invalidateQueries({ queryKey: ['upcoming-hunts'] }),
-        queryClient.invalidateQueries({ queryKey: ['events'] }),
-        queryClient.invalidateQueries({ queryKey: ['reports'] }),
-      ]);
-
-      toast.success('Team switched successfully');
-      setOpen(false);
-      
-      // Refresh the page to update all team-specific data
-      navigate(0);
-    } catch (error) {
-      console.error('Error in handleTeamSelect:', error);
-      toast.error('An error occurred while switching teams');
-    }
-  };
-
-  if (isTeamsLoading || isActiveTeamLoading) {
+  if (isTeamsLoading) {
     return <Skeleton className="h-10 w-full" />;
   }
 
@@ -158,7 +88,7 @@ export function TeamSwitcher() {
             aria-expanded={open}
             className="w-full justify-between"
           >
-            {activeTeam?.name || "Select a team"}
+            {defaultTeam?.name || "Select a team"}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -166,8 +96,15 @@ export function TeamSwitcher() {
           <Command>
             <TeamList
               teams={teams || []}
-              activeTeamId={activeTeam?.id}
-              onTeamSelect={handleTeamSelect}
+              activeTeamId={defaultTeam?.id}
+              onTeamSelect={(teamId) => {
+                const selectedTeam = teams?.find(team => team.id === teamId);
+                if (selectedTeam) {
+                  setOpen(false);
+                  // Refresh the page to update all team-specific data
+                  navigate(0);
+                }
+              }}
               onJoinTeam={() => {
                 setOpen(false);
                 setShowJoinDialog(true);

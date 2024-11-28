@@ -20,54 +20,25 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        console.log("Session found, checking profile...");
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('active_team_id')
-          .eq('id', session.user.id)
-          .single();
+        console.log("Session found, checking team membership...");
+        const { data: teamMembership, error: teamError } = await supabase
+          .from('team_members')
+          .select('team_id')
+          .eq('user_id', session.user.id)
+          .limit(1);
 
-        if (profileError) {
-          console.error('Error checking profile:', profileError);
-          toast.error('Failed to check profile');
+        if (teamError) {
+          console.error('Error checking team membership:', teamError);
+          toast.error('Failed to check team membership');
           setIsLoading(false);
           return;
         }
 
-        if (!profile.active_team_id) {
-          console.log("No active team, checking team membership...");
-          const { data: teamMembership, error: teamError } = await supabase
-            .from('team_members')
-            .select('team_id')
-            .eq('user_id', session.user.id)
-            .limit(1);
-
-          if (teamError) {
-            console.error('Error checking team membership:', teamError);
-            toast.error('Failed to check team membership');
-            setIsLoading(false);
-            return;
-          }
-
-          if (!teamMembership || teamMembership.length === 0) {
-            console.log("No team membership found, redirecting to no-team");
-            setIsLoading(false);
-            navigate("/no-team");
-            return;
-          }
-
-          // Set first team as active
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ active_team_id: teamMembership[0].team_id })
-            .eq('id', session.user.id);
-
-          if (updateError) {
-            console.error('Error setting active team:', updateError);
-            toast.error('Failed to set active team');
-            setIsLoading(false);
-            return;
-          }
+        if (!teamMembership || teamMembership.length === 0) {
+          console.log("No team membership found, redirecting to no-team");
+          setIsLoading(false);
+          navigate("/no-team");
+          return;
         }
 
         setIsLoading(false);
