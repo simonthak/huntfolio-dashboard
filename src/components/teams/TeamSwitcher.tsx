@@ -12,6 +12,7 @@ import { useState } from "react";
 import JoinTeamDialog from "./JoinTeamDialog";
 import TeamList from "./TeamList";
 import { useTeamSwitch } from "@/hooks/useTeamSwitch";
+import { toast } from "sonner";
 
 type TeamMembership = {
   teams: {
@@ -31,7 +32,10 @@ export function TeamSwitcher() {
     queryFn: async () => {
       console.log("Fetching team memberships...");
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      if (!user) {
+        console.error("No authenticated user found");
+        throw new Error("Not authenticated");
+      }
 
       const { data, error } = await supabase
         .from('team_members')
@@ -50,6 +54,12 @@ export function TeamSwitcher() {
       }
 
       console.log("Team memberships fetched:", data);
+      
+      if (!data || data.length === 0) {
+        console.log("User has no team memberships");
+        toast.error("You are not a member of any team. Please join a team first.");
+      }
+      
       return data as TeamMembership[];
     },
   });
@@ -59,7 +69,10 @@ export function TeamSwitcher() {
     queryFn: async () => {
       console.log("Fetching active team...");
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      if (!user) {
+        console.error("No authenticated user found");
+        throw new Error("Not authenticated");
+      }
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -67,8 +80,10 @@ export function TeamSwitcher() {
         .eq('id', user.id)
         .single();
 
+      console.log("Profile data:", profile);
+
       if (!profile?.active_team_id) {
-        console.log("No active team set");
+        console.log("No active team set in profile");
         return null;
       }
 
@@ -89,9 +104,13 @@ export function TeamSwitcher() {
   });
 
   const handleTeamSelect = async (teamId: string) => {
+    console.log("Attempting to switch to team:", teamId);
     const success = await switchTeam(teamId);
     if (success) {
+      console.log("Team switch successful");
       setOpen(false);
+    } else {
+      console.error("Team switch failed");
     }
   };
 
@@ -111,6 +130,20 @@ export function TeamSwitcher() {
       membership?.teams?.id !== undefined && 
       membership?.teams?.name !== undefined
   );
+
+  if (validTeamMemberships.length === 0) {
+    return (
+      <Button
+        variant="outline"
+        role="combobox"
+        className="w-full justify-between"
+        onClick={() => setShowJoinDialog(true)}
+      >
+        <span>Join a team...</span>
+        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+      </Button>
+    );
+  }
 
   return (
     <>
