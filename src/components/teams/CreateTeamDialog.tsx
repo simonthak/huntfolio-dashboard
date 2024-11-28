@@ -44,7 +44,7 @@ const CreateTeamDialog = () => {
       name: "",
       location: "",
       description: "",
-      areal: "",
+      areal: undefined,
     },
   });
 
