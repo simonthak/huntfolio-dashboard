@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import { toast } from "sonner";
 
 export function TeamSwitcher() {
   const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: teamMemberships, isLoading } = useQuery({
     queryKey: ['team-memberships'],
@@ -92,11 +93,15 @@ export function TeamSwitcher() {
       if (error) throw error;
 
       setOpen(false);
+      
+      // Invalidate both queries to trigger a refetch
+      await queryClient.invalidateQueries({ queryKey: ['active-team'] });
+      await queryClient.invalidateQueries({ queryKey: ['team-memberships'] });
+      
       toast.success("Team switched successfully");
       
-      // Invalidate queries that depend on the active team
-      // This will trigger a refetch of the data with the new team context
-      // queryClient.invalidateQueries(['active-team']);
+      // Force a page reload to ensure all team-dependent components are updated
+      window.location.reload();
     } catch (error) {
       console.error("Error switching team:", error);
       toast.error("Failed to switch team");
