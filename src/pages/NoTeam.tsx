@@ -34,6 +34,33 @@ const NoTeam = () => {
     }
   };
 
+  const handleJoinTeam = async (teamId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error("You must be logged in to join a team");
+        return;
+      }
+
+      const { error } = await supabase
+        .from('team_members')
+        .insert({
+          team_id: teamId,
+          user_id: user.id,
+          role: 'member'
+        });
+
+      if (error) throw error;
+
+      toast.success("Successfully joined team");
+      navigate("/");
+    } catch (error) {
+      console.error("Error joining team:", error);
+      toast.error("Failed to join team");
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md p-8">
