@@ -9,99 +9,117 @@ import {
 } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-import JoinTeamDialog from "./JoinTeamDialog";
-import TeamList from "./TeamList";
-import { useTeamSwitch } from "@/hooks/useTeamSwitch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import JoinTeamDialog from "./JoinTeamDialog";
+import TeamList from "./TeamList";
 
 export function TeamSwitcher() {
   const [open, setOpen] = useState(false);
   const [showJoinDialog, setShowJoinDialog] = useState(false);
-  const { switchTeam } = useTeamSwitch();
 
-  const { data: user } = useQuery({
-    queryKey: ['current-user'],
+  // Fetch current user
+  const { data: session } = useQuery({
+    queryKey: ['session'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-      return user;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No session found');
+      return session;
     },
   });
 
-  const { data: teamMemberships, isLoading: isTeamMembershipsLoading } = useQuery({
-    queryKey: ['team-memberships', user?.id],
-    enabled: !!user?.id,
+  // Fetch user's teams
+  const { data: teams, isLoading: isTeamsLoading } = useQuery({
+    queryKey: ['teams', session?.user?.id],
+    enabled: !!session?.user?.id,
     queryFn: async () => {
-      console.log("Fetching team memberships...");
+      console.log('Fetching teams for user:', session?.user?.id);
       const { data, error } = await supabase
         .from('team_members')
         .select(`
-          teams (
+          team_id,
+          teams:team_id (
             id,
             name
           )
         `)
-        .eq('user_id', user?.id);
+        .eq('user_id', session?.user?.id);
 
       if (error) {
-        console.error("Error fetching team memberships:", error);
+        console.error('Error fetching teams:', error);
         throw error;
       }
 
-      console.log("Team memberships fetched:", data);
-      return data || null;
+      return data?.map(item => item.teams) || [];
     },
   });
 
+  // Fetch active team
   const { data: activeTeam, isLoading: isActiveTeamLoading } = useQuery({
-    queryKey: ['active-team', user?.id],
-    enabled: !!user?.id,
+    queryKey: ['active-team', session?.user?.id],
+    enabled: !!session?.user?.id,
     queryFn: async () => {
-      console.log("Fetching active team...");
-      const { data: profile } = await supabase
+      console.log('Fetching active team for user:', session?.user?.id);
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('active_team_id')
-        .eq('id', user?.id)
+        .eq('id', session?.user?.id)
         .single();
 
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        throw profileError;
+      }
+
       if (!profile?.active_team_id) {
-        console.log("No active team set");
+        console.log('No active team found');
         return null;
       }
 
-      const { data: team, error } = await supabase
+      const { data: team, error: teamError } = await supabase
         .from('teams')
         .select('id, name')
         .eq('id', profile.active_team_id)
         .single();
 
-      if (error) {
-        console.error("Error fetching team:", error);
-        throw error;
+      if (teamError) {
+        console.error('Error fetching team:', teamError);
+        throw teamError;
       }
 
-      console.log("Active team fetched:", team);
       return team;
     },
   });
 
   const handleTeamSelect = async (teamId: string) => {
     try {
-      const success = await switchTeam(teamId);
-      if (success) {
-        toast.success("Team switched successfully");
-        setOpen(false);
-      } else {
-        toast.error("Failed to switch team");
+      console.log('Switching to team:', teamId);
+      const { error } = await supabase
+        .from('profiles')
+        .update({ active_team_id: teamId })
+        .eq('id', session?.user?.id);
+
+      if (error) {
+        console.error('Error switching team:', error);
+        toast.error('Failed to switch team');
+        return;
       }
+
+      // Invalidate queries to refresh data
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['active-team'] }),
+        queryClient.invalidateQueries({ queryKey: ['teams'] }),
+      ]);
+
+      toast.success('Team switched successfully');
+      setOpen(false);
     } catch (error) {
-      console.error("Error switching team:", error);
-      toast.error("An error occurred while switching teams");
+      console.error('Error in handleTeamSelect:', error);
+      toast.error('An error occurred while switching teams');
     }
   };
 
-  if (isTeamMembershipsLoading || isActiveTeamLoading) {
+  if (isTeamsLoading || isActiveTeamLoading) {
     return <Skeleton className="h-10 w-full" />;
   }
 
@@ -115,14 +133,14 @@ export function TeamSwitcher() {
             aria-expanded={open}
             className="w-full justify-between"
           >
-            <span>{activeTeam?.name || "Select a team"}</span>
+            {activeTeam?.name || "Select a team"}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0" align="start" side="bottom">
+        <PopoverContent className="w-[200px] p-0" align="start">
           <Command>
             <TeamList
-              teams={teamMemberships}
+              teams={teams || []}
               activeTeamId={activeTeam?.id}
               onTeamSelect={handleTeamSelect}
               onJoinTeam={() => {

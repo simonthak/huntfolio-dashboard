@@ -7,41 +7,31 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 
-type Team = {
-  teams: {
+type TeamListProps = {
+  teams: Array<{
     id: string;
     name: string;
-  };
-};
-
-interface TeamListProps {
-  teams: Team[] | null;
-  activeTeamId?: string;
+  }>;
+  activeTeamId?: string | null;
   onTeamSelect: (teamId: string) => void;
   onJoinTeam: () => void;
-}
+};
 
 const TeamList = ({ teams, activeTeamId, onTeamSelect, onJoinTeam }: TeamListProps) => {
-  const validTeams = teams?.filter(team => team?.teams?.id && team?.teams?.name) || [];
-
-  const renderJoinTeamButton = () => (
-    <CommandGroup>
-      <CommandItem 
-        onSelect={onJoinTeam}
-        className="cursor-pointer hover:bg-accent"
-      >
-        <Plus className="mr-2 h-4 w-4" />
-        Join Another Team
-      </CommandItem>
-    </CommandGroup>
-  );
-
-  if (validTeams.length === 0) {
+  if (!teams?.length) {
     return (
       <>
         <CommandEmpty>No teams found.</CommandEmpty>
         <CommandSeparator />
-        {renderJoinTeamButton()}
+        <CommandGroup>
+          <CommandItem 
+            onSelect={onJoinTeam}
+            className="cursor-pointer hover:bg-accent"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Join Another Team
+          </CommandItem>
+        </CommandGroup>
       </>
     );
   }
@@ -49,24 +39,32 @@ const TeamList = ({ teams, activeTeamId, onTeamSelect, onJoinTeam }: TeamListPro
   return (
     <>
       <CommandGroup heading="Your teams">
-        {validTeams.map((team) => (
+        {teams.map((team) => (
           <CommandItem
-            key={team.teams.id}
-            onSelect={() => onTeamSelect(team.teams.id)}
+            key={team.id}
+            onSelect={() => onTeamSelect(team.id)}
             className="cursor-pointer hover:bg-accent"
           >
             <Check
               className={cn(
                 "mr-2 h-4 w-4",
-                activeTeamId === team.teams.id ? "opacity-100" : "opacity-0"
+                activeTeamId === team.id ? "opacity-100" : "opacity-0"
               )}
             />
-            {team.teams.name}
+            {team.name}
           </CommandItem>
         ))}
       </CommandGroup>
       <CommandSeparator />
-      {renderJoinTeamButton()}
+      <CommandGroup>
+        <CommandItem 
+          onSelect={onJoinTeam}
+          className="cursor-pointer hover:bg-accent"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Join Another Team
+        </CommandItem>
+      </CommandGroup>
     </>
   );
 };
