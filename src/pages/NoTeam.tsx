@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -9,6 +10,7 @@ import JoinTeamDialog from "@/components/teams/JoinTeamDialog";
 
 const NoTeam = () => {
   const navigate = useNavigate();
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -39,7 +41,17 @@ const NoTeam = () => {
               <span className="bg-background px-2 text-muted-foreground">Or</span>
             </div>
           </div>
-          <JoinTeamDialog />
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={() => setJoinDialogOpen(true)}
+          >
+            Join Existing Team
+          </Button>
+          <JoinTeamDialog 
+            open={joinDialogOpen} 
+            onOpenChange={setJoinDialogOpen} 
+          />
 
           <Button
             variant="ghost"
