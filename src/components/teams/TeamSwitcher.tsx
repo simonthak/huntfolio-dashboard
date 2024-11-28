@@ -55,7 +55,7 @@ export function TeamSwitcher() {
       }
 
       console.log("Team memberships fetched:", data);
-      return data;
+      return data ?? null;
     },
   });
 
@@ -159,7 +159,7 @@ export function TeamSwitcher() {
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0" align="start" side="bottom">
-          <Command className="w-full">
+          <Command>
             <TeamList
               teams={teamMemberships}
               activeTeamId={activeTeamData?.id}

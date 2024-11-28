@@ -15,7 +15,9 @@ interface TeamListProps {
 }
 
 const TeamList = ({ teams, activeTeamId, onTeamSelect, onJoinTeam }: TeamListProps) => {
-  if (!teams || teams.length === 0) {
+  const validTeams = teams?.filter(team => team?.teams?.id && team?.teams?.name) ?? [];
+
+  if (validTeams.length === 0) {
     return (
       <>
         <CommandEmpty>No teams found.</CommandEmpty>
@@ -36,24 +38,22 @@ const TeamList = ({ teams, activeTeamId, onTeamSelect, onJoinTeam }: TeamListPro
   return (
     <>
       <CommandGroup heading="Your teams">
-        {teams.map((membership) => (
-          membership?.teams?.id && membership?.teams?.name && (
-            <CommandItem
-              key={membership.teams.id}
-              onSelect={() => onTeamSelect(membership.teams.id)}
-              className="cursor-pointer hover:bg-accent"
-            >
-              <Check
-                className={cn(
-                  "mr-2 h-4 w-4",
-                  activeTeamId === membership.teams.id
-                    ? "opacity-100"
-                    : "opacity-0"
-                )}
-              />
-              {membership.teams.name}
-            </CommandItem>
-          )
+        {validTeams.map((membership) => (
+          <CommandItem
+            key={membership.teams.id}
+            onSelect={() => onTeamSelect(membership.teams.id)}
+            className="cursor-pointer hover:bg-accent"
+          >
+            <Check
+              className={cn(
+                "mr-2 h-4 w-4",
+                activeTeamId === membership.teams.id
+                  ? "opacity-100"
+                  : "opacity-0"
+              )}
+            />
+            {membership.teams.name}
+          </CommandItem>
         ))}
       </CommandGroup>
       <CommandSeparator />
