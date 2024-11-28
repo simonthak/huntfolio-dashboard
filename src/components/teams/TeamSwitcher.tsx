@@ -30,7 +30,7 @@ export function TeamSwitcher() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: teamMemberships = [], isLoading, error } = useQuery<TeamMembership[]>({
+  const { data: teamMemberships, isLoading, error } = useQuery<TeamMembership[]>({
     queryKey: ['team-memberships'],
     queryFn: async () => {
       console.log("Fetching team memberships...");
@@ -55,7 +55,8 @@ export function TeamSwitcher() {
 
       console.log("Team memberships fetched:", data);
       return (data as TeamMembership[]) || [];
-    }
+    },
+    initialData: [] // Provide initial data to prevent undefined
   });
 
   const { data: activeTeamData } = useQuery({
@@ -142,7 +143,8 @@ export function TeamSwitcher() {
     );
   }
 
-  const validTeamMemberships = teamMemberships.filter(
+  // Ensure we have a valid array to work with
+  const validTeamMemberships = (teamMemberships || []).filter(
     (membership): membership is TeamMembership => 
       membership?.teams?.id !== undefined && 
       membership?.teams?.name !== undefined
