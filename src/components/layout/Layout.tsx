@@ -22,16 +22,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
         console.log("Session found for user:", session.user.id);
 
-        // Check if user is part of a team
+        // Check if user is part of a team - simplified query
         const { data: teamMembership, error: teamError } = await supabase
           .from('team_members')
-          .select(`
-            team_id,
-            teams (
-              id,
-              name
-            )
-          `)
+          .select('team_id')
           .eq('user_id', session.user.id)
           .single();
 
