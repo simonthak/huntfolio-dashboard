@@ -98,6 +98,7 @@ export type Database = {
           hunt_type_id: number
           id: string
           participant_limit: number
+          team_id: string | null
         }
         Insert: {
           created_at?: string
@@ -107,6 +108,7 @@ export type Database = {
           hunt_type_id: number
           id?: string
           participant_limit: number
+          team_id?: string | null
         }
         Update: {
           created_at?: string
@@ -116,6 +118,7 @@ export type Database = {
           hunt_type_id?: number
           id?: string
           participant_limit?: number
+          team_id?: string | null
         }
         Relationships: [
           {
@@ -123,6 +126,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
           {
@@ -161,6 +171,7 @@ export type Database = {
           hunt_type_id: number | null
           id: string
           participant_count: number
+          team_id: string | null
         }
         Insert: {
           created_at?: string
@@ -170,6 +181,7 @@ export type Database = {
           hunt_type_id?: number | null
           id?: string
           participant_count: number
+          team_id?: string | null
         }
         Update: {
           created_at?: string
@@ -179,6 +191,7 @@ export type Database = {
           hunt_type_id?: number | null
           id?: string
           participant_count?: number
+          team_id?: string | null
         }
         Relationships: [
           {
@@ -193,6 +206,13 @@ export type Database = {
             columns: ["hunt_type_id"]
             isOneToOne: false
             referencedRelation: "hunt_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hunting_reports_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]

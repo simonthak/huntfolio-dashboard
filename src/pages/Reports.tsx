@@ -80,6 +80,19 @@ const Reports = () => {
     queryKey: ["hunting-reports"],
     queryFn: async () => {
       console.log("Fetching hunting reports...");
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('active_team_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile?.active_team_id) {
+        console.log("No active team found");
+        return [];
+      }
       
       const { data, error } = await supabase
         .from("hunting_reports")
@@ -96,6 +109,7 @@ const Reports = () => {
             animal_subtype:animal_subtypes(name)
           )
         `)
+        .eq('team_id', profile.active_team_id)
         .order('date', { ascending: false });
 
       if (error) {

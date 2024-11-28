@@ -12,12 +12,7 @@ interface CreateEventDialogProps {
   onEventCreated: () => void;
 }
 
-const CreateEventDialog = ({ 
-  open, 
-  onOpenChange, 
-  selectedDate, 
-  onEventCreated 
-}: CreateEventDialogProps) => {
+const CreateEventDialog = ({ open, onOpenChange, selectedDate, onEventCreated }: CreateEventDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (data: {
@@ -37,18 +32,24 @@ const CreateEventDialog = ({
       console.log("Getting authenticated user...");
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       
-      if (authError) {
-        console.error("Auth error:", authError);
-        throw authError;
-      }
-
+      if (authError) throw authError;
       if (!user) {
-        console.error("No authenticated user found");
         toast.error("You must be logged in to create events");
         return;
       }
 
-      console.log("Authenticated user:", user.id);
+      // Get user's active team
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('active_team_id')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) throw profileError;
+      if (!profile?.active_team_id) {
+        toast.error("You must be part of a team to create events");
+        return;
+      }
 
       const eventData = {
         hunt_type_id: data.hunt_type_id,
@@ -56,24 +57,18 @@ const CreateEventDialog = ({
         description: data.description,
         participant_limit: data.participantLimit,
         created_by: user.id,
+        team_id: profile.active_team_id
       };
 
-      console.log("Attempting to create event with data:", eventData);
-
+      console.log("Creating event with data:", eventData);
       const { error: eventError, data: createdEvent } = await supabase
         .from("events")
         .insert(eventData)
         .select()
         .single();
 
-      if (eventError) {
-        console.error("Event creation error:", eventError);
-        throw eventError;
-      }
+      if (eventError) throw eventError;
 
-      console.log("Event created successfully:", createdEvent);
-
-      // Add creator as first participant
       const { error: participantError } = await supabase
         .from("event_participants")
         .insert({
@@ -81,12 +76,8 @@ const CreateEventDialog = ({
           user_id: user.id,
         });
 
-      if (participantError) {
-        console.error("Participant creation error:", participantError);
-        throw participantError;
-      }
+      if (participantError) throw participantError;
 
-      console.log("Successfully added creator as participant");
       await onEventCreated();
       onOpenChange(false);
       toast.success("Event created successfully");

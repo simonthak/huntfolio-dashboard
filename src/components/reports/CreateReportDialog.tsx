@@ -10,11 +10,7 @@ interface CreateReportDialogProps {
   onReportCreated: () => void;
 }
 
-const CreateReportDialog = ({ 
-  open, 
-  onOpenChange, 
-  onReportCreated 
-}: CreateReportDialogProps) => {
+const CreateReportDialog = ({ open, onOpenChange, onReportCreated }: CreateReportDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (data: {
@@ -31,21 +27,27 @@ const CreateReportDialog = ({
     setIsSubmitting(true);
 
     try {
-      console.log("Getting authenticated user...");
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       
-      if (authError) {
-        console.error("Auth error:", authError);
-        throw authError;
-      }
-
+      if (authError) throw authError;
       if (!user) {
-        console.error("No authenticated user found");
         toast.error("You must be logged in to create reports");
         return;
       }
 
-      console.log("Creating report...");
+      // Get user's active team
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('active_team_id')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) throw profileError;
+      if (!profile?.active_team_id) {
+        toast.error("You must be part of a team to create reports");
+        return;
+      }
+
       const { data: report, error: reportError } = await supabase
         .from("hunting_reports")
         .insert({
@@ -54,18 +56,14 @@ const CreateReportDialog = ({
           participant_count: data.participant_count,
           description: data.description,
           created_by: user.id,
+          team_id: profile.active_team_id
         })
         .select()
         .single();
 
-      if (reportError) {
-        console.error("Report creation error:", reportError);
-        throw reportError;
-      }
+      if (reportError) throw reportError;
 
-      // Only insert animals if there are any
       if (data.animals.length > 0) {
-        console.log("Creating report animals...");
         const { error: animalsError } = await supabase
           .from("report_animals")
           .insert(
@@ -77,13 +75,9 @@ const CreateReportDialog = ({
             }))
           );
 
-        if (animalsError) {
-          console.error("Report animals creation error:", animalsError);
-          throw animalsError;
-        }
+        if (animalsError) throw animalsError;
       }
 
-      console.log("Report created successfully");
       await onReportCreated();
       onOpenChange(false);
       toast.success("Report created successfully");

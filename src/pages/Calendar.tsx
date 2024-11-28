@@ -31,16 +31,29 @@ const Calendar = () => {
     queryFn: async () => {
       console.log("Fetching events...");
       const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('active_team_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile?.active_team_id) {
+        console.log("No active team found");
+        return [];
+      }
       
       const { data, error } = await supabase
         .from("events")
         .select(`
           *,
+          event_participants(user_id),
           hunt_type:hunt_types(name),
-          created_by_profile:profiles!events_created_by_fkey(full_name),
-          event_participants(user_id)
+          created_by_profile:profiles!events_created_by_fkey(full_name)
         `)
-        .order("date", { ascending: true });
+        .eq('team_id', profile.active_team_id)
+        .order('date', { ascending: true });
 
       if (error) {
         console.error("Error fetching events:", error);
@@ -125,9 +138,7 @@ const Calendar = () => {
                 right: ''
               }}
               height="auto"
-              dayCellClassNames={(arg) => {
-                return 'cursor-pointer hover:bg-gray-50';
-              }}
+              dayCellClassNames="cursor-pointer hover:bg-gray-50"
               eventContent={(eventInfo) => (
                 <div className="p-1 w-full">
                   <div className={`p-2 rounded-md text-sm border border-green-500`}>
