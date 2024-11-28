@@ -320,27 +320,33 @@ export type Database = {
       }
       teams: {
         Row: {
+          areal: number | null
           created_at: string
           created_by: string
           description: string | null
           id: string
           invite_code: string
+          location: string | null
           name: string
         }
         Insert: {
+          areal?: number | null
           created_at?: string
           created_by: string
           description?: string | null
           id?: string
           invite_code?: string
+          location?: string | null
           name: string
         }
         Update: {
+          areal?: number | null
           created_at?: string
           created_by?: string
           description?: string | null
           id?: string
           invite_code?: string
+          location?: string | null
           name?: string
         }
         Relationships: [
