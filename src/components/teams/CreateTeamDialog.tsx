@@ -66,8 +66,15 @@ const CreateTeamDialog = () => {
 
       console.log("Added creator as admin member");
       toast.success("Team created successfully");
+      
+      // Close the dialog first
       setIsOpen(false);
-      navigate("/teams");
+      
+      // Small delay to ensure state updates are processed
+      setTimeout(() => {
+        navigate("/");
+      }, 100);
+      
     } catch (error: any) {
       console.error("Error creating team:", error);
       toast.error(error.message || "Failed to create team. Please try again.");
