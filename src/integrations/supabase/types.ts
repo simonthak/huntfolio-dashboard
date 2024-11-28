@@ -322,19 +322,25 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string
+          description: string | null
           id: string
+          invite_code: string
           name: string
         }
         Insert: {
           created_at?: string
           created_by: string
+          description?: string | null
           id?: string
+          invite_code?: string
           name: string
         }
         Update: {
           created_at?: string
           created_by?: string
+          description?: string | null
           id?: string
+          invite_code?: string
           name?: string
         }
         Relationships: [
@@ -352,7 +358,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_unique_invite_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
