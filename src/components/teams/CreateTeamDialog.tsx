@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -12,45 +10,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormDescription,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Plus, Loader2 } from "lucide-react";
-
-const formSchema = z.object({
-  name: z.string().min(1, "Team name is required"),
-  location: z.string().optional(),
-  description: z.string().optional(),
-  areal: z.string().optional().transform(val => val ? parseFloat(val) : null),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import TeamForm from "./form/TeamForm";
+import type { TeamFormValues } from "./form/TeamFormSchema";
 
 const CreateTeamDialog = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      location: "",
-      description: "",
-      areal: undefined,
-    },
-  });
-
-  const onSubmit = async (values: FormValues) => {
+  const handleSubmit = async (values: TeamFormValues) => {
     try {
       setIsCreating(true);
       console.log("Creating team with values:", values);
@@ -79,6 +48,8 @@ const CreateTeamDialog = () => {
         throw teamError;
       }
 
+      console.log("Team created successfully:", team);
+
       // Then add the creator as an admin member
       const { error: memberError } = await supabase
         .from('team_members')
@@ -93,9 +64,10 @@ const CreateTeamDialog = () => {
         throw memberError;
       }
 
+      console.log("Added creator as admin member");
       toast.success("Team created successfully");
       setIsOpen(false);
-      navigate("/teams"); // Redirect to teams page instead of dashboard
+      navigate("/teams");
     } catch (error: any) {
       console.error("Error creating team:", error);
       toast.error(error.message || "Failed to create team. Please try again.");
@@ -116,93 +88,7 @@ const CreateTeamDialog = () => {
         <DialogHeader>
           <DialogTitle>Create New Team</DialogTitle>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Team Name*</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Enter team name" />
-                  </FormControl>
-                  <FormDescription>
-                    Choose a unique name for your team
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Location</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Enter team location" />
-                  </FormControl>
-                  <FormDescription>
-                    Where is your team primarily based?
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} placeholder="Describe your team" />
-                  </FormControl>
-                  <FormDescription>
-                    Add some details about your team's purpose and activities
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="areal"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Areal (hectares)</FormLabel>
-                  <FormControl>
-                    <Input 
-                      {...field} 
-                      type="number" 
-                      step="0.01" 
-                      placeholder="Enter area in hectares" 
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    The size of your hunting area in hectares
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button 
-              type="submit" 
-              disabled={isCreating}
-              className="w-full bg-[#13B67F] hover:bg-[#0ea16f]"
-            >
-              {isCreating ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                "Create Team"
-              )}
-            </Button>
-          </form>
-        </Form>
+        <TeamForm onSubmit={handleSubmit} isCreating={isCreating} />
       </DialogContent>
     </Dialog>
   );
