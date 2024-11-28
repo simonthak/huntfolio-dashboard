@@ -46,7 +46,8 @@ const Teams = () => {
             id,
             name,
             description,
-            created_at
+            created_at,
+            invite_code
           )
         `)
         .eq('user_id', user.id)
