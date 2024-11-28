@@ -18,11 +18,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { toast } from "sonner";
 
+type TeamMembership = {
+  teams: {
+    id: string;
+    name: string;
+  };
+  role: string;
+};
+
 export function TeamSwitcher() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: teamMemberships = [], isLoading } = useQuery({
+  const { data: teamMemberships = [], isLoading, error } = useQuery<TeamMembership[]>({
     queryKey: ['team-memberships'],
     queryFn: async () => {
       console.log("Fetching team memberships...");
@@ -46,7 +54,7 @@ export function TeamSwitcher() {
       }
 
       console.log("Team memberships fetched:", data);
-      return data || [];
+      return (data as TeamMembership[]) || [];
     }
   });
 
@@ -125,7 +133,20 @@ export function TeamSwitcher() {
     );
   }
 
-  const validTeamMemberships = teamMemberships.filter(membership => membership?.teams?.id && membership?.teams?.name);
+  if (error) {
+    return (
+      <Button variant="outline" className="w-full justify-between text-red-500">
+        <span>Error loading teams</span>
+        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+      </Button>
+    );
+  }
+
+  const validTeamMemberships = teamMemberships.filter(
+    (membership): membership is TeamMembership => 
+      membership?.teams?.id !== undefined && 
+      membership?.teams?.name !== undefined
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
