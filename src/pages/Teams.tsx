@@ -20,15 +20,7 @@ const Teams = () => {
         .select(`
           team_id,
           role,
-          teams (
-            id,
-            name,
-            description,
-            location,
-            areal,
-            created_at,
-            created_by
-          )
+          teams (*)
         `)
         .eq('user_id', user.id)
         .single();

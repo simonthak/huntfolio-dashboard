@@ -61,7 +61,8 @@ const CreateTeamDialog = () => {
         return;
       }
 
-      const { error } = await supabase
+      // First create the team
+      const { data: team, error: teamError } = await supabase
         .from('teams')
         .insert({
           name: values.name,
@@ -69,16 +70,32 @@ const CreateTeamDialog = () => {
           location: values.location || null,
           areal: values.areal,
           created_by: user.id,
+        })
+        .select()
+        .single();
+
+      if (teamError) {
+        console.error("Error creating team:", teamError);
+        throw teamError;
+      }
+
+      // Then add the creator as an admin member
+      const { error: memberError } = await supabase
+        .from('team_members')
+        .insert({
+          team_id: team.id,
+          user_id: user.id,
+          role: 'admin'
         });
 
-      if (error) {
-        console.error("Error creating team:", error);
-        throw error;
+      if (memberError) {
+        console.error("Error adding team member:", memberError);
+        throw memberError;
       }
 
       toast.success("Team created successfully");
       setIsOpen(false);
-      navigate("/"); // Redirect to dashboard instead of reloading
+      navigate("/teams"); // Redirect to teams page instead of dashboard
     } catch (error: any) {
       console.error("Error creating team:", error);
       toast.error(error.message || "Failed to create team. Please try again.");
