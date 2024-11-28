@@ -19,33 +19,50 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        // Check if user is part of a team
-        const { data: teamMembership, error: teamError } = await supabase
-          .from('team_members')
-          .select(`
-            team_id,
-            role,
-            joined_at
-          `)
-          .eq('user_id', session.user.id)
-          .limit(1)
+        // Check if user has an active team
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('active_team_id')
+          .eq('id', session.user.id)
           .single();
 
-        if (teamError) {
-          console.error('Error checking team membership:', teamError);
-          if (teamError.code === 'PGRST116') {
-            console.log("No team membership found, redirecting to no-team");
-            navigate("/no-team");
-            return;
-          }
-          toast.error('Failed to check team membership');
+        if (profileError) {
+          console.error('Error checking profile:', profileError);
+          toast.error('Failed to check profile');
           return;
         }
 
-        if (!teamMembership) {
-          console.log("No team membership found, redirecting to no-team");
-          navigate("/no-team");
-          return;
+        // If no active team is set, check if user is part of any team
+        if (!profile.active_team_id) {
+          const { data: teamMembership, error: teamError } = await supabase
+            .from('team_members')
+            .select('team_id')
+            .eq('user_id', session.user.id)
+            .limit(1)
+            .single();
+
+          if (teamError) {
+            if (teamError.code === 'PGRST116') {
+              console.log("No team membership found, redirecting to no-team");
+              navigate("/no-team");
+              return;
+            }
+            console.error('Error checking team membership:', teamError);
+            toast.error('Failed to check team membership');
+            return;
+          }
+
+          // Set the first team as active team
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ active_team_id: teamMembership.team_id })
+            .eq('id', session.user.id);
+
+          if (updateError) {
+            console.error('Error setting active team:', updateError);
+            toast.error('Failed to set active team');
+            return;
+          }
         }
 
         setIsLoading(false);
@@ -65,32 +82,47 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        const { data: teamMembership, error } = await supabase
-          .from('team_members')
-          .select(`
-            team_id,
-            role,
-            joined_at
-          `)
-          .eq('user_id', session.user.id)
-          .limit(1)
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('active_team_id')
+          .eq('id', session.user.id)
           .single();
 
-        if (error) {
-          console.error('Error checking team membership on auth change:', error);
-          if (error.code === 'PGRST116') {
-            console.log("No team membership found on auth change, redirecting to no-team");
-            navigate("/no-team");
-            return;
-          }
-          toast.error('Failed to check team membership');
+        if (profileError) {
+          console.error('Error checking profile on auth change:', profileError);
+          toast.error('Failed to check profile');
           return;
         }
 
-        if (!teamMembership) {
-          console.log("No team membership found on auth change, redirecting to no-team");
-          navigate("/no-team");
-          return;
+        if (!profile.active_team_id) {
+          const { data: teamMembership, error: teamError } = await supabase
+            .from('team_members')
+            .select('team_id')
+            .eq('user_id', session.user.id)
+            .limit(1)
+            .single();
+
+          if (teamError) {
+            if (teamError.code === 'PGRST116') {
+              console.log("No team membership found on auth change, redirecting to no-team");
+              navigate("/no-team");
+              return;
+            }
+            console.error('Error checking team membership on auth change:', teamError);
+            toast.error('Failed to check team membership');
+            return;
+          }
+
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ active_team_id: teamMembership.team_id })
+            .eq('id', session.user.id);
+
+          if (updateError) {
+            console.error('Error setting active team on auth change:', updateError);
+            toast.error('Failed to set active team');
+            return;
+          }
         }
 
         setIsLoading(false);

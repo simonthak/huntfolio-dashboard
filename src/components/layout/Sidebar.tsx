@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { TeamSwitcher } from "@/components/teams/TeamSwitcher";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -88,6 +89,10 @@ const Sidebar = () => {
         <h1 className="text-xl font-bold text-gray-900">ANTLERS</h1>
       </div>
       
+      <div className="px-4 mb-4">
+        <TeamSwitcher />
+      </div>
+
       <nav className="flex-1 px-4">
         {menuItems.map((item) => (
           <Link
