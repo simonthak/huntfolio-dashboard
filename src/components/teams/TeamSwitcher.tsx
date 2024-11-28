@@ -17,6 +17,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 type TeamMembership = {
   teams: {
@@ -29,8 +30,9 @@ type TeamMembership = {
 export function TeamSwitcher() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-  const { data: teamMemberships, isLoading, error } = useQuery<TeamMembership[]>({
+  const { data: teamMemberships, isLoading: isTeamMembershipsLoading } = useQuery<TeamMembership[]>({
     queryKey: ['team-memberships'],
     queryFn: async () => {
       console.log("Fetching team memberships...");
@@ -54,12 +56,12 @@ export function TeamSwitcher() {
       }
 
       console.log("Team memberships fetched:", data);
-      return (data as TeamMembership[]) || [];
+      return data as TeamMembership[];
     },
-    initialData: [] // Provide initial data to prevent undefined
+    initialData: []
   });
 
-  const { data: activeTeamData } = useQuery({
+  const { data: activeTeamData, isLoading: isActiveTeamLoading } = useQuery({
     queryKey: ['active-team'],
     queryFn: async () => {
       console.log("Fetching active team...");
@@ -102,42 +104,44 @@ export function TeamSwitcher() {
     try {
       console.log("Switching to team:", teamId);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      if (!user) {
+        toast.error("You must be logged in to switch teams");
+        return;
+      }
 
       const { error } = await supabase
         .from('profiles')
         .update({ active_team_id: teamId })
         .eq('id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error switching team:", error);
+        toast.error("Failed to switch team");
+        return;
+      }
 
       setOpen(false);
       
+      // Invalidate queries to refresh data
       await queryClient.invalidateQueries({ queryKey: ['active-team'] });
       await queryClient.invalidateQueries({ queryKey: ['team-memberships'] });
       
       toast.success("Team switched successfully");
       
-      window.location.reload();
+      // Navigate to the home page to refresh the context
+      navigate('/', { replace: true });
     } catch (error) {
       console.error("Error switching team:", error);
       toast.error("Failed to switch team");
     }
   };
 
+  const isLoading = isTeamMembershipsLoading || isActiveTeamLoading;
+
   if (isLoading) {
     return (
       <Button variant="outline" className="w-full justify-between">
         <span>Loading teams...</span>
-        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-      </Button>
-    );
-  }
-
-  if (error) {
-    return (
-      <Button variant="outline" className="w-full justify-between text-red-500">
-        <span>Error loading teams</span>
         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
       </Button>
     );
