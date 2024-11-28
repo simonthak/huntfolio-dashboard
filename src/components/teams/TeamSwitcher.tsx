@@ -12,7 +12,6 @@ import { useState } from "react";
 import JoinTeamDialog from "./JoinTeamDialog";
 import TeamList from "./TeamList";
 import { useTeamSwitch } from "@/hooks/useTeamSwitch";
-import { toast } from "sonner";
 
 type TeamMembership = {
   teams: {
@@ -139,24 +138,27 @@ export function TeamSwitcher() {
             role="combobox"
             aria-expanded={open}
             className="w-full justify-between"
+            onClick={() => validTeamMemberships.length === 0 && setShowJoinDialog(true)}
           >
-            <span>{activeTeamData?.name || "Select team..."}</span>
+            <span>{activeTeamData?.name || "Join a team..."}</span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
-          <Command>
-            <TeamList
-              teams={validTeamMemberships}
-              activeTeamId={activeTeamData?.id}
-              onTeamSelect={handleTeamSelect}
-              onJoinTeam={() => {
-                setOpen(false);
-                setShowJoinDialog(true);
-              }}
-            />
-          </Command>
-        </PopoverContent>
+        {validTeamMemberships.length > 0 && (
+          <PopoverContent className="w-[200px] p-0">
+            <Command>
+              <TeamList
+                teams={validTeamMemberships}
+                activeTeamId={activeTeamData?.id}
+                onTeamSelect={handleTeamSelect}
+                onJoinTeam={() => {
+                  setOpen(false);
+                  setShowJoinDialog(true);
+                }}
+              />
+            </Command>
+          </PopoverContent>
+        )}
       </Popover>
       {showJoinDialog && (
         <JoinTeamDialog open={showJoinDialog} onOpenChange={setShowJoinDialog} />
