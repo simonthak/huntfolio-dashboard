@@ -32,21 +32,31 @@ const CreateEventDialog = ({ open, onOpenChange, selectedDate, onEventCreated }:
       console.log("Getting authenticated user...");
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       
-      if (authError) throw authError;
+      if (authError) {
+        console.error("Auth error:", authError);
+        throw authError;
+      }
+      
       if (!user) {
+        console.error("No user found");
         toast.error("You must be logged in to create events");
         return;
       }
 
-      // Get user's active team
+      console.log("Getting user's active team...");
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('active_team_id')
         .eq('id', user.id)
         .single();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Profile error:", profileError);
+        throw profileError;
+      }
+
       if (!profile?.active_team_id) {
+        console.error("No active team found");
         toast.error("You must be part of a team to create events");
         return;
       }
@@ -67,8 +77,14 @@ const CreateEventDialog = ({ open, onOpenChange, selectedDate, onEventCreated }:
         .select()
         .single();
 
-      if (eventError) throw eventError;
+      if (eventError) {
+        console.error("Event creation error:", eventError);
+        throw eventError;
+      }
 
+      console.log("Event created successfully:", createdEvent);
+
+      console.log("Adding creator as participant...");
       const { error: participantError } = await supabase
         .from("event_participants")
         .insert({
@@ -76,14 +92,18 @@ const CreateEventDialog = ({ open, onOpenChange, selectedDate, onEventCreated }:
           user_id: user.id,
         });
 
-      if (participantError) throw participantError;
+      if (participantError) {
+        console.error("Participant creation error:", participantError);
+        throw participantError;
+      }
 
+      console.log("Creator added as participant successfully");
       await onEventCreated();
       onOpenChange(false);
       toast.success("Event created successfully");
     } catch (error) {
       console.error("Error in event creation process:", error);
-      toast.error("Failed to create event");
+      toast.error("Failed to create event. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
