@@ -18,6 +18,24 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
+        // Check if user is part of a team
+        const { data: teamMembership, error: teamError } = await supabase
+          .from('team_members')
+          .select('team_id')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (teamError && teamError.code !== 'PGRST116') {
+          console.error('Error checking team membership:', teamError);
+          toast.error('Failed to check team membership');
+          return;
+        }
+
+        if (!teamMembership) {
+          navigate("/no-team");
+          return;
+        }
+
         setIsLoading(false);
       } catch (error) {
         console.error('Error in checkUser:', error);
@@ -33,7 +51,17 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         if (!session) {
           navigate("/login");
         } else {
-          setIsLoading(false);
+          const { data: teamMembership } = await supabase
+            .from('team_members')
+            .select('team_id')
+            .eq('user_id', session.user.id)
+            .single();
+
+          if (!teamMembership) {
+            navigate("/no-team");
+          } else {
+            setIsLoading(false);
+          }
         }
       }
     );
