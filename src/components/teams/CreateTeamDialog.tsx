@@ -18,11 +18,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(1, "Team name is required"),
@@ -48,6 +49,8 @@ const CreateTeamDialog = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsCreating(true);
+      console.log("Creating team with values:", values);
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast.error("You must be logged in to create a team");
@@ -64,14 +67,17 @@ const CreateTeamDialog = () => {
           created_by: user.id,
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error creating team:", error);
+        throw error;
+      }
 
       toast.success("Team created successfully");
       setIsOpen(false);
       window.location.reload();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating team:", error);
-      toast.error("Failed to create team");
+      toast.error(error.message || "Failed to create team. Please try again.");
     } finally {
       setIsCreating(false);
     }
@@ -98,8 +104,11 @@ const CreateTeamDialog = () => {
                 <FormItem>
                   <FormLabel>Team Name*</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder="Enter team name" />
                   </FormControl>
+                  <FormDescription>
+                    Choose a unique name for your team
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -111,8 +120,11 @@ const CreateTeamDialog = () => {
                 <FormItem>
                   <FormLabel>Location</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder="Enter team location" />
                   </FormControl>
+                  <FormDescription>
+                    Where is your team primarily based?
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -124,8 +136,11 @@ const CreateTeamDialog = () => {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea {...field} />
+                    <Textarea {...field} placeholder="Describe your team" />
                   </FormControl>
+                  <FormDescription>
+                    Add some details about your team's purpose and activities
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -137,8 +152,11 @@ const CreateTeamDialog = () => {
                 <FormItem>
                   <FormLabel>Areal (hectares)</FormLabel>
                   <FormControl>
-                    <Input {...field} type="number" step="0.01" />
+                    <Input {...field} type="number" step="0.01" placeholder="Enter area in hectares" />
                   </FormControl>
+                  <FormDescription>
+                    The size of your hunting area in hectares
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -148,7 +166,14 @@ const CreateTeamDialog = () => {
               disabled={isCreating}
               className="w-full bg-[#13B67F] hover:bg-[#0ea16f]"
             >
-              {isCreating ? "Creating..." : "Create Team"}
+              {isCreating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Team"
+              )}
             </Button>
           </form>
         </Form>
