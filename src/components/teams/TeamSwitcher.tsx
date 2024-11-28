@@ -13,6 +13,7 @@ import JoinTeamDialog from "./JoinTeamDialog";
 import TeamList from "./TeamList";
 import { useTeamSwitch } from "@/hooks/useTeamSwitch";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 type TeamMembership = {
   teams: {
@@ -27,7 +28,7 @@ export function TeamSwitcher() {
   const [showJoinDialog, setShowJoinDialog] = useState(false);
   const { switchTeam } = useTeamSwitch();
 
-  const { data: teamMemberships = [], isLoading: isTeamMembershipsLoading } = useQuery({
+  const { data: teamMemberships = [], isLoading: isTeamMembershipsLoading, error: teamMembershipsError } = useQuery({
     queryKey: ['team-memberships'],
     queryFn: async () => {
       console.log("Fetching team memberships...");
@@ -58,7 +59,7 @@ export function TeamSwitcher() {
     },
   });
 
-  const { data: activeTeamData, isLoading: isActiveTeamLoading } = useQuery({
+  const { data: activeTeamData, isLoading: isActiveTeamLoading, error: activeTeamError } = useQuery({
     queryKey: ['active-team'],
     queryFn: async () => {
       console.log("Fetching active team...");
@@ -98,13 +99,32 @@ export function TeamSwitcher() {
   });
 
   const handleTeamSelect = async (teamId: string) => {
-    console.log("Attempting to switch to team:", teamId);
-    const success = await switchTeam(teamId);
-    if (success) {
-      console.log("Team switch successful");
-      setOpen(false);
-    } else {
-      console.error("Team switch failed");
+    try {
+      console.log("Attempting to switch to team:", teamId);
+      const success = await switchTeam(teamId);
+      if (success) {
+        console.log("Team switch successful");
+        toast.success("Team switched successfully");
+        setOpen(false);
+      } else {
+        console.error("Team switch failed");
+        toast.error("Failed to switch team");
+      }
+    } catch (error) {
+      console.error("Error switching team:", error);
+      toast.error("An error occurred while switching teams");
+    }
+  };
+
+  const handleDropdownOpen = (isOpen: boolean) => {
+    try {
+      setOpen(isOpen);
+      if (isOpen) {
+        toast.info("Select a team to switch to");
+      }
+    } catch (error) {
+      console.error("Error handling dropdown:", error);
+      toast.error("An error occurred while opening the team selector");
     }
   };
 
@@ -112,6 +132,16 @@ export function TeamSwitcher() {
 
   if (isLoading) {
     return <Skeleton className="h-10 w-full" />;
+  }
+
+  if (teamMembershipsError || activeTeamError) {
+    toast.error("Failed to load teams");
+    return (
+      <Button variant="outline" className="w-full justify-between" disabled>
+        <span>Error loading teams</span>
+        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+      </Button>
+    );
   }
 
   const validTeamMemberships = (teamMemberships || []).filter(
@@ -122,7 +152,7 @@ export function TeamSwitcher() {
 
   return (
     <>
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={handleDropdownOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
