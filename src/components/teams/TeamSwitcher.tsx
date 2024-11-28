@@ -60,11 +60,12 @@ export function TeamSwitcher() {
 
       console.log('Teams data received:', data);
       
-      // Transform the data to match the expected type
-      const transformedTeams = data?.map(({ teams }) => ({
-        id: teams.id,
-        name: teams.name
-      })) as Team[] || [];
+      // Transform the data to match the expected type and handle null/undefined cases
+      const transformedTeams = data?.filter(item => item.teams)
+        .map(({ teams }) => ({
+          id: teams.id,
+          name: teams.name
+        })) || [];
 
       console.log('Transformed teams:', transformedTeams);
       return transformedTeams;
