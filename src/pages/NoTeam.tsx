@@ -3,25 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { LogOut } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import CreateTeamDialog from "@/components/teams/CreateTeamDialog";
+import JoinTeamDialog from "@/components/teams/JoinTeamDialog";
 
 const NoTeam = () => {
   const navigate = useNavigate();
-
-  const { data: teams, isLoading } = useQuery({
-    queryKey: ['teams'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('teams')
-        .select('*');
-      
-      if (error) throw error;
-      return data;
-    }
-  });
 
   const handleLogout = async () => {
     try {
@@ -34,33 +21,6 @@ const NoTeam = () => {
     }
   };
 
-  const handleJoinTeam = async (teamId: string) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast.error("You must be logged in to join a team");
-        return;
-      }
-
-      const { error } = await supabase
-        .from('team_members')
-        .insert({
-          team_id: teamId,
-          user_id: user.id,
-          role: 'member'
-        });
-
-      if (error) throw error;
-
-      toast.success("Successfully joined team");
-      navigate("/");
-    } catch (error) {
-      console.error("Error joining team:", error);
-      toast.error("Failed to join team");
-    }
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md p-8">
@@ -69,28 +29,17 @@ const NoTeam = () => {
           To continue, please join an existing team or create a new one.
         </p>
         
-        <div className="space-y-6">
+        <div className="space-y-4">
           <CreateTeamDialog />
-
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Or Join an Existing Team:</h2>
-            {isLoading ? (
-              <div className="text-center py-4">Loading teams...</div>
-            ) : teams?.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No teams available to join</p>
-            ) : (
-              teams?.map((team) => (
-                <Button
-                  key={team.id}
-                  variant="outline"
-                  className="w-full justify-between"
-                  onClick={() => handleJoinTeam(team.id)}
-                >
-                  {team.name}
-                </Button>
-              ))
-            )}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">Or</span>
+            </div>
           </div>
+          <JoinTeamDialog />
 
           <Button
             variant="ghost"
