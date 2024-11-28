@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,6 +36,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const CreateTeamDialog = () => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -76,7 +78,7 @@ const CreateTeamDialog = () => {
 
       toast.success("Team created successfully");
       setIsOpen(false);
-      window.location.reload();
+      navigate("/"); // Redirect to dashboard instead of reloading
     } catch (error: any) {
       console.error("Error creating team:", error);
       toast.error(error.message || "Failed to create team. Please try again.");
