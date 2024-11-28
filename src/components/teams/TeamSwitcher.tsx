@@ -22,7 +22,7 @@ export function TeamSwitcher() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: teamMemberships, isLoading } = useQuery({
+  const { data: teamMemberships = [], isLoading } = useQuery({
     queryKey: ['team-memberships'],
     queryFn: async () => {
       console.log("Fetching team memberships...");
@@ -46,7 +46,7 @@ export function TeamSwitcher() {
       }
 
       console.log("Team memberships fetched:", data);
-      return data;
+      return data || [];
     }
   });
 
