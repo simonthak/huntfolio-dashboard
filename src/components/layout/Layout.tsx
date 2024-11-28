@@ -28,10 +28,16 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             joined_at
           `)
           .eq('user_id', session.user.id)
-          .maybeSingle();
+          .limit(1)
+          .single();
 
         if (teamError) {
           console.error('Error checking team membership:', teamError);
+          if (teamError.code === 'PGRST116') {
+            console.log("No team membership found, redirecting to no-team");
+            navigate("/no-team");
+            return;
+          }
           toast.error('Failed to check team membership');
           return;
         }
@@ -67,10 +73,16 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             joined_at
           `)
           .eq('user_id', session.user.id)
-          .maybeSingle();
+          .limit(1)
+          .single();
 
         if (error) {
           console.error('Error checking team membership on auth change:', error);
+          if (error.code === 'PGRST116') {
+            console.log("No team membership found on auth change, redirecting to no-team");
+            navigate("/no-team");
+            return;
+          }
           toast.error('Failed to check team membership');
           return;
         }
