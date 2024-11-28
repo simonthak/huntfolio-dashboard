@@ -28,7 +28,7 @@ export function TeamSwitcher() {
   const [showJoinDialog, setShowJoinDialog] = useState(false);
   const { switchTeam } = useTeamSwitch();
 
-  const { data: teamMemberships = [], isLoading: isTeamMembershipsLoading, error: teamMembershipsError } = useQuery({
+  const { data: teamMemberships, isLoading: isTeamMembershipsLoading, error: teamMembershipsError } = useQuery({
     queryKey: ['team-memberships'],
     queryFn: async () => {
       console.log("Fetching team memberships...");
