@@ -92,8 +92,8 @@ export function TeamSwitcher() {
       console.log("Active team fetched:", team);
       return team;
     },
-    staleTime: 0, // Always refetch when the query is invalidated
-    refetchOnWindowFocus: true // Refetch when the window regains focus
+    staleTime: 0,
+    refetchOnWindowFocus: true
   });
 
   const handleTeamSelect = async (teamId: string) => {
@@ -133,31 +133,29 @@ export function TeamSwitcher() {
             role="combobox"
             aria-expanded={open}
             className="w-full justify-between"
-            onClick={() => validTeamMemberships.length === 0 && setShowJoinDialog(true)}
           >
-            <span>{activeTeamData?.name || "Join a team..."}</span>
+            <span>{activeTeamData?.name || "Select a team..."}</span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        {validTeamMemberships.length > 0 && (
-          <PopoverContent className="w-[200px] p-0">
-            <Command>
-              <TeamList
-                teams={validTeamMemberships}
-                activeTeamId={activeTeamData?.id}
-                onTeamSelect={handleTeamSelect}
-                onJoinTeam={() => {
-                  setOpen(false);
-                  setShowJoinDialog(true);
-                }}
-              />
-            </Command>
-          </PopoverContent>
-        )}
+        <PopoverContent className="w-[200px] p-0" align="start">
+          <Command>
+            <TeamList
+              teams={validTeamMemberships}
+              activeTeamId={activeTeamData?.id}
+              onTeamSelect={handleTeamSelect}
+              onJoinTeam={() => {
+                setOpen(false);
+                setShowJoinDialog(true);
+              }}
+            />
+          </Command>
+        </PopoverContent>
       </Popover>
-      {showJoinDialog && (
-        <JoinTeamDialog open={showJoinDialog} onOpenChange={setShowJoinDialog} />
-      )}
+      <JoinTeamDialog 
+        open={showJoinDialog} 
+        onOpenChange={setShowJoinDialog} 
+      />
     </>
   );
 }

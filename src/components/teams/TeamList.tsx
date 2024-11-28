@@ -32,6 +32,7 @@ const TeamList = ({ teams = [], activeTeamId, onTeamSelect, onJoinTeam }: TeamLi
             <CommandItem
               key={membership.teams.id}
               onSelect={() => onTeamSelect(membership.teams.id)}
+              className="cursor-pointer"
             >
               <Check
                 className={cn(
@@ -48,7 +49,7 @@ const TeamList = ({ teams = [], activeTeamId, onTeamSelect, onJoinTeam }: TeamLi
       )}
       <CommandSeparator />
       <CommandGroup>
-        <CommandItem onSelect={onJoinTeam}>
+        <CommandItem onSelect={onJoinTeam} className="cursor-pointer">
           <Plus className="mr-2 h-4 w-4" />
           Join Another Team
         </CommandItem>
