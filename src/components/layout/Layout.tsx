@@ -22,17 +22,22 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
         console.log("Session found for user:", session.user.id);
 
-        // Check if user is part of a team - simplified query
+        // Check if user is part of a team with proper headers
         const { data: teamMembership, error: teamError } = await supabase
           .from('team_members')
-          .select('team_id')
+          .select('*')
           .eq('user_id', session.user.id)
           .single();
 
         console.log("Team membership check result:", { teamMembership, teamError });
 
-        if (teamError && teamError.code !== 'PGRST116') {
+        if (teamError) {
           console.error('Error checking team membership:', teamError);
+          if (teamError.code === 'PGRST116') {
+            console.log("No team membership found, redirecting to no-team");
+            navigate("/no-team");
+            return;
+          }
           toast.error('Failed to check team membership');
           return;
         }
@@ -64,7 +69,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         } else {
           const { data: teamMembership, error } = await supabase
             .from('team_members')
-            .select('team_id')
+            .select('*')
             .eq('user_id', session.user.id)
             .single();
 
