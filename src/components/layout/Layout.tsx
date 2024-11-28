@@ -11,7 +11,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        console.log("Checking user session and team...");
+        console.log("Checking user session...");
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
@@ -20,7 +20,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        // Check if user has an active team
+        console.log("Session found, checking profile...");
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('active_team_id')
@@ -34,7 +34,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        // If no active team is set, check if user is part of any team
         if (!profile.active_team_id) {
           console.log("No active team, checking team membership...");
           const { data: teamMembership, error: teamError } = await supabase
@@ -50,7 +49,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             return;
           }
 
-          // If no team memberships found, redirect to no-team
           if (!teamMembership || teamMembership.length === 0) {
             console.log("No team membership found, redirecting to no-team");
             setIsLoading(false);
@@ -58,7 +56,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             return;
           }
 
-          console.log("Setting first team as active team...");
+          // Set first team as active
           const { error: updateError } = await supabase
             .from('profiles')
             .update({ active_team_id: teamMembership[0].team_id })
@@ -72,7 +70,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           }
         }
 
-        console.log("Team check complete, rendering content");
         setIsLoading(false);
       } catch (error) {
         console.error('Error in checkUser:', error);
@@ -83,67 +80,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
     checkUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event);
-      if (!session) {
-        console.log("No session in auth change, redirecting to login");
+      if (event === 'SIGNED_OUT') {
+        console.log("User signed out, redirecting to login");
         navigate("/login");
-        return;
-      }
-
-      try {
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('active_team_id')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profileError) {
-          console.error('Error checking profile on auth change:', profileError);
-          toast.error('Failed to check profile');
-          setIsLoading(false);
-          return;
-        }
-
-        if (!profile.active_team_id) {
-          const { data: teamMembership, error: teamError } = await supabase
-            .from('team_members')
-            .select('team_id')
-            .eq('user_id', session.user.id)
-            .limit(1);
-
-          if (teamError) {
-            console.error('Error checking team membership on auth change:', teamError);
-            toast.error('Failed to check team membership');
-            setIsLoading(false);
-            return;
-          }
-
-          if (!teamMembership || teamMembership.length === 0) {
-            console.log("No team membership found on auth change, redirecting to no-team");
-            setIsLoading(false);
-            navigate("/no-team");
-            return;
-          }
-
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ active_team_id: teamMembership[0].team_id })
-            .eq('id', session.user.id);
-
-          if (updateError) {
-            console.error('Error setting active team on auth change:', updateError);
-            toast.error('Failed to set active team');
-            setIsLoading(false);
-            return;
-          }
-        }
-
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error in auth change handler:', error);
-        toast.error('An error occurred while checking your session');
-        setIsLoading(false);
       }
     });
 
