@@ -57,7 +57,6 @@ export function TeamSwitcher() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // First get the active team ID from profiles
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('active_team_id')
@@ -69,12 +68,11 @@ export function TeamSwitcher() {
         throw profileError;
       }
 
-      if (!profile.active_team_id) {
+      if (!profile?.active_team_id) {
         console.log("No active team set");
         return null;
       }
 
-      // Then get the team details
       const { data: team, error: teamError } = await supabase
         .from('teams')
         .select('id, name')
@@ -106,13 +104,11 @@ export function TeamSwitcher() {
 
       setOpen(false);
       
-      // Invalidate both queries to trigger a refetch
       await queryClient.invalidateQueries({ queryKey: ['active-team'] });
       await queryClient.invalidateQueries({ queryKey: ['team-memberships'] });
       
       toast.success("Team switched successfully");
       
-      // Force a page reload to ensure all team-dependent components are updated
       window.location.reload();
     } catch (error) {
       console.error("Error switching team:", error);
@@ -128,6 +124,8 @@ export function TeamSwitcher() {
       </Button>
     );
   }
+
+  const validTeamMemberships = teamMemberships.filter(membership => membership?.teams?.id && membership?.teams?.name);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -147,20 +145,20 @@ export function TeamSwitcher() {
           <CommandInput placeholder="Search team..." />
           <CommandEmpty>No team found.</CommandEmpty>
           <CommandGroup>
-            {teamMemberships?.map((membership) => (
+            {validTeamMemberships.map((membership) => (
               <CommandItem
-                key={membership.teams?.id}
-                onSelect={() => handleTeamSelect(membership.teams?.id)}
+                key={membership.teams.id}
+                onSelect={() => handleTeamSelect(membership.teams.id)}
               >
                 <Check
                   className={cn(
                     "mr-2 h-4 w-4",
-                    activeTeamData?.id === membership.teams?.id
+                    activeTeamData?.id === membership.teams.id
                       ? "opacity-100"
                       : "opacity-0"
                   )}
                 />
-                {membership.teams?.name}
+                {membership.teams.name}
               </CommandItem>
             ))}
           </CommandGroup>
