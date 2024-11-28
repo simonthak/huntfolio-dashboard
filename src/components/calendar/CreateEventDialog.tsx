@@ -34,7 +34,8 @@ const CreateEventDialog = ({ open, onOpenChange, selectedDate, onEventCreated }:
       
       if (authError) {
         console.error("Auth error:", authError);
-        throw authError;
+        toast.error("Authentication error. Please try logging in again.");
+        return;
       }
       
       if (!user) {
@@ -52,7 +53,8 @@ const CreateEventDialog = ({ open, onOpenChange, selectedDate, onEventCreated }:
 
       if (profileError) {
         console.error("Profile error:", profileError);
-        throw profileError;
+        toast.error("Error fetching user profile. Please try again.");
+        return;
       }
 
       if (!profile?.active_team_id) {
@@ -79,7 +81,8 @@ const CreateEventDialog = ({ open, onOpenChange, selectedDate, onEventCreated }:
 
       if (eventError) {
         console.error("Event creation error:", eventError);
-        throw eventError;
+        toast.error(eventError.message || "Failed to create event");
+        return;
       }
 
       console.log("Event created successfully:", createdEvent);
@@ -94,7 +97,8 @@ const CreateEventDialog = ({ open, onOpenChange, selectedDate, onEventCreated }:
 
       if (participantError) {
         console.error("Participant creation error:", participantError);
-        throw participantError;
+        toast.error("Event created but failed to add you as participant");
+        return;
       }
 
       console.log("Creator added as participant successfully");
@@ -103,7 +107,11 @@ const CreateEventDialog = ({ open, onOpenChange, selectedDate, onEventCreated }:
       toast.success("Event created successfully");
     } catch (error) {
       console.error("Error in event creation process:", error);
-      toast.error("Failed to create event. Please try again.");
+      if (error instanceof Error) {
+        toast.error(`Failed to create event: ${error.message}`);
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
