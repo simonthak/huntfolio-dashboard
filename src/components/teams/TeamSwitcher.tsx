@@ -1,15 +1,7 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, ChevronsUpDown, Plus } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandSeparator,
-} from "@/components/ui/command";
+import { Command } from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
@@ -17,9 +9,9 @@ import {
 } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 import JoinTeamDialog from "./JoinTeamDialog";
+import TeamList from "./TeamList";
+import { useTeamSwitch } from "@/hooks/useTeamSwitch";
 
 type TeamMembership = {
   teams: {
@@ -32,8 +24,7 @@ type TeamMembership = {
 export function TeamSwitcher() {
   const [open, setOpen] = useState(false);
   const [showJoinDialog, setShowJoinDialog] = useState(false);
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  const { switchTeam } = useTeamSwitch();
 
   const { data: teamMemberships, isLoading: isTeamMembershipsLoading } = useQuery<TeamMembership[]>({
     queryKey: ['team-memberships'],
@@ -61,7 +52,6 @@ export function TeamSwitcher() {
       console.log("Team memberships fetched:", data);
       return data as TeamMembership[];
     },
-    initialData: []
   });
 
   const { data: activeTeamData, isLoading: isActiveTeamLoading } = useQuery({
@@ -71,16 +61,11 @@ export function TeamSwitcher() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile } = await supabase
         .from('profiles')
         .select('active_team_id')
         .eq('id', user.id)
         .single();
-
-      if (profileError) {
-        console.error("Error fetching profile:", profileError);
-        throw profileError;
-      }
 
       if (!profile?.active_team_id) {
         console.log("No active team set");
@@ -104,38 +89,9 @@ export function TeamSwitcher() {
   });
 
   const handleTeamSelect = async (teamId: string) => {
-    try {
-      console.log("Switching to team:", teamId);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("You must be logged in to switch teams");
-        return;
-      }
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({ active_team_id: teamId })
-        .eq('id', user.id);
-
-      if (error) {
-        console.error("Error switching team:", error);
-        toast.error("Failed to switch team");
-        return;
-      }
-
+    const success = await switchTeam(teamId);
+    if (success) {
       setOpen(false);
-      
-      // Invalidate queries to refresh data
-      await queryClient.invalidateQueries({ queryKey: ['active-team'] });
-      await queryClient.invalidateQueries({ queryKey: ['team-memberships'] });
-      
-      toast.success("Team switched successfully");
-      
-      // Navigate to the home page to refresh the context
-      navigate('/', { replace: true });
-    } catch (error) {
-      console.error("Error switching team:", error);
-      toast.error("Failed to switch team");
     }
   };
 
@@ -150,7 +106,6 @@ export function TeamSwitcher() {
     );
   }
 
-  // Ensure we have a valid array to work with
   const validTeamMemberships = (teamMemberships || []).filter(
     (membership): membership is TeamMembership => 
       membership?.teams?.id !== undefined && 
@@ -173,38 +128,15 @@ export function TeamSwitcher() {
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
           <Command>
-            <CommandInput placeholder="Search team..." />
-            <CommandEmpty>No team found.</CommandEmpty>
-            <CommandGroup heading="Your teams">
-              {validTeamMemberships.map((membership) => (
-                <CommandItem
-                  key={membership.teams.id}
-                  onSelect={() => handleTeamSelect(membership.teams.id)}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      activeTeamData?.id === membership.teams.id
-                        ? "opacity-100"
-                        : "opacity-0"
-                    )}
-                  />
-                  {membership.teams.name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-            <CommandSeparator />
-            <CommandGroup>
-              <CommandItem
-                onSelect={() => {
-                  setOpen(false);
-                  setShowJoinDialog(true);
-                }}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Join Another Team
-              </CommandItem>
-            </CommandGroup>
+            <TeamList
+              teams={validTeamMemberships}
+              activeTeamId={activeTeamData?.id}
+              onTeamSelect={handleTeamSelect}
+              onJoinTeam={() => {
+                setOpen(false);
+                setShowJoinDialog(true);
+              }}
+            />
           </Command>
         </PopoverContent>
       </Popover>
