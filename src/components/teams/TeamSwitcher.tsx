@@ -26,7 +26,7 @@ export function TeamSwitcher() {
   const [showJoinDialog, setShowJoinDialog] = useState(false);
   const { switchTeam } = useTeamSwitch();
 
-  const { data: teamMemberships, isLoading: isTeamMembershipsLoading } = useQuery<TeamMembership[]>({
+  const { data: teamMemberships = [], isLoading: isTeamMembershipsLoading } = useQuery<TeamMembership[]>({
     queryKey: ['team-memberships'],
     queryFn: async () => {
       console.log("Fetching team memberships...");
@@ -53,12 +53,7 @@ export function TeamSwitcher() {
       }
 
       console.log("Team memberships fetched:", data);
-      
-      if (!data || data.length === 0) {
-        console.log("User has no team memberships");
-      }
-      
-      return data as TeamMembership[];
+      return data || [];
     },
   });
 

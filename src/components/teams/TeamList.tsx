@@ -15,28 +15,37 @@ interface TeamListProps {
   onJoinTeam: () => void;
 }
 
-const TeamList = ({ teams, activeTeamId, onTeamSelect, onJoinTeam }: TeamListProps) => {
+const TeamList = ({ teams = [], activeTeamId, onTeamSelect, onJoinTeam }: TeamListProps) => {
+  const validTeams = teams.filter(
+    (membership): membership is { teams: { id: string; name: string } } => 
+      membership?.teams?.id !== undefined && 
+      membership?.teams?.name !== undefined
+  );
+
   return (
     <>
-      <CommandEmpty>No team found.</CommandEmpty>
-      <CommandGroup heading="Your teams">
-        {teams.map((membership) => (
-          <CommandItem
-            key={membership.teams.id}
-            onSelect={() => onTeamSelect(membership.teams.id)}
-          >
-            <Check
-              className={cn(
-                "mr-2 h-4 w-4",
-                activeTeamId === membership.teams.id
-                  ? "opacity-100"
-                  : "opacity-0"
-              )}
-            />
-            {membership.teams.name}
-          </CommandItem>
-        ))}
-      </CommandGroup>
+      {validTeams.length === 0 ? (
+        <CommandEmpty>No teams found.</CommandEmpty>
+      ) : (
+        <CommandGroup heading="Your teams">
+          {validTeams.map((membership) => (
+            <CommandItem
+              key={membership.teams.id}
+              onSelect={() => onTeamSelect(membership.teams.id)}
+            >
+              <Check
+                className={cn(
+                  "mr-2 h-4 w-4",
+                  activeTeamId === membership.teams.id
+                    ? "opacity-100"
+                    : "opacity-0"
+                )}
+              />
+              {membership.teams.name}
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      )}
       <CommandSeparator />
       <CommandGroup>
         <CommandItem onSelect={onJoinTeam}>
