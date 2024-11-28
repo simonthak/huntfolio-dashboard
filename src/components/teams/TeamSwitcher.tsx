@@ -50,32 +50,44 @@ export function TeamSwitcher() {
     }
   });
 
-  const { data: activeTeam } = useQuery({
+  const { data: activeTeamData } = useQuery({
     queryKey: ['active-team'],
     queryFn: async () => {
       console.log("Fetching active team...");
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { data, error } = await supabase
+      // First get the active team ID from profiles
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select(`
-          active_team_id,
-          teams (
-            id,
-            name
-          )
-        `)
+        .select('active_team_id')
         .eq('id', user.id)
         .single();
 
-      if (error) {
-        console.error("Error fetching active team:", error);
-        throw error;
+      if (profileError) {
+        console.error("Error fetching profile:", profileError);
+        throw profileError;
       }
 
-      console.log("Active team fetched:", data);
-      return data.teams;
+      if (!profile.active_team_id) {
+        console.log("No active team set");
+        return null;
+      }
+
+      // Then get the team details
+      const { data: team, error: teamError } = await supabase
+        .from('teams')
+        .select('id, name')
+        .eq('id', profile.active_team_id)
+        .single();
+
+      if (teamError) {
+        console.error("Error fetching team:", teamError);
+        throw teamError;
+      }
+
+      console.log("Active team fetched:", team);
+      return team;
     }
   });
 
@@ -126,7 +138,7 @@ export function TeamSwitcher() {
           aria-expanded={open}
           className="w-full justify-between"
         >
-          <span>{activeTeam?.name || "Select team..."}</span>
+          <span>{activeTeamData?.name || "Select team..."}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -143,7 +155,7 @@ export function TeamSwitcher() {
                 <Check
                   className={cn(
                     "mr-2 h-4 w-4",
-                    activeTeam?.id === membership.teams?.id
+                    activeTeamData?.id === membership.teams?.id
                       ? "opacity-100"
                       : "opacity-0"
                   )}
