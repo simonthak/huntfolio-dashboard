@@ -40,8 +40,7 @@ export function TeamSwitcher() {
         .select(`
           team:team_id (
             id,
-            name,
-            description
+            name
           )
         `)
         .eq('user_id', session?.user?.id);
