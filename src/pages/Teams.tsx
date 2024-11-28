@@ -23,10 +23,15 @@ const Teams = () => {
           teams (*)
         `)
         .eq('user_id', user.id)
+        .limit(1)
         .single();
 
       if (teamError) {
         console.error("Error fetching team:", teamError);
+        if (teamError.code === 'PGRST116') {
+          console.log("No team membership found");
+          return null;
+        }
         throw teamError;
       }
 
