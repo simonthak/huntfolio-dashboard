@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import JoinTeamDialog from "./JoinTeamDialog";
 import TeamList from "./TeamList";
+import { useNavigate } from "react-router-dom";
 
 type Team = {
   id: string;
@@ -23,6 +24,7 @@ export function TeamSwitcher() {
   const [open, setOpen] = useState(false);
   const [showJoinDialog, setShowJoinDialog] = useState(false);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Fetch current user
   const { data: session } = useQuery({
@@ -125,10 +127,16 @@ export function TeamSwitcher() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['active-team'] }),
         queryClient.invalidateQueries({ queryKey: ['teams'] }),
+        queryClient.invalidateQueries({ queryKey: ['upcoming-hunts'] }),
+        queryClient.invalidateQueries({ queryKey: ['events'] }),
+        queryClient.invalidateQueries({ queryKey: ['reports'] }),
       ]);
 
       toast.success('Team switched successfully');
       setOpen(false);
+      
+      // Refresh the page to update all team-specific data
+      navigate(0);
     } catch (error) {
       console.error('Error in handleTeamSelect:', error);
       toast.error('An error occurred while switching teams');
