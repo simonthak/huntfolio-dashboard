@@ -41,10 +41,15 @@ export function TeamSwitcher() {
     queryFn: async () => {
       console.log('Fetching teams for user:', session?.user?.id);
       const { data, error } = await supabase
-        .from('teams')
-        .select('id, name')
-        .innerJoin('team_members', 'teams.id = team_members.team_id')
-        .eq('team_members.user_id', session?.user?.id);
+        .from('team_members')
+        .select(`
+          team_id,
+          teams (
+            id,
+            name
+          )
+        `)
+        .eq('user_id', session?.user?.id);
 
       if (error) {
         console.error('Error fetching teams:', error);
@@ -54,9 +59,9 @@ export function TeamSwitcher() {
       console.log('Teams data received:', data);
       
       // Transform the data to match the expected type
-      const transformedTeams = data?.map(({ teams: team }) => ({
-        id: team.id,
-        name: team.name
+      const transformedTeams = data?.map(({ teams }) => ({
+        id: teams.id,
+        name: teams.name
       })) as Team[] || [];
 
       console.log('Transformed teams:', transformedTeams);
