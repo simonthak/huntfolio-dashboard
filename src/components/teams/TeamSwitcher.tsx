@@ -57,7 +57,6 @@ export function TeamSwitcher() {
       
       if (!data || data.length === 0) {
         console.log("User has no team memberships");
-        toast.error("You are not a member of any team. Please join a team first.");
       }
       
       return data as TeamMembership[];
@@ -130,20 +129,6 @@ export function TeamSwitcher() {
       membership?.teams?.id !== undefined && 
       membership?.teams?.name !== undefined
   );
-
-  if (validTeamMemberships.length === 0) {
-    return (
-      <Button
-        variant="outline"
-        role="combobox"
-        className="w-full justify-between"
-        onClick={() => setShowJoinDialog(true)}
-      >
-        <span>Join a team...</span>
-        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-      </Button>
-    );
-  }
 
   return (
     <>
