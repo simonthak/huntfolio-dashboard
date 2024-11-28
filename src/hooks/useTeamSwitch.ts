@@ -33,28 +33,33 @@ export const useTeamSwitch = () => {
       }
 
       console.log("Updating active team in profile...");
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('profiles')
         .update({ active_team_id: teamId })
         .eq('id', user.id);
 
-      if (error) {
-        console.error("Error switching team:", error);
+      if (updateError) {
+        console.error("Error switching team:", updateError);
         toast.error("Failed to switch team");
         return false;
       }
 
-      console.log("Team switch successful, invalidating queries...");
-      await queryClient.invalidateQueries();
+      // Invalidate all queries that might depend on the active team
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['active-team'] }),
+        queryClient.invalidateQueries({ queryKey: ['team-memberships'] }),
+        queryClient.invalidateQueries({ queryKey: ['events'] }),
+        queryClient.invalidateQueries({ queryKey: ['reports'] })
+      ]);
+
+      console.log("Team switch successful, waiting for query invalidation...");
       
-      toast.success("Team switched successfully");
-      
-      // Small delay to ensure state updates are processed
-      console.log("Waiting for state updates before navigation...");
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Give a small delay to ensure state updates are processed
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       console.log("Navigating to home page...");
       navigate('/', { replace: true });
+      toast.success("Team switched successfully");
       
       return true;
     } catch (error) {

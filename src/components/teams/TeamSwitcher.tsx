@@ -26,7 +26,7 @@ export function TeamSwitcher() {
   const [showJoinDialog, setShowJoinDialog] = useState(false);
   const { switchTeam } = useTeamSwitch();
 
-  const { data: teamMemberships = [], isLoading: isTeamMembershipsLoading } = useQuery<TeamMembership[]>({
+  const { data: teamMemberships = [], isLoading: isTeamMembershipsLoading } = useQuery({
     queryKey: ['team-memberships'],
     queryFn: async () => {
       console.log("Fetching team memberships...");
@@ -73,8 +73,6 @@ export function TeamSwitcher() {
         .eq('id', user.id)
         .single();
 
-      console.log("Profile data:", profile);
-
       if (!profile?.active_team_id) {
         console.log("No active team set in profile");
         return null;
@@ -93,7 +91,9 @@ export function TeamSwitcher() {
 
       console.log("Active team fetched:", team);
       return team;
-    }
+    },
+    staleTime: 0, // Always refetch when the query is invalidated
+    refetchOnWindowFocus: true // Refetch when the window regains focus
   });
 
   const handleTeamSelect = async (teamId: string) => {
