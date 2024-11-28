@@ -11,6 +11,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const checkUser = async () => {
       try {
+        console.log("Checking user session and team...");
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
@@ -34,6 +35,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
         // If no active team is set, check if user is part of any team
         if (!profile.active_team_id) {
+          console.log("No active team, checking team membership...");
           const { data: teamMembership, error: teamError } = await supabase
             .from('team_members')
             .select('team_id')
@@ -44,6 +46,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           if (teamError) {
             if (teamError.code === 'PGRST116') {
               console.log("No team membership found, redirecting to no-team");
+              setIsLoading(false);
               navigate("/no-team");
               return;
             }
@@ -52,7 +55,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             return;
           }
 
-          // Set the first team as active team
+          console.log("Setting first team as active team...");
           const { error: updateError } = await supabase
             .from('profiles')
             .update({ active_team_id: teamMembership.team_id })
@@ -65,23 +68,26 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           }
         }
 
+        console.log("Team check complete, rendering content");
         setIsLoading(false);
       } catch (error) {
         console.error('Error in checkUser:', error);
         toast.error('An error occurred while checking your session');
+        setIsLoading(false);
       }
     };
 
     checkUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!session) {
-          console.log("No session in auth change, redirecting to login");
-          navigate("/login");
-          return;
-        }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event);
+      if (!session) {
+        console.log("No session in auth change, redirecting to login");
+        navigate("/login");
+        return;
+      }
 
+      try {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('active_team_id')
@@ -126,8 +132,12 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         }
 
         setIsLoading(false);
+      } catch (error) {
+        console.error('Error in auth change handler:', error);
+        toast.error('An error occurred while checking your session');
+        setIsLoading(false);
       }
-    );
+    });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
@@ -135,7 +145,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#13B67F]"></div>
       </div>
     );
   }

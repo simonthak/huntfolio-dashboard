@@ -3,8 +3,6 @@ import { Users, Calendar, Target, Trophy } from "lucide-react";
 import GameChart from "@/components/dashboard/GameChart";
 import SpeciesChart from "@/components/dashboard/SpeciesChart";
 import UpcomingHunts from "@/components/dashboard/UpcomingHunts";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 const stats = [
   { label: "Active Teams", value: "12", icon: Users, change: "+2" },
@@ -14,41 +12,6 @@ const stats = [
 ];
 
 const Index = () => {
-  // Query to check if user has an active team
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ['active-team-check'],
-    queryFn: async () => {
-      console.log("Checking active team...");
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log("No user found");
-        return null;
-      }
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('active_team_id')
-        .eq('id', user.id)
-        .single();
-
-      if (error) {
-        console.error("Error fetching profile:", error);
-        return null;
-      }
-
-      console.log("Profile data:", data);
-      return data;
-    }
-  });
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#13B67F]"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div>
