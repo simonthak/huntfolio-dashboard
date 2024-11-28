@@ -14,6 +14,13 @@ import { toast } from "sonner";
 import JoinTeamDialog from "./JoinTeamDialog";
 import TeamList from "./TeamList";
 
+type TeamResponse = {
+  team: {
+    id: string;
+    name: string;
+  };
+};
+
 export function TeamSwitcher() {
   const [open, setOpen] = useState(false);
   const [showJoinDialog, setShowJoinDialog] = useState(false);
@@ -53,7 +60,7 @@ export function TeamSwitcher() {
       console.log('Teams data received:', data);
       
       // Transform the data to match the expected type
-      const transformedTeams = data?.map(item => ({
+      const transformedTeams = (data as TeamResponse[])?.map(item => ({
         id: item.team.id,
         name: item.team.name
       })) || [];
