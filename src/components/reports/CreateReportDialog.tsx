@@ -35,15 +35,15 @@ const CreateReportDialog = ({ open, onOpenChange, onReportCreated }: CreateRepor
         return;
       }
 
-      // Get user's active team
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('active_team_id')
-        .eq('id', user.id)
+      // Get user's team
+      const { data: teamMember, error: teamError } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', user.id)
         .single();
 
-      if (profileError) throw profileError;
-      if (!profile?.active_team_id) {
+      if (teamError) throw teamError;
+      if (!teamMember?.team_id) {
         toast.error("You must be part of a team to create reports");
         return;
       }
@@ -56,7 +56,7 @@ const CreateReportDialog = ({ open, onOpenChange, onReportCreated }: CreateRepor
           participant_count: data.participant_count,
           description: data.description,
           created_by: user.id,
-          team_id: profile.active_team_id
+          team_id: teamMember.team_id
         })
         .select()
         .single();

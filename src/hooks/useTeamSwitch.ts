@@ -32,21 +32,8 @@ export const useTeamSwitch = () => {
         return false;
       }
 
-      console.log("Updating active team in profile...");
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ active_team_id: teamId })
-        .eq('id', user.id);
-
-      if (updateError) {
-        console.error("Error switching team:", updateError);
-        toast.error("Failed to switch team");
-        return false;
-      }
-
       // Invalidate all queries that might depend on the active team
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['active-team'] }),
         queryClient.invalidateQueries({ queryKey: ['team-memberships'] }),
         queryClient.invalidateQueries({ queryKey: ['events'] }),
         queryClient.invalidateQueries({ queryKey: ['reports'] })

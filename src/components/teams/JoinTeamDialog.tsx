@@ -79,18 +79,6 @@ const JoinTeamDialog = ({ open, onOpenChange }: JoinTeamDialogProps) => {
 
       if (joinError) throw joinError;
 
-      // Set as active team
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ active_team_id: team.id })
-        .eq('id', user.id);
-
-      if (updateError) {
-        console.error("Error setting active team:", updateError);
-        toast.error("Failed to set active team");
-        return;
-      }
-
       toast.success("Successfully joined team");
       onOpenChange(false);
       navigate("/", { replace: true });
