@@ -55,7 +55,7 @@ export function TeamSwitcher() {
       }
 
       console.log("Team memberships fetched:", data);
-      return data || [];
+      return data;
     },
   });
 

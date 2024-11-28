@@ -8,26 +8,36 @@ import {
 } from "@/components/ui/command";
 
 interface TeamListProps {
-  teams: Array<{ teams: { id: string; name: string } }> | undefined;
+  teams: Array<{ teams: { id: string; name: string } }> | null;
   activeTeamId?: string;
   onTeamSelect: (teamId: string) => void;
   onJoinTeam: () => void;
 }
 
-const TeamList = ({ teams = [], activeTeamId, onTeamSelect, onJoinTeam }: TeamListProps) => {
-  const validTeams = (teams || []).filter(
-    (membership): membership is { teams: { id: string; name: string } } => 
-      membership?.teams?.id !== undefined && 
-      membership?.teams?.name !== undefined
-  );
+const TeamList = ({ teams, activeTeamId, onTeamSelect, onJoinTeam }: TeamListProps) => {
+  if (!teams || teams.length === 0) {
+    return (
+      <>
+        <CommandEmpty>No teams found.</CommandEmpty>
+        <CommandSeparator />
+        <CommandGroup>
+          <CommandItem 
+            onSelect={onJoinTeam}
+            className="cursor-pointer hover:bg-accent"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Join Another Team
+          </CommandItem>
+        </CommandGroup>
+      </>
+    );
+  }
 
   return (
     <>
-      {validTeams.length === 0 ? (
-        <CommandEmpty>No teams found.</CommandEmpty>
-      ) : (
-        <CommandGroup heading="Your teams">
-          {validTeams.map((membership) => (
+      <CommandGroup heading="Your teams">
+        {teams.map((membership) => (
+          membership?.teams?.id && membership?.teams?.name && (
             <CommandItem
               key={membership.teams.id}
               onSelect={() => onTeamSelect(membership.teams.id)}
@@ -43,13 +53,13 @@ const TeamList = ({ teams = [], activeTeamId, onTeamSelect, onJoinTeam }: TeamLi
               />
               {membership.teams.name}
             </CommandItem>
-          ))}
-        </CommandGroup>
-      )}
+          )
+        ))}
+      </CommandGroup>
       <CommandSeparator />
       <CommandGroup>
         <CommandItem 
-          onSelect={onJoinTeam} 
+          onSelect={onJoinTeam}
           className="cursor-pointer hover:bg-accent"
         >
           <Plus className="mr-2 h-4 w-4" />
