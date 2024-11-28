@@ -28,7 +28,7 @@ const formSchema = z.object({
   name: z.string().min(1, "Team name is required"),
   location: z.string().optional(),
   description: z.string().optional(),
-  areal: z.string().optional().transform(val => val ? parseFloat(val) : null),
+  areal: z.string().optional().transform(val => val ? Number(val) : null),
 });
 
 const CreateTeamDialog = () => {

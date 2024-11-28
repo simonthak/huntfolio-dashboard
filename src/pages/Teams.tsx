@@ -32,15 +32,7 @@ const Teams = () => {
         .select(`
           team_id,
           role,
-          teams (
-            id,
-            name,
-            description,
-            created_at,
-            invite_code,
-            location,
-            areal
-          )
+          teams (*)
         `)
         .eq('user_id', user.id)
         .single();
@@ -50,7 +42,6 @@ const Teams = () => {
     }
   });
 
-  // Fetch team members if user is in a team
   const { data: teamMembers, isLoading: isMembersLoading } = useQuery({
     queryKey: ['team-members', teamData?.team_id],
     enabled: !!teamData?.team_id,
