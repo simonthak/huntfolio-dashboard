@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Command } from "@/components/ui/command";
@@ -17,6 +17,7 @@ import TeamList from "./TeamList";
 export function TeamSwitcher() {
   const [open, setOpen] = useState(false);
   const [showJoinDialog, setShowJoinDialog] = useState(false);
+  const queryClient = useQueryClient();
 
   // Fetch current user
   const { data: session } = useQuery({
@@ -37,7 +38,6 @@ export function TeamSwitcher() {
       const { data, error } = await supabase
         .from('team_members')
         .select(`
-          team_id,
           teams:team_id (
             id,
             name
@@ -50,6 +50,7 @@ export function TeamSwitcher() {
         throw error;
       }
 
+      // Transform the data to match the expected type
       return data?.map(item => item.teams) || [];
     },
   });
