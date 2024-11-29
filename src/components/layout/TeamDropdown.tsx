@@ -8,6 +8,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import CreateTeamDialog from "../teams/CreateTeamDialog";
@@ -119,18 +120,18 @@ const TeamDropdown = () => {
             </div>
           </DropdownMenuItem>
         ))}
-        <DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <div className="p-2">
           <CreateTeamDialog />
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Button
-            variant="ghost"
-            className="w-full justify-start"
-            onClick={() => setShowJoinTeamDialog(true)}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Join Team
-          </Button>
+        </div>
+        <DropdownMenuItem onSelect={(e) => {
+          e.preventDefault();
+          setShowJoinTeamDialog(true);
+        }}>
+          <div className="flex items-center gap-2 w-full">
+            <Plus className="w-4 h-4" />
+            <span>Join Team</span>
+          </div>
         </DropdownMenuItem>
       </DropdownMenuContent>
 
