@@ -4,6 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Sidebar from "./Sidebar";
 
+// Pages that don't require automatic team selection
+const TEAM_OPTIONAL_ROUTES = ['/teams', '/no-team', '/login'];
+
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -51,8 +54,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        // If we're on a protected route and no team is selected, select the first team
-        if (!searchParams.get('team') && location.pathname !== '/no-team') {
+        // Only set default team if we're not on a team-optional route and no team is selected
+        if (!searchParams.get('team') && !TEAM_OPTIONAL_ROUTES.includes(location.pathname)) {
           console.log("No team selected, selecting first team:", teamMemberships[0].team_id);
           navigate(`${location.pathname}?team=${teamMemberships[0].team_id}`);
         }
@@ -95,7 +98,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   }
 
   const currentTeamId = searchParams.get('team');
-  if (!currentTeamId) {
+  if (!currentTeamId && !TEAM_OPTIONAL_ROUTES.includes(location.pathname)) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center space-y-4">
