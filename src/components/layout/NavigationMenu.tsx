@@ -13,7 +13,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Calendar, label: "Calendar", path: "/calendar" },
   { icon: FileText, label: "Reports", path: "/reports" },
-  { icon: Users, label: "Teams", path: "/teams" },
+  { icon: Users, label: "Team", path: "/team" },
   { icon: UserCircle, label: "Profile", path: "/profile" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
@@ -26,8 +26,8 @@ const NavigationMenu = () => {
   return (
     <>
       {menuItems.map((item) => {
-        // Only add team parameter if we're not going to the teams page
-        const to = item.path === '/teams' 
+        // Only add team parameter if we're not on profile or settings pages
+        const to = item.path === '/profile' || item.path === '/settings'
           ? item.path 
           : currentTeam 
             ? `${item.path}?team=${currentTeam}`
