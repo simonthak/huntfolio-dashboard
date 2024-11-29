@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Plus } from "lucide-react";
+import { ChevronDown, Plus, Users } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,8 +53,9 @@ const TeamDropdown = () => {
           throw membershipError;
         }
 
-        if (!teamMemberships) {
-          console.log("No team memberships found");
+        if (!teamMemberships?.length) {
+          console.log("No team memberships found, redirecting to no-team page");
+          navigate("/no-team");
           return [];
         }
 
@@ -78,17 +79,21 @@ const TeamDropdown = () => {
 
   const handleTeamClick = (teamId: string) => {
     console.log("Navigating to team:", teamId);
-    navigate(`/teams?id=${teamId}`);
+    navigate(`/?team=${teamId}`);
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button 
-          variant="ghost" 
-          className="w-full justify-between mb-2 font-medium"
+          variant="outline" 
+          className="w-full justify-between mb-2 font-medium bg-white hover:bg-gray-50"
+          size="lg"
         >
-          My Teams
+          <div className="flex items-center gap-2">
+            <Users className="w-5 h-5 text-[#13B67F]" />
+            <span>Select Team</span>
+          </div>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
