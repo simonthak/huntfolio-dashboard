@@ -50,17 +50,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        // Then check team membership and get the active team from localStorage
+        // Then check team membership
         console.log("Checking team membership...");
         const { data: teamMemberships, error: teamError } = await supabase
           .from('team_members')
-          .select(`
-            team_id,
-            teams (
-              id,
-              name
-            )
-          `)
+          .select('team_id')
           .eq('user_id', session.user.id);
 
         if (teamError) {
@@ -79,14 +73,14 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
         // Get active team from localStorage or use the first team
         const storedTeamId = localStorage.getItem('activeTeamId');
-        const activeTeam = teamMemberships.find(tm => tm.team_id === storedTeamId) || teamMemberships[0];
+        const firstTeamId = teamMemberships[0]?.team_id;
         
-        if (!storedTeamId) {
+        if (!storedTeamId && firstTeamId) {
           // If no active team was stored, store the first one
-          localStorage.setItem('activeTeamId', activeTeam.team_id);
+          localStorage.setItem('activeTeamId', firstTeamId);
         }
 
-        console.log("Team membership verified:", activeTeam);
+        console.log("Team membership verified");
 
       } catch (error) {
         console.error('Error in checkUser:', error);
@@ -116,7 +110,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, [navigate, location.pathname]);
 
-  if (location.pathname === '/login') {
+  if (location.pathname === '/login' || location.pathname === '/no-team') {
     return <main className="flex-1">{children}</main>;
   }
 
