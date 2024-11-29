@@ -6,66 +6,75 @@ import {
   CommandItem,
   CommandSeparator,
 } from "@/components/ui/command";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-type TeamListProps = {
-  teams: Array<{
-    id: string;
-    name: string;
-  }>;
-  activeTeamId?: string | null;
-  onTeamSelect: (teamId: string) => void;
-  onJoinTeam: () => void;
-};
+const TeamList = () => {
+  const { data: teams = [], isLoading } = useQuery({
+    queryKey: ["user-teams"],
+    queryFn: async () => {
+      console.log("Fetching user teams...");
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
-const TeamList = ({ teams, activeTeamId, onTeamSelect, onJoinTeam }: TeamListProps) => {
+      const { data, error } = await supabase
+        .from('team_members')
+        .select(`
+          role,
+          teams (
+            id,
+            name,
+            location,
+            description
+          )
+        `)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error("Error fetching teams:", error);
+        throw error;
+      }
+
+      console.log("Teams fetched:", data);
+      return data.map(tm => ({
+        ...tm.teams,
+        role: tm.role
+      }));
+    }
+  });
+
+  if (isLoading) {
+    return <div className="p-4 text-sm text-muted-foreground">Loading teams...</div>;
+  }
+
   if (!teams?.length) {
     return (
-      <>
-        <CommandEmpty>No teams found.</CommandEmpty>
-        <CommandSeparator />
-        <CommandGroup>
-          <CommandItem 
-            onSelect={onJoinTeam}
-            className="cursor-pointer hover:bg-accent"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Join Another Team
-          </CommandItem>
-        </CommandGroup>
-      </>
+      <div className="p-4 space-y-4">
+        <div className="text-sm text-muted-foreground">You are not a member of any teams yet.</div>
+      </div>
     );
   }
 
   return (
-    <>
-      <CommandGroup heading="Your teams">
-        {teams.map((team) => (
-          <CommandItem
-            key={team.id}
-            onSelect={() => onTeamSelect(team.id)}
-            className="cursor-pointer hover:bg-accent"
-          >
-            <Check
-              className={cn(
-                "mr-2 h-4 w-4",
-                activeTeamId === team.id ? "opacity-100" : "opacity-0"
-              )}
-            />
-            {team.name}
-          </CommandItem>
-        ))}
-      </CommandGroup>
-      <CommandSeparator />
-      <CommandGroup>
-        <CommandItem 
-          onSelect={onJoinTeam}
-          className="cursor-pointer hover:bg-accent"
+    <div className="space-y-4">
+      {teams.map((team) => (
+        <div 
+          key={team.id} 
+          className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm"
         >
-          <Plus className="mr-2 h-4 w-4" />
-          Join Another Team
-        </CommandItem>
-      </CommandGroup>
-    </>
+          <h3 className="font-medium">{team.name}</h3>
+          {team.location && (
+            <p className="text-sm text-muted-foreground mt-1">📍 {team.location}</p>
+          )}
+          {team.description && (
+            <p className="text-sm text-muted-foreground mt-2">{team.description}</p>
+          )}
+          <div className="mt-2 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+            {team.role}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 };
 
