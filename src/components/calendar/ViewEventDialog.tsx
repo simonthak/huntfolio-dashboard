@@ -17,6 +17,19 @@ interface ViewEventDialogProps {
   onEventJoin: () => Promise<void>;
 }
 
+// Separate component for participant list to keep the main component cleaner
+const ParticipantList = ({ participants }: { participants: Event['event_participants'] }) => (
+  <ScrollArea className="h-[100px] w-full rounded-md border p-2">
+    <div className="space-y-1">
+      {participants.map((participant) => (
+        <div key={participant.user_id} className="text-sm">
+          {participant.profile?.full_name || 'Unnamed Hunter'}
+        </div>
+      ))}
+    </div>
+  </ScrollArea>
+);
+
 const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDialogProps) => {
   const [isUserOrganizer, setIsUserOrganizer] = useState(false);
   const [isUserParticipant, setIsUserParticipant] = useState(false);
@@ -90,15 +103,7 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
               </span>
             </div>
             
-            <ScrollArea className="h-[100px] w-full rounded-md border p-2">
-              <div className="space-y-1">
-                {event.event_participants.map((participant) => (
-                  <div key={participant.user_id} className="text-sm">
-                    {participant.profile?.full_name || 'Anonymous Hunter'}
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
+            <ParticipantList participants={event.event_participants} />
           </div>
 
           <div className="flex justify-end gap-2">
