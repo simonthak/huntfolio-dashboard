@@ -83,7 +83,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, location.pathname]);
+  }, [navigate, location.pathname, searchParams]);
 
   if (location.pathname === '/login' || location.pathname === '/no-team') {
     return <main className="flex-1">{children}</main>;
@@ -97,8 +97,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // Don't show the "No Team Selected" message on team-optional routes
-  if (!searchParams.get('team') && !TEAM_OPTIONAL_ROUTES.includes(location.pathname)) {
+  const currentTeamId = searchParams.get('team');
+  if (!currentTeamId && !TEAM_OPTIONAL_ROUTES.includes(location.pathname)) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center space-y-4">
