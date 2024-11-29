@@ -11,6 +11,7 @@ import JoinTeamDialog from "@/components/teams/JoinTeamDialog";
 const NoTeam = () => {
   const navigate = useNavigate();
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -32,7 +33,14 @@ const NoTeam = () => {
         </p>
         
         <div className="space-y-4">
-          <CreateTeamDialog />
+          <Button 
+            variant="default" 
+            className="w-full bg-[#13B67F] hover:bg-[#0ea16f]"
+            onClick={() => setCreateDialogOpen(true)}
+          >
+            Create New Team
+          </Button>
+          
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
@@ -41,6 +49,7 @@ const NoTeam = () => {
               <span className="bg-background px-2 text-muted-foreground">Or</span>
             </div>
           </div>
+          
           <Button 
             variant="outline" 
             className="w-full"
@@ -48,10 +57,6 @@ const NoTeam = () => {
           >
             Join Existing Team
           </Button>
-          <JoinTeamDialog 
-            open={joinDialogOpen} 
-            onOpenChange={setJoinDialogOpen} 
-          />
 
           <Button
             variant="ghost"
@@ -63,6 +68,16 @@ const NoTeam = () => {
           </Button>
         </div>
       </Card>
+
+      <CreateTeamDialog 
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+      />
+      
+      <JoinTeamDialog 
+        open={joinDialogOpen}
+        onOpenChange={setJoinDialogOpen}
+      />
     </div>
   );
 };
