@@ -30,22 +30,30 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         }
 
         console.log("Session found, checking team membership...");
-        const { data: teamMembership, error: teamError } = await supabase
+        const { data: teamMemberships, error: teamError } = await supabase
           .from('team_members')
-          .select('team_id')
+          .select(`
+            team_id,
+            teams (
+              id,
+              name
+            )
+          `)
           .eq('user_id', session.user.id)
-          .limit(1);
+          .maybeSingle();
 
         if (teamError) {
           console.error('Error checking team membership:', teamError);
-          toast.error('Failed to check team membership');
+          toast.error('Failed to check team membership. Please try again.');
           setIsLoading(false);
           return;
         }
 
-        if (!teamMembership || teamMembership.length === 0) {
+        if (!teamMemberships) {
           console.log("No team membership found, redirecting to no-team");
-          navigate("/no-team");
+          if (location.pathname !== '/no-team') {
+            navigate("/no-team");
+          }
           setIsLoading(false);
           return;
         }
@@ -55,7 +63,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         console.error('Error in checkUser:', error);
         toast.error('An error occurred while checking your session');
         setIsLoading(false);
-        navigate("/login");
+        if (location.pathname !== '/login') {
+          navigate("/login");
+        }
       }
     };
 
