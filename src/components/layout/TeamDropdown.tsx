@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,9 @@ import { toast } from "sonner";
 
 const TeamDropdown = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const currentTeamId = searchParams.get('team');
   const [showJoinTeamDialog, setShowJoinTeamDialog] = useState(false);
 
   const { data: teams = [], isError } = useQuery({
@@ -78,9 +81,13 @@ const TeamDropdown = () => {
   });
 
   const handleTeamClick = (teamId: string) => {
-    console.log("Navigating to team:", teamId);
-    navigate(`/?team=${teamId}`);
+    console.log("Switching to team:", teamId);
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('team', teamId);
+    navigate(`${location.pathname}?${newSearchParams.toString()}`);
   };
+
+  const currentTeam = teams.find(team => team.id === currentTeamId);
 
   return (
     <DropdownMenu>
@@ -92,7 +99,7 @@ const TeamDropdown = () => {
         >
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-[#13B67F]" />
-            <span>Select Team</span>
+            <span>{currentTeam?.name || "Select Team"}</span>
           </div>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
@@ -102,6 +109,7 @@ const TeamDropdown = () => {
           <DropdownMenuItem 
             key={team.id}
             onClick={() => handleTeamClick(team.id)}
+            className={currentTeamId === team.id ? "bg-primary/10" : ""}
           >
             <div className="flex items-center gap-2 w-full">
               <span className="flex-1">{team.name}</span>
