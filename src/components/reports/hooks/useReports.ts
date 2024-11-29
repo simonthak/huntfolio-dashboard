@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Report } from "@/components/reports/types";
-import { toast } from "sonner";
 
 export const useReports = () => {
   return useQuery({
@@ -35,13 +34,11 @@ export const useReports = () => {
 
       if (teamError) {
         console.error("Error fetching team membership:", teamError);
-        toast.error("Failed to fetch team membership");
         throw new Error("Failed to fetch team membership");
       }
 
       if (!teamMember) {
         console.log("No team membership found for user:", user.id);
-        toast.error("You must be part of a team to view reports");
         return [];
       }
 
@@ -67,7 +64,6 @@ export const useReports = () => {
 
       if (error) {
         console.error("Error fetching hunting reports:", error);
-        toast.error("Failed to fetch reports");
         throw error;
       }
 
