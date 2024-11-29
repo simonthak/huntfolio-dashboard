@@ -1,17 +1,30 @@
+import { useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Users, Calendar, Target, Trophy } from "lucide-react";
 import GameChart from "@/components/dashboard/GameChart";
 import SpeciesChart from "@/components/dashboard/SpeciesChart";
 import UpcomingHunts from "@/components/dashboard/UpcomingHunts";
 
-const stats = [
-  { label: "Active Teams", value: "12", icon: Users, change: "+2" },
-  { label: "Upcoming Hunts", value: "8", icon: Calendar, change: "+3" },
-  { label: "Success Rate", value: "76%", icon: Target, change: "+5%" },
-  { label: "Season Trophies", value: "23", icon: Trophy, change: "+2" },
-];
-
 const Index = () => {
+  const [searchParams] = useSearchParams();
+  const currentTeamId = searchParams.get('team');
+
+  if (!currentTeamId) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
+        <h2 className="text-xl font-semibold text-gray-800">No Team Selected</h2>
+        <p className="text-gray-600">Please select a team to view the dashboard</p>
+      </div>
+    );
+  }
+
+  const stats = [
+    { label: "Active Teams", value: "12", icon: Users, change: "+2" },
+    { label: "Upcoming Hunts", value: "8", icon: Calendar, change: "+3" },
+    { label: "Success Rate", value: "76%", icon: Target, change: "+5%" },
+    { label: "Season Trophies", value: "23", icon: Trophy, change: "+2" },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
@@ -40,9 +53,9 @@ const Index = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <GameChart />
-        <SpeciesChart />
-        <UpcomingHunts />
+        <GameChart teamId={currentTeamId} />
+        <SpeciesChart teamId={currentTeamId} />
+        <UpcomingHunts teamId={currentTeamId} />
       </div>
     </div>
   );

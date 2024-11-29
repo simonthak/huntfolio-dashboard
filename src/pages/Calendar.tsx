@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import CreateEventDialog from "@/components/calendar/CreateEventDialog";
 import EventsList from "@/components/calendar/EventsList";
 import { useQuery } from "@tanstack/react-query";
@@ -17,6 +18,8 @@ const Calendar = () => {
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const currentTeamId = searchParams.get('team');
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -26,24 +29,19 @@ const Calendar = () => {
     getCurrentUser();
   }, []);
 
-  const { data: events = [], refetch: refetchEvents } = useQuery({
-    queryKey: ["events"],
+  const { data: events = [], refetch: refetchEvents, isError } = useQuery({
+    queryKey: ["events", currentTeamId],
     queryFn: async () => {
-      console.log("Fetching events...");
+      console.log("Fetching events for team:", currentTeamId);
+      
+      if (!currentTeamId) {
+        console.log("No team selected");
+        return [];
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { data: teamMember } = await supabase
-        .from('team_members')
-        .select('team_id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!teamMember?.team_id) {
-        console.log("No team membership found");
-        return [];
-      }
-      
       const { data, error } = await supabase
         .from("events")
         .select(`
@@ -58,18 +56,24 @@ const Calendar = () => {
           hunt_type:hunt_types(name),
           created_by_profile:profiles!events_created_by_fkey(firstname, lastname)
         `)
-        .eq('team_id', teamMember.team_id)
+        .eq('team_id', currentTeamId)
         .order('date', { ascending: true });
 
       if (error) {
         console.error("Error fetching events:", error);
-        toast.error("Failed to load events");
         throw error;
       }
 
       console.log("Events fetched successfully:", data);
       return data || [];
     },
+    meta: {
+      onError: (error: Error) => {
+        console.error("Error in events query:", error);
+        toast.error("Failed to load events");
+      }
+    },
+    enabled: !!currentTeamId
   });
 
   const handleDateSelect = (selectInfo: { date: Date }) => {
@@ -117,6 +121,15 @@ const Calendar = () => {
       }
     };
   });
+
+  if (!currentTeamId) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
+        <h2 className="text-xl font-semibold text-gray-800">No Team Selected</h2>
+        <p className="text-gray-600">Please select a team to view the calendar</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

@@ -13,17 +13,30 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-const data = [
-  { species: "Deer", count: 45 },
-  { species: "Wild Boar", count: 32 },
-  { species: "Duck", count: 28 },
-  { species: "Pheasant", count: 24 },
-  { species: "Rabbit", count: 18 },
-  { species: "Turkey", count: 15 },
-];
+interface SpeciesChartProps {
+  teamId: string;
+}
 
-const SpeciesChart = () => {
+const SpeciesChart = ({ teamId }: SpeciesChartProps) => {
+  const { data = [] } = useQuery({
+    queryKey: ["species-chart", teamId],
+    queryFn: async () => {
+      // TODO: Implement actual data fetching from hunting_reports and report_animals
+      // This is currently using mock data
+      return [
+        { species: "Deer", count: 45 },
+        { species: "Wild Boar", count: 32 },
+        { species: "Duck", count: 28 },
+        { species: "Pheasant", count: 24 },
+        { species: "Rabbit", count: 18 },
+        { species: "Turkey", count: 15 },
+      ];
+    }
+  });
+
   return (
     <Card className="col-span-4">
       <CardHeader>

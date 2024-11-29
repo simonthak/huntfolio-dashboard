@@ -10,26 +10,19 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-const UpcomingHunts = () => {
+interface UpcomingHuntsProps {
+  teamId: string;
+}
+
+const UpcomingHunts = ({ teamId }: UpcomingHuntsProps) => {
   const { data: events = [] } = useQuery({
-    queryKey: ["upcoming-hunts"],
+    queryKey: ["upcoming-hunts", teamId],
     queryFn: async () => {
       console.log("Fetching upcoming hunts for dashboard...");
       const today = new Date().toISOString().split('T')[0];
       
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
-
-      const { data: teamMember } = await supabase
-        .from('team_members')
-        .select('team_id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!teamMember?.team_id) {
-        console.log("No team found");
-        return [];
-      }
 
       const { data, error } = await supabase
         .from("events")
@@ -38,7 +31,7 @@ const UpcomingHunts = () => {
           event_participants(user_id),
           hunt_type:hunt_types(name)
         `)
-        .eq('team_id', teamMember.team_id)
+        .eq('team_id', teamId)
         .gte('date', today)
         .order('date', { ascending: true })
         .limit(3);
@@ -51,6 +44,11 @@ const UpcomingHunts = () => {
       console.log("Successfully fetched upcoming hunts:", data);
       return data || [];
     },
+    meta: {
+      onError: (error: Error) => {
+        console.error("Error in upcoming hunts query:", error);
+      }
+    }
   });
 
   return (

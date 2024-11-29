@@ -13,23 +13,36 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-const data = [
-  { month: "Jan", count: 24 },
-  { month: "Feb", count: 18 },
-  { month: "Mar", count: 32 },
-  { month: "Apr", count: 45 },
-  { month: "May", count: 38 },
-  { month: "Jun", count: 29 },
-  { month: "Jul", count: 35 },
-  { month: "Aug", count: 42 },
-  { month: "Sep", count: 28 },
-  { month: "Oct", count: 33 },
-  { month: "Nov", count: 26 },
-  { month: "Dec", count: 21 },
-];
+interface GameChartProps {
+  teamId: string;
+}
 
-const GameChart = () => {
+const GameChart = ({ teamId }: GameChartProps) => {
+  const { data = [] } = useQuery({
+    queryKey: ["game-chart", teamId],
+    queryFn: async () => {
+      // TODO: Implement actual data fetching from hunting_reports
+      // This is currently using mock data
+      return [
+        { month: "Jan", count: 24 },
+        { month: "Feb", count: 18 },
+        { month: "Mar", count: 32 },
+        { month: "Apr", count: 45 },
+        { month: "May", count: 38 },
+        { month: "Jun", count: 29 },
+        { month: "Jul", count: 35 },
+        { month: "Aug", count: 42 },
+        { month: "Sep", count: 28 },
+        { month: "Oct", count: 33 },
+        { month: "Nov", count: 26 },
+        { month: "Dec", count: 21 },
+      ];
+    }
+  });
+
   return (
     <Card className="col-span-4">
       <CardHeader>
