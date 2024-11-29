@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import CreateReportDialog from "@/components/reports/CreateReportDialog";
 import ViewReportDialog from "@/components/reports/ViewReportDialog";
 import EditReportDialog from "@/components/reports/EditReportDialog";
 import ReportsTable from "@/components/reports/ReportsTable";
 import ReportsHeader from "@/components/reports/ReportsHeader";
-import { useQuery } from "@tanstack/react-query";
 import { Report } from "@/components/reports/types";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +19,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useReportsData } from "./Reports/useReportsData";
+import { LoadingState } from "./Reports/LoadingState";
+import { NoTeamSelected } from "./Reports/NoTeamSelected";
 
 const Reports = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -30,64 +33,9 @@ const Reports = () => {
   const [searchParams] = useSearchParams();
   const currentTeamId = searchParams.get('team');
   
-  const { data: reports = [], isLoading, refetch } = useQuery({
-    queryKey: ["hunting-reports", currentTeamId],
-    queryFn: async () => {
-      console.log("Fetching hunting reports for team:", currentTeamId);
-      
-      if (!currentTeamId) {
-        console.log("No team selected");
-        return [];
-      }
+  const { data: reports = [], isLoading, refetch } = useReportsData(currentTeamId);
 
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      
-      if (authError) {
-        console.error("Auth error:", authError);
-        throw new Error("Authentication error");
-      }
-      
-      if (!user) {
-        console.error("No authenticated user found");
-        throw new Error("Not authenticated");
-      }
-
-      const { data, error } = await supabase
-        .from("hunting_reports")
-        .select(`
-          *,
-          hunt_type:hunt_types(name),
-          created_by_profile:profiles!hunting_reports_created_by_fkey(
-            firstname,
-            lastname
-          ),
-          report_animals(
-            quantity,
-            animal_type:animal_types(name),
-            animal_subtype:animal_subtypes(name)
-          )
-        `)
-        .eq('team_id', currentTeamId)
-        .order('date', { ascending: false });
-
-      if (error) {
-        console.error("Error fetching hunting reports:", error);
-        throw error;
-      }
-
-      console.log("Successfully fetched reports:", data);
-      return data as Report[];
-    },
-    meta: {
-      onError: (error: Error) => {
-        console.error("Error in reports query:", error);
-        toast.error("Failed to load reports");
-      }
-    },
-    enabled: !!currentTeamId
-  });
-
-  useEffect(() => {
+  useState(() => {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUserId(user?.id || null);
@@ -113,20 +61,11 @@ const Reports = () => {
   };
 
   if (!currentTeamId) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
-        <h2 className="text-xl font-semibold text-gray-800">No Team Selected</h2>
-        <p className="text-gray-600">Please select a team to view reports</p>
-      </div>
-    );
+    return <NoTeamSelected />;
   }
 
   if (isLoading) {
-    return (
-      <div className="flex h-[200px] items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   return (
