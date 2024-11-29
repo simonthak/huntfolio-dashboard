@@ -50,8 +50,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        // Then check team membership
-        console.log("Checking team membership...");
+        // Then check team membership with detailed error logging
+        console.log("Checking team membership for user:", session.user.id);
         const { data: teamMemberships, error: teamError } = await supabase
           .from('team_members')
           .select('team_id')
@@ -59,9 +59,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
         if (teamError) {
           console.error("Team membership check failed:", teamError);
-          toast.error("Failed to verify team membership");
+          toast.error("Failed to verify team membership. Please try again.");
           return;
         }
+
+        console.log("Team memberships response:", teamMemberships);
 
         if (!teamMemberships || teamMemberships.length === 0) {
           console.log("No team membership found, redirecting to no-team");
@@ -71,7 +73,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        console.log("Team membership verified");
+        console.log("Team membership verified successfully");
 
       } catch (error) {
         console.error('Error in checkUser:', error);
@@ -90,7 +92,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       console.log("Auth state changed:", event);
       if (event === 'SIGNED_OUT') {
         console.log("User signed out, redirecting to login");
-        localStorage.removeItem('activeTeamId');
         navigate("/login");
       } else if (event === 'SIGNED_IN') {
         console.log("User signed in, checking team membership");
