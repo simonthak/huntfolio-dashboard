@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import CreateReportDialog from "@/components/reports/CreateReportDialog";
@@ -35,7 +35,7 @@ const Reports = () => {
   
   const { data: reports = [], isLoading, refetch } = useReportsData(currentTeamId);
 
-  useState(() => {
+  useEffect(() => {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUserId(user?.id || null);
