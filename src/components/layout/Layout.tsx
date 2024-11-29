@@ -54,13 +54,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         console.log("Checking team membership...");
         const { data: teamMemberships, error: teamError } = await supabase
           .from('team_members')
-          .select(`
-            team_id,
-            teams (
-              id,
-              name
-            )
-          `)
+          .select('team_id')
           .eq('user_id', session.user.id);
 
         if (teamError) {
@@ -68,8 +62,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           toast.error("Failed to verify team membership");
           return;
         }
-
-        console.log("Team memberships found:", teamMemberships);
 
         if (!teamMemberships || teamMemberships.length === 0) {
           console.log("No team membership found, redirecting to no-team");
@@ -79,17 +71,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        // Get active team from localStorage or use the first team
-        const storedTeamId = localStorage.getItem('activeTeamId');
-        const activeTeam = teamMemberships.find(tm => tm.team_id === storedTeamId) || teamMemberships[0];
-        
-        if (!storedTeamId && activeTeam) {
-          // If no active team was stored, store the first one
-          localStorage.setItem('activeTeamId', activeTeam.team_id);
-          console.log("Set first team as active:", activeTeam.team_id);
-        }
-
-        console.log("Team membership verified:", activeTeam);
+        console.log("Team membership verified");
 
       } catch (error) {
         console.error('Error in checkUser:', error);
@@ -108,7 +90,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       console.log("Auth state changed:", event);
       if (event === 'SIGNED_OUT') {
         console.log("User signed out, redirecting to login");
-        localStorage.removeItem('activeTeamId'); // Clear active team on logout
+        localStorage.removeItem('activeTeamId');
         navigate("/login");
       } else if (event === 'SIGNED_IN') {
         console.log("User signed in, checking team membership");
