@@ -18,7 +18,7 @@ const HuntTypeSelector = ({ value, onChange }: HuntTypeSelectorProps) => {
       const { data, error } = await supabase
         .from('hunt_types')
         .select('*')
-        .neq('name', 'arbetsdag')
+        .neq('name', 'Arbetsdag')
         .order('name');
       
       if (error) {
