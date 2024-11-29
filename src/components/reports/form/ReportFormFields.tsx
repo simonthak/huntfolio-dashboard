@@ -4,14 +4,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Plus } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import AnimalEntry from "./AnimalEntry";
+import HuntTypeSelector from "./HuntTypeSelector";
+import AnimalEntriesList from "./AnimalEntriesList";
 
 interface ReportFormFieldsProps {
   initialData?: {
@@ -49,26 +49,10 @@ const ReportFormFields = ({ onChange, initialData }: ReportFormFieldsProps) => {
     quantity: number;
   }>>(initialData?.animals || []);
   
-  const [huntTypes, setHuntTypes] = useState<any[]>([]);
   const [animalTypes, setAnimalTypes] = useState<any[]>([]);
   const [animalSubtypes, setAnimalSubtypes] = useState<Record<number, any[]>>({});
 
   useEffect(() => {
-    const fetchHuntTypes = async () => {
-      const { data, error } = await supabase
-        .from('hunt_types')
-        .select('*')
-        .neq('name', 'arbetsdag') // Filter out "arbetsdag"
-        .order('name');
-      
-      if (error) {
-        console.error('Error fetching hunt types:', error);
-        toast.error('Failed to load hunt types');
-        return;
-      }
-      setHuntTypes(data);
-    };
-
     const fetchAnimalTypes = async () => {
       const { data, error } = await supabase
         .from('animal_types')
@@ -83,11 +67,6 @@ const ReportFormFields = ({ onChange, initialData }: ReportFormFieldsProps) => {
       setAnimalTypes(data);
     };
 
-    fetchHuntTypes();
-    fetchAnimalTypes();
-  }, []);
-
-  useEffect(() => {
     const fetchAnimalSubtypes = async () => {
       const { data, error } = await supabase
         .from('animal_subtypes')
@@ -113,6 +92,7 @@ const ReportFormFields = ({ onChange, initialData }: ReportFormFieldsProps) => {
       setAnimalSubtypes(subtypesByType);
     };
 
+    fetchAnimalTypes();
     fetchAnimalSubtypes();
   }, []);
 
@@ -168,21 +148,7 @@ const ReportFormFields = ({ onChange, initialData }: ReportFormFieldsProps) => {
         </Popover>
       </div>
 
-      <div className="space-y-2">
-        <Label>Hunt Type</Label>
-        <Select value={huntTypeId} onValueChange={setHuntTypeId}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select hunt type" />
-          </SelectTrigger>
-          <SelectContent>
-            {huntTypes.map((type) => (
-              <SelectItem key={type.id} value={type.id.toString()}>
-                {type.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <HuntTypeSelector value={huntTypeId} onChange={setHuntTypeId} />
 
       <div className="space-y-2">
         <Label htmlFor="participantCount">Number of Participants</Label>
@@ -199,29 +165,14 @@ const ReportFormFields = ({ onChange, initialData }: ReportFormFieldsProps) => {
 
       <div className="space-y-2">
         <Label>Animals</Label>
-        <div className="space-y-4">
-          {animals.map((animal, index) => (
-            <AnimalEntry
-              key={index}
-              initialData={animal}
-              animalTypes={animalTypes}
-              animalSubtypes={animalSubtypes}
-              onRemove={() => handleRemoveAnimal(index)}
-              onChange={(data) => handleAnimalChange(index, data)}
-            />
-          ))}
-          <Button 
-            type="button" 
-            variant="outline" 
-            size="sm" 
-            onClick={handleAddAnimal}
-            className="w-full"
-            style={{ borderColor: '#13B67F', color: '#13B67F' }}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Animal
-          </Button>
-        </div>
+        <AnimalEntriesList
+          animals={animals}
+          animalTypes={animalTypes}
+          animalSubtypes={animalSubtypes}
+          onAddAnimal={handleAddAnimal}
+          onRemoveAnimal={handleRemoveAnimal}
+          onAnimalChange={handleAnimalChange}
+        />
       </div>
 
       <div className="space-y-2">
