@@ -81,18 +81,29 @@ const Reports = () => {
     queryFn: async () => {
       console.log("Fetching hunting reports...");
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      if (!user) {
+        console.error("No authenticated user found");
+        throw new Error("Not authenticated");
+      }
 
-      const { data: teamMember } = await supabase
+      console.log("Checking team membership for user:", user.id);
+      const { data: teamMember, error: teamError } = await supabase
         .from('team_members')
-        .select('team_id')
+        .select('team_id, teams(name)')
         .eq('user_id', user.id)
         .single();
 
+      if (teamError) {
+        console.error("Error fetching team membership:", teamError);
+        throw new Error("Failed to fetch team membership");
+      }
+
       if (!teamMember?.team_id) {
-        console.log("No team membership found");
+        console.log("No team membership found for user:", user.id);
         return [];
       }
+
+      console.log("Found team membership:", JSON.stringify(teamMember, null, 2));
       
       const { data, error } = await supabase
         .from("hunting_reports")
@@ -117,7 +128,7 @@ const Reports = () => {
         throw error;
       }
 
-      console.log("Fetched reports data:", data);
+      console.log("Successfully fetched reports:", data);
       return data as Report[];
     },
   });
