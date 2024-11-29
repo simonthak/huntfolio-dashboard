@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import CreateReportDialog from "@/components/reports/CreateReportDialog";
 import ViewReportDialog from "@/components/reports/ViewReportDialog";
 import EditReportDialog from "@/components/reports/EditReportDialog";
 import ReportsTable from "@/components/reports/ReportsTable";
+import ReportsHeader from "@/components/reports/ReportsHeader";
+import { useReports } from "@/components/reports/hooks/useReports";
 import { Report } from "@/components/reports/types";
 import {
   AlertDialog,
@@ -21,28 +19,24 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const useReportDialogs = () => {
+const Reports = () => {
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  
+  const { data: reports = [], isLoading, refetch } = useReports();
 
-  return {
-    createDialogOpen,
-    setCreateDialogOpen,
-    viewDialogOpen,
-    setViewDialogOpen,
-    editDialogOpen,
-    setEditDialogOpen,
-    deleteDialogOpen,
-    setDeleteDialogOpen,
-    selectedReport,
-    setSelectedReport,
-  };
-};
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id || null);
+    };
+    getCurrentUser();
+  }, []);
 
-const useReportDeletion = (refetch: () => void) => {
   const handleDelete = async (report: Report) => {
     try {
       console.log("Deleting report:", report.id);
@@ -52,88 +46,11 @@ const useReportDeletion = (refetch: () => void) => {
         .eq('id', report.id);
 
       if (error) throw error;
-
-      toast.success("Report deleted successfully");
-      refetch();
+      await refetch();
     } catch (error) {
       console.error("Error deleting report:", error);
-      toast.error("Failed to delete report");
     }
   };
-
-  return { handleDelete };
-};
-
-const Reports = () => {
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const dialogState = useReportDialogs();
-  
-  useEffect(() => {
-    const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUserId(user?.id || null);
-    };
-    getCurrentUser();
-  }, []);
-
-  const { data: reports = [], isLoading, refetch } = useQuery({
-    queryKey: ["hunting-reports"],
-    queryFn: async () => {
-      console.log("Fetching hunting reports...");
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.error("No authenticated user found");
-        throw new Error("Not authenticated");
-      }
-
-      console.log("Checking team membership for user:", user.id);
-      const { data: teamMember, error: teamError } = await supabase
-        .from('team_members')
-        .select('team_id, teams(name)')
-        .eq('user_id', user.id)
-        .single();
-
-      if (teamError) {
-        console.error("Error fetching team membership:", teamError);
-        throw new Error("Failed to fetch team membership");
-      }
-
-      if (!teamMember?.team_id) {
-        console.log("No team membership found for user:", user.id);
-        return [];
-      }
-
-      console.log("Found team membership:", JSON.stringify(teamMember, null, 2));
-      
-      const { data, error } = await supabase
-        .from("hunting_reports")
-        .select(`
-          *,
-          hunt_type:hunt_types(name),
-          created_by_profile:profiles!hunting_reports_created_by_fkey(
-            firstname,
-            lastname
-          ),
-          report_animals(
-            quantity,
-            animal_type:animal_types(name),
-            animal_subtype:animal_subtypes(name)
-          )
-        `)
-        .eq('team_id', teamMember.team_id)
-        .order('date', { ascending: false });
-
-      if (error) {
-        console.error("Error fetching hunting reports:", error);
-        throw error;
-      }
-
-      console.log("Successfully fetched reports:", data);
-      return data as Report[];
-    },
-  });
-
-  const { handleDelete } = useReportDeletion(refetch);
 
   if (isLoading) {
     return (
@@ -145,63 +62,51 @@ const Reports = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Hunting Reports</h1>
-          <p className="text-gray-500 mt-1">View all hunting reports and their details</p>
-        </div>
-        <Button 
-          onClick={() => dialogState.setCreateDialogOpen(true)} 
-          style={{ backgroundColor: '#13B67F' }}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          New Report
-        </Button>
-      </div>
+      <ReportsHeader onCreateReport={() => setCreateDialogOpen(true)} />
 
       <Card>
         <ReportsTable 
           reports={reports}
           currentUserId={currentUserId}
           onView={(report) => {
-            dialogState.setSelectedReport(report);
-            dialogState.setViewDialogOpen(true);
+            setSelectedReport(report);
+            setViewDialogOpen(true);
           }}
           onEdit={(report) => {
-            dialogState.setSelectedReport(report);
-            dialogState.setEditDialogOpen(true);
+            setSelectedReport(report);
+            setEditDialogOpen(true);
           }}
           onDelete={(report) => {
-            dialogState.setSelectedReport(report);
-            dialogState.setDeleteDialogOpen(true);
+            setSelectedReport(report);
+            setDeleteDialogOpen(true);
           }}
         />
       </Card>
 
       <CreateReportDialog
-        open={dialogState.createDialogOpen}
-        onOpenChange={dialogState.setCreateDialogOpen}
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
         onReportCreated={refetch}
       />
 
       <ViewReportDialog
-        report={dialogState.selectedReport}
-        open={dialogState.viewDialogOpen}
-        onOpenChange={dialogState.setViewDialogOpen}
+        report={selectedReport}
+        open={viewDialogOpen}
+        onOpenChange={setViewDialogOpen}
       />
 
-      {dialogState.selectedReport && (
+      {selectedReport && (
         <EditReportDialog
-          report={dialogState.selectedReport}
-          open={dialogState.editDialogOpen}
-          onOpenChange={dialogState.setEditDialogOpen}
+          report={selectedReport}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
           onReportUpdated={refetch}
         />
       )}
 
       <AlertDialog 
-        open={dialogState.deleteDialogOpen} 
-        onOpenChange={dialogState.setDeleteDialogOpen}
+        open={deleteDialogOpen} 
+        onOpenChange={setDeleteDialogOpen}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -214,10 +119,10 @@ const Reports = () => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction 
               onClick={() => {
-                if (dialogState.selectedReport) {
-                  handleDelete(dialogState.selectedReport);
-                  dialogState.setDeleteDialogOpen(false);
-                  dialogState.setSelectedReport(null);
+                if (selectedReport) {
+                  handleDelete(selectedReport);
+                  setDeleteDialogOpen(false);
+                  setSelectedReport(null);
                 }
               }} 
               className="bg-red-500 hover:bg-red-600"
