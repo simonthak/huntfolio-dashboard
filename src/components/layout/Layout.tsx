@@ -30,27 +30,28 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         }
 
         console.log("Session found, checking team membership...");
-        const { data: teamMemberships, error: teamError } = await supabase
+        const { data: teamMember, error: teamError } = await supabase
           .from('team_members')
-          .select(`
-            team_id,
-            teams (
-              id,
-              name
-            )
-          `)
+          .select('team_id')
           .eq('user_id', session.user.id)
-          .maybeSingle();
+          .single();
 
         if (teamError) {
           console.error('Error checking team membership:', teamError);
-          toast.error('Failed to check team membership. Please try again.');
+          if (teamError.code === 'PGRST116') {
+            console.log("No team membership found");
+            if (location.pathname !== '/no-team') {
+              navigate("/no-team");
+            }
+          } else {
+            toast.error('Error checking team membership. Please try again.');
+          }
           setIsLoading(false);
           return;
         }
 
-        if (!teamMemberships) {
-          console.log("No team membership found, redirecting to no-team");
+        if (!teamMember?.team_id) {
+          console.log("Invalid team membership data:", teamMember);
           if (location.pathname !== '/no-team') {
             navigate("/no-team");
           }
