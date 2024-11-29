@@ -54,6 +54,19 @@ const EventsList = ({ events }: EventsListProps) => {
                       {event.description}
                     </p>
                   )}
+                  {event.event_participants.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-xs text-gray-500 mb-1">Participants:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {event.event_participants.map((participant, index) => (
+                          <span key={participant.user_id} className="text-xs text-gray-600">
+                            {participant.profile?.full_name || 'Unnamed Hunter'}
+                            {index < event.event_participants.length - 1 ? ', ' : ''}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))
             )}
