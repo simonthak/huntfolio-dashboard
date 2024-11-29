@@ -21,11 +21,19 @@ interface ViewEventDialogProps {
 const ParticipantList = ({ participants }: { participants: Event['event_participants'] }) => (
   <ScrollArea className="h-[100px] w-full rounded-md border p-2">
     <div className="space-y-1">
-      {participants.map((participant) => (
-        <div key={participant.user_id} className="text-sm">
-          {participant.profile?.full_name || 'Unnamed Hunter'}
-        </div>
-      ))}
+      {participants.map((participant) => {
+        const firstName = participant.profile?.firstname || '';
+        const lastName = participant.profile?.lastname || '';
+        const displayName = firstName || lastName 
+          ? `${firstName} ${lastName}`.trim()
+          : 'Unnamed Hunter';
+        
+        return (
+          <div key={participant.user_id} className="text-sm">
+            {displayName}
+          </div>
+        );
+      })}
     </div>
   </ScrollArea>
 );

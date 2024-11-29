@@ -48,9 +48,15 @@ const Calendar = () => {
         .from("events")
         .select(`
           *,
-          event_participants(user_id),
+          event_participants(
+            user_id,
+            profile:profiles(
+              firstname,
+              lastname
+            )
+          ),
           hunt_type:hunt_types(name),
-          created_by_profile:profiles!events_created_by_fkey(full_name)
+          created_by_profile:profiles!events_created_by_fkey(firstname, lastname)
         `)
         .eq('team_id', teamMember.team_id)
         .order('date', { ascending: true });
@@ -107,7 +113,7 @@ const Calendar = () => {
         description: event.description,
         participantLimit: event.participant_limit,
         currentParticipants: event.event_participants.length,
-        createdBy: event.created_by_profile.full_name
+        createdBy: event.created_by_profile.firstname + ' ' + event.created_by_profile.lastname
       }
     };
   });

@@ -6,11 +6,15 @@ export interface Event {
   description: string | null;
   participant_limit: number;
   created_by: string;
-  created_by_profile: { full_name: string | null };
+  created_by_profile: { 
+    firstname: string | null;
+    lastname: string | null;
+  };
   event_participants: {
     user_id: string;
     profile?: {
-      full_name: string | null;
+      firstname: string | null;
+      lastname: string | null;
     };
   }[];
 }
