@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -20,22 +20,33 @@ const menuItems = [
 
 const NavigationMenu = () => {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const currentTeam = searchParams.get('team');
 
   return (
     <>
-      {menuItems.map((item) => (
-        <Link
-          key={item.path}
-          to={item.path}
-          className={cn(
-            "flex items-center gap-3 px-3 py-2 rounded-lg mb-1 text-gray-700 hover:bg-gray-100 transition-colors",
-            location.pathname === item.path && "bg-primary/10 text-primary"
-          )}
-        >
-          <item.icon className="w-5 h-5" />
-          <span>{item.label}</span>
-        </Link>
-      ))}
+      {menuItems.map((item) => {
+        // Only add team parameter if we're not going to the teams page
+        const to = item.path === '/teams' 
+          ? item.path 
+          : currentTeam 
+            ? `${item.path}?team=${currentTeam}`
+            : item.path;
+
+        return (
+          <Link
+            key={item.path}
+            to={to}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 rounded-lg mb-1 text-gray-700 hover:bg-gray-100 transition-colors",
+              location.pathname === item.path && "bg-primary/10 text-primary"
+            )}
+          >
+            <item.icon className="w-5 h-5" />
+            <span>{item.label}</span>
+          </Link>
+        );
+      })}
     </>
   );
 };
