@@ -36,18 +36,25 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           .from('profiles')
           .select('id')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle();
 
         if (profileError) {
           console.error("Profile check failed:", profileError);
           toast.error("Failed to verify user profile");
-          return;
+          throw profileError;
         }
 
         if (!profile) {
-          console.log("No profile found for user");
-          toast.error("User profile not found");
-          return;
+          console.log("No profile found, creating one...");
+          const { error: createProfileError } = await supabase
+            .from('profiles')
+            .insert([{ id: session.user.id }]);
+
+          if (createProfileError) {
+            console.error("Failed to create profile:", createProfileError);
+            toast.error("Failed to create user profile");
+            throw createProfileError;
+          }
         }
 
         // Then check team membership
@@ -66,7 +73,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         if (teamError) {
           console.error("Team membership check failed:", teamError);
           toast.error("Failed to verify team membership");
-          return;
+          throw teamError;
         }
 
         if (!teamMemberships || teamMemberships.length === 0) {
