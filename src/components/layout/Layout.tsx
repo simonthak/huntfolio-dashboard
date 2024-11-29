@@ -30,36 +30,55 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
         console.log("Valid session found for user:", session.user.id);
 
-        // Check team membership with better error handling
-        console.log("Checking team membership...");
-        const { data: teamMember, error: teamError } = await supabase
-          .from('team_members')
-          .select('team_id')
-          .eq('user_id', session.user.id)
+        // First check if user has a profile
+        console.log("Checking user profile...");
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', session.user.id)
           .single();
 
-        if (teamError) {
-          if (teamError.code === 'PGRST116') {
-            console.log("No team membership found, redirecting to no-team");
-            if (location.pathname !== '/no-team') {
-              navigate("/no-team");
-            }
-          } else {
-            console.error("Team membership check failed:", teamError);
-            toast.error("Failed to verify team membership");
-          }
+        if (profileError) {
+          console.error("Profile check failed:", profileError);
+          toast.error("Failed to verify user profile");
           return;
         }
 
-        if (!teamMember?.team_id) {
-          console.log("No team ID found, redirecting to no-team");
+        if (!profile) {
+          console.log("No profile found for user");
+          toast.error("User profile not found");
+          return;
+        }
+
+        // Then check team membership
+        console.log("Checking team membership...");
+        const { data: teamMemberships, error: teamError } = await supabase
+          .from('team_members')
+          .select(`
+            team_id,
+            teams (
+              id,
+              name
+            )
+          `)
+          .eq('user_id', session.user.id);
+
+        if (teamError) {
+          console.error("Team membership check failed:", teamError);
+          toast.error("Failed to verify team membership");
+          return;
+        }
+
+        if (!teamMemberships || teamMemberships.length === 0) {
+          console.log("No team membership found, redirecting to no-team");
           if (location.pathname !== '/no-team') {
             navigate("/no-team");
           }
           return;
         }
 
-        console.log("Team membership verified:", teamMember);
+        console.log("Team membership verified:", teamMemberships[0]);
+
       } catch (error) {
         console.error('Error in checkUser:', error);
         toast.error('Session verification failed');
