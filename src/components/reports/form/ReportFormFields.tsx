@@ -58,6 +58,7 @@ const ReportFormFields = ({ onChange, initialData }: ReportFormFieldsProps) => {
       const { data, error } = await supabase
         .from('hunt_types')
         .select('*')
+        .neq('name', 'arbetsdag') // Filter out "arbetsdag"
         .order('name');
       
       if (error) {
