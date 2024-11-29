@@ -27,7 +27,7 @@ const HuntTypeSelector = ({ value, onChange }: HuntTypeSelectorProps) => {
         return;
       }
       console.log("Fetched hunt types for report form:", data);
-      setHuntTypes(data);
+      setHuntTypes(data || []);
     };
 
     fetchHuntTypes();
