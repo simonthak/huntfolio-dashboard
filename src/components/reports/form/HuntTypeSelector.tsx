@@ -14,7 +14,7 @@ const HuntTypeSelector = ({ value, onChange }: HuntTypeSelectorProps) => {
 
   useEffect(() => {
     const fetchHuntTypes = async () => {
-      console.log("Fetching hunt types...");
+      console.log("Fetching hunt types for report form...");
       const { data, error } = await supabase
         .from('hunt_types')
         .select('*')
@@ -26,7 +26,7 @@ const HuntTypeSelector = ({ value, onChange }: HuntTypeSelectorProps) => {
         toast.error('Failed to load hunt types');
         return;
       }
-      console.log("Fetched hunt types:", data);
+      console.log("Fetched hunt types for report form:", data);
       setHuntTypes(data);
     };
 
