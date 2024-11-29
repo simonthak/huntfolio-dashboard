@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,6 +15,8 @@ interface CreateEventDialogProps {
 
 const CreateEventDialog = ({ open, onOpenChange, selectedDate, onEventCreated }: CreateEventDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchParams] = useSearchParams();
+  const currentTeamId = searchParams.get('team');
 
   const handleSubmit = async (data: {
     hunt_type_id: number;
@@ -22,6 +25,11 @@ const CreateEventDialog = ({ open, onOpenChange, selectedDate, onEventCreated }:
   }) => {
     if (!selectedDate) {
       toast.error("Please select a date");
+      return;
+    }
+
+    if (!currentTeamId) {
+      toast.error("Please select a team first");
       return;
     }
 
@@ -44,16 +52,18 @@ const CreateEventDialog = ({ open, onOpenChange, selectedDate, onEventCreated }:
         return;
       }
 
-      console.log("Getting user's team...");
+      // Verify user is member of the selected team
+      console.log("Verifying team membership...");
       const { data: teamMember, error: teamError } = await supabase
         .from('team_members')
         .select('team_id')
         .eq('user_id', user.id)
+        .eq('team_id', currentTeamId)
         .single();
 
       if (teamError) {
-        console.error("Team error:", teamError);
-        toast.error("Error fetching user's team. Please try again.");
+        console.error("Team verification error:", teamError);
+        toast.error("You are not a member of this team");
         return;
       }
 
@@ -63,7 +73,7 @@ const CreateEventDialog = ({ open, onOpenChange, selectedDate, onEventCreated }:
         description: data.description,
         participant_limit: data.participantLimit,
         created_by: user.id,
-        team_id: teamMember.team_id
+        team_id: currentTeamId
       };
 
       console.log("Creating event with data:", eventData);
