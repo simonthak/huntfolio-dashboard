@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Check, ChevronsUpDown, Plus, Users } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Command } from "@/components/ui/command";
 import {
@@ -22,6 +21,14 @@ export function TeamSwitcher() {
   const [showJoinDialog, setShowJoinDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [activeTeamId, setActiveTeamId] = useState<string | null>(null);
+
+  // Load active team from localStorage on component mount
+  useEffect(() => {
+    const storedTeamId = localStorage.getItem('activeTeamId');
+    if (storedTeamId) {
+      setActiveTeamId(storedTeamId);
+    }
+  }, []);
 
   const { data: teamData, isLoading } = useQuery({
     queryKey: ['user-teams'],
@@ -47,16 +54,29 @@ export function TeamSwitcher() {
       }
 
       console.log("Teams fetched:", teams);
-      return teams.map(tm => ({
-        id: tm.teams?.id,
-        name: tm.teams?.name,
-      })).filter(team => team.id && team.name);
+      
+      const formattedTeams = teams
+        .map(tm => ({
+          id: tm.teams?.id,
+          name: tm.teams?.name,
+        }))
+        .filter(team => team.id && team.name);
+
+      // If no active team is set, set the first team as active
+      if (!activeTeamId && formattedTeams.length > 0) {
+        const firstTeamId = formattedTeams[0].id;
+        setActiveTeamId(firstTeamId);
+        localStorage.setItem('activeTeamId', firstTeamId);
+      }
+
+      return formattedTeams;
     }
   });
 
   const handleTeamSelect = async (teamId: string) => {
     console.log("Switching to team:", teamId);
     setActiveTeamId(teamId);
+    localStorage.setItem('activeTeamId', teamId);
     setOpen(false);
     // Refresh the page to update team context
     window.location.reload();

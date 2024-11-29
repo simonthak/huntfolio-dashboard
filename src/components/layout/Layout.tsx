@@ -50,7 +50,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        // Then check team membership
+        // Then check team membership and get the active team from localStorage
         console.log("Checking team membership...");
         const { data: teamMemberships, error: teamError } = await supabase
           .from('team_members')
@@ -77,7 +77,16 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        console.log("Team membership verified:", teamMemberships[0]);
+        // Get active team from localStorage or use the first team
+        const storedTeamId = localStorage.getItem('activeTeamId');
+        const activeTeam = teamMemberships.find(tm => tm.team_id === storedTeamId) || teamMemberships[0];
+        
+        if (!storedTeamId) {
+          // If no active team was stored, store the first one
+          localStorage.setItem('activeTeamId', activeTeam.team_id);
+        }
+
+        console.log("Team membership verified:", activeTeam);
 
       } catch (error) {
         console.error('Error in checkUser:', error);
@@ -96,6 +105,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       console.log("Auth state changed:", event);
       if (event === 'SIGNED_OUT') {
         console.log("User signed out, redirecting to login");
+        localStorage.removeItem('activeTeamId'); // Clear active team on logout
         navigate("/login");
       } else if (event === 'SIGNED_IN') {
         console.log("User signed in, checking team membership");
