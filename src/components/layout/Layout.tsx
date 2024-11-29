@@ -30,35 +30,14 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         }
 
         console.log("Session found for user:", session.user.id);
-        
-        // First verify if user has a profile
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', session.user.id)
-          .single();
 
-        if (profileError) {
-          console.error("Error checking user profile:", profileError);
-          toast.error("Error verifying user profile");
-          setIsLoading(false);
-          return;
-        }
-
-        if (!profile) {
-          console.error("No profile found for user");
-          toast.error("User profile not found");
-          navigate("/login");
-          setIsLoading(false);
-          return;
-        }
-
-        // Then check team membership
+        // Check team membership directly
         console.log("Checking team membership for user:", session.user.id);
-        const { data: teamMembers, error: teamError } = await supabase
+        const { data: teamMember, error: teamError } = await supabase
           .from('team_members')
           .select('team_id')
-          .eq('user_id', session.user.id);
+          .eq('user_id', session.user.id)
+          .maybeSingle();
 
         if (teamError) {
           console.error("Error checking team membership:", teamError);
@@ -67,15 +46,13 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        console.log("Team membership result:", teamMembers);
+        console.log("Team membership result:", teamMember);
 
-        if (!teamMembers || teamMembers.length === 0) {
+        if (!teamMember) {
           console.log("No team membership found, redirecting to no-team");
           if (location.pathname !== '/no-team') {
             navigate("/no-team");
           }
-          setIsLoading(false);
-          return;
         }
 
         setIsLoading(false);
