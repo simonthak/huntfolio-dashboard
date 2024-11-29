@@ -50,30 +50,37 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        // Then check team membership with detailed error logging
-        console.log("Checking team membership for user:", session.user.id);
-        const { data: teamMemberships, error: teamError } = await supabase
+        // Verify team membership with detailed logging
+        console.log("Verifying team membership for user:", session.user.id);
+        const { data: teamMembership, error: teamError } = await supabase
           .from('team_members')
-          .select('team_id')
-          .eq('user_id', session.user.id);
+          .select(`
+            team_id,
+            teams (
+              id,
+              name
+            )
+          `)
+          .eq('user_id', session.user.id)
+          .maybeSingle();
 
         if (teamError) {
-          console.error("Team membership check failed:", teamError);
-          toast.error("Failed to verify team membership. Please try again.");
+          console.error("Team membership verification failed:", teamError);
+          toast.error("Could not verify team membership");
           return;
         }
 
-        console.log("Team memberships response:", teamMemberships);
+        console.log("Team membership response:", teamMembership);
 
-        if (!teamMemberships || teamMemberships.length === 0) {
-          console.log("No team membership found, redirecting to no-team");
+        if (!teamMembership) {
+          console.log("No team membership found, redirecting to no-team page");
           if (location.pathname !== '/no-team') {
             navigate("/no-team");
           }
           return;
         }
 
-        console.log("Team membership verified successfully");
+        console.log("Team membership verified successfully:", teamMembership.team_id);
 
       } catch (error) {
         console.error('Error in checkUser:', error);
