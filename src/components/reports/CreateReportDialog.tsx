@@ -25,29 +25,40 @@ const CreateReportDialog = ({ open, onOpenChange, onReportCreated }: CreateRepor
     }>;
   }) => {
     setIsSubmitting(true);
+    console.log("Starting report creation with data:", data);
 
     try {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       
-      if (authError) throw authError;
+      if (authError) {
+        console.error("Auth error:", authError);
+        throw authError;
+      }
       if (!user) {
+        console.error("No user found");
         toast.error("You must be logged in to create reports");
         return;
       }
 
       // Get user's team
+      console.log("Fetching team for user:", user.id);
       const { data: teamMember, error: teamError } = await supabase
         .from('team_members')
         .select('team_id')
         .eq('user_id', user.id)
         .single();
 
-      if (teamError) throw teamError;
+      if (teamError) {
+        console.error("Team fetch error:", teamError);
+        throw teamError;
+      }
       if (!teamMember?.team_id) {
+        console.error("No team_id found for user");
         toast.error("You must be part of a team to create reports");
         return;
       }
 
+      console.log("Creating report with team_id:", teamMember.team_id);
       const { data: report, error: reportError } = await supabase
         .from("hunting_reports")
         .insert({
@@ -61,9 +72,13 @@ const CreateReportDialog = ({ open, onOpenChange, onReportCreated }: CreateRepor
         .select()
         .single();
 
-      if (reportError) throw reportError;
+      if (reportError) {
+        console.error("Report creation error:", reportError);
+        throw reportError;
+      }
 
       if (data.animals.length > 0) {
+        console.log("Creating report animals for report:", report.id);
         const { error: animalsError } = await supabase
           .from("report_animals")
           .insert(
@@ -75,14 +90,18 @@ const CreateReportDialog = ({ open, onOpenChange, onReportCreated }: CreateRepor
             }))
           );
 
-        if (animalsError) throw animalsError;
+        if (animalsError) {
+          console.error("Animals creation error:", animalsError);
+          throw animalsError;
+        }
       }
 
+      console.log("Report created successfully");
       await onReportCreated();
       onOpenChange(false);
       toast.success("Report created successfully");
     } catch (error) {
-      console.error("Error in report creation process:", error);
+      console.error("Detailed error in report creation process:", error);
       toast.error("Failed to create report");
     } finally {
       setIsSubmitting(false);
