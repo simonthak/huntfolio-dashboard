@@ -51,10 +51,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        // If we're on the root path and no team is selected, select the first team
-        if (location.pathname === '/' && !searchParams.get('team')) {
+        // If we're on a protected route and no team is selected, select the first team
+        if (!searchParams.get('team') && location.pathname !== '/no-team') {
           console.log("No team selected, selecting first team:", teamMemberships[0].team_id);
-          navigate(`/?team=${teamMemberships[0].team_id}`);
+          navigate(`${location.pathname}?team=${teamMemberships[0].team_id}`);
         }
 
         setIsLoading(false);
@@ -82,7 +82,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, [navigate, location.pathname, searchParams]);
 
-  if (location.pathname === '/login') {
+  if (location.pathname === '/login' || location.pathname === '/no-team') {
     return <main className="flex-1">{children}</main>;
   }
 
@@ -90,6 +90,18 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#13B67F]"></div>
+      </div>
+    );
+  }
+
+  const currentTeamId = searchParams.get('team');
+  if (!currentTeamId) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-semibold text-gray-800">No Team Selected</h2>
+          <p className="text-gray-600">Please select a team from the sidebar to continue</p>
+        </div>
       </div>
     );
   }
