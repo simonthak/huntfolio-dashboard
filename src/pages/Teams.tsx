@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import TeamInformation from "@/components/teams/TeamInformation";
 import TeamMembers from "@/components/teams/TeamMembers";
@@ -6,14 +7,18 @@ import TeamActions from "@/components/teams/TeamActions";
 import { Loader2 } from "lucide-react";
 
 const Teams = () => {
-  // Fetch current user's team
+  const [searchParams] = useSearchParams();
+  const currentTeamId = searchParams.get('team');
+
+  // Fetch current team's data
   const { data: teamData, isLoading: isTeamLoading } = useQuery({
-    queryKey: ['team'],
+    queryKey: ['team', currentTeamId],
+    enabled: !!currentTeamId,
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      console.log("Fetching team data for user:", user.id);
+      console.log("Fetching team data for team:", currentTeamId);
 
       const { data: teamMember, error: teamError } = await supabase
         .from('team_members')
@@ -22,16 +27,12 @@ const Teams = () => {
           role,
           teams (*)
         `)
+        .eq('team_id', currentTeamId)
         .eq('user_id', user.id)
-        .limit(1)
         .single();
 
       if (teamError) {
         console.error("Error fetching team:", teamError);
-        if (teamError.code === 'PGRST116') {
-          console.log("No team membership found");
-          return null;
-        }
         throw teamError;
       }
 
@@ -42,10 +43,10 @@ const Teams = () => {
 
   // Fetch team members
   const { data: teamMembers, isLoading: isMembersLoading } = useQuery({
-    queryKey: ['team-members', teamData?.team_id],
-    enabled: !!teamData?.team_id,
+    queryKey: ['team-members', currentTeamId],
+    enabled: !!currentTeamId,
     queryFn: async () => {
-      console.log("Fetching team members for team:", teamData?.team_id);
+      console.log("Fetching team members for team:", currentTeamId);
 
       const { data, error } = await supabase
         .from('team_members')
@@ -59,7 +60,7 @@ const Teams = () => {
             email
           )
         `)
-        .eq('team_id', teamData.team_id);
+        .eq('team_id', currentTeamId);
 
       if (error) {
         console.error("Error fetching team members:", error);
@@ -70,6 +71,14 @@ const Teams = () => {
       return data;
     }
   });
+
+  if (!currentTeamId) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-gray-500">Please select a team from the dropdown menu</p>
+      </div>
+    );
+  }
 
   if (isTeamLoading || isMembersLoading) {
     return (
