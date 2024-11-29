@@ -29,29 +29,40 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        console.log("Session found, checking team membership...");
-        const { data: teamMember, error: teamError } = await supabase
+        console.log("Session found, checking team membership for user:", session.user.id);
+        const { data: teamMembers, error: teamError } = await supabase
           .from('team_members')
-          .select('team_id')
-          .eq('user_id', session.user.id)
-          .single();
+          .select(`
+            team_id,
+            teams (
+              id,
+              name
+            )
+          `)
+          .eq('user_id', session.user.id);
 
         if (teamError) {
           console.error('Error checking team membership:', teamError);
-          if (teamError.code === 'PGRST116') {
-            console.log("No team membership found");
-            if (location.pathname !== '/no-team') {
-              navigate("/no-team");
-            }
-          } else {
-            toast.error('Error checking team membership. Please try again.');
+          toast.error('Error checking team membership. Please try again.');
+          setIsLoading(false);
+          return;
+        }
+
+        console.log("Team membership query result:", teamMembers);
+
+        if (!teamMembers || teamMembers.length === 0) {
+          console.log("No team membership found, redirecting to no-team");
+          if (location.pathname !== '/no-team') {
+            navigate("/no-team");
           }
           setIsLoading(false);
           return;
         }
 
+        const teamMember = teamMembers[0];
         if (!teamMember?.team_id) {
-          console.log("Invalid team membership data:", teamMember);
+          console.error("Invalid team membership data:", teamMember);
+          toast.error('Invalid team data. Please try rejoining your team.');
           if (location.pathname !== '/no-team') {
             navigate("/no-team");
           }
