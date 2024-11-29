@@ -54,7 +54,13 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         console.log("Checking team membership...");
         const { data: teamMemberships, error: teamError } = await supabase
           .from('team_members')
-          .select('team_id')
+          .select(`
+            team_id,
+            teams (
+              id,
+              name
+            )
+          `)
           .eq('user_id', session.user.id);
 
         if (teamError) {
@@ -62,6 +68,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           toast.error("Failed to verify team membership");
           return;
         }
+
+        console.log("Team memberships found:", teamMemberships);
 
         if (!teamMemberships || teamMemberships.length === 0) {
           console.log("No team membership found, redirecting to no-team");
@@ -73,14 +81,15 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
         // Get active team from localStorage or use the first team
         const storedTeamId = localStorage.getItem('activeTeamId');
-        const firstTeamId = teamMemberships[0]?.team_id;
+        const activeTeam = teamMemberships.find(tm => tm.team_id === storedTeamId) || teamMemberships[0];
         
-        if (!storedTeamId && firstTeamId) {
+        if (!storedTeamId && activeTeam) {
           // If no active team was stored, store the first one
-          localStorage.setItem('activeTeamId', firstTeamId);
+          localStorage.setItem('activeTeamId', activeTeam.team_id);
+          console.log("Set first team as active:", activeTeam.team_id);
         }
 
-        console.log("Team membership verified");
+        console.log("Team membership verified:", activeTeam);
 
       } catch (error) {
         console.error('Error in checkUser:', error);
