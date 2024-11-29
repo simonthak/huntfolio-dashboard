@@ -12,7 +12,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        console.log("Starting user session check...");
+        console.log("Checking user session...");
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -22,64 +22,40 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
         if (!session) {
           console.log("No session found, redirecting to login");
-          navigate("/login");
+          if (location.pathname !== '/login') {
+            navigate("/login");
+          }
+          setIsLoading(false);
           return;
         }
 
-        console.log("Valid session found for user:", session.user.id);
-
-        // First check if user has a profile
-        console.log("Checking user profile...");
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profileError) {
-          console.error("Profile check failed:", profileError);
-          throw new Error("Failed to verify user profile");
-        }
-
-        if (!profile) {
-          console.log("No profile found for user");
-          throw new Error("User profile not found");
-        }
-
-        // Verify team membership
-        console.log("Verifying team membership...");
-        const { data: teamMember, error: teamError } = await supabase
+        console.log("Session found, checking team membership...");
+        const { data: teamMembership, error: teamError } = await supabase
           .from('team_members')
           .select('team_id')
           .eq('user_id', session.user.id)
-          .maybeSingle();
+          .limit(1);
 
         if (teamError) {
-          console.error("Team membership verification failed:", teamError);
-          throw new Error("Could not verify team membership");
-        }
-
-        if (!teamMember && location.pathname !== '/no-team') {
-          console.log("No team membership found, redirecting to no-team page");
-          navigate("/no-team");
+          console.error('Error checking team membership:', teamError);
+          toast.error('Failed to check team membership');
+          setIsLoading(false);
           return;
         }
 
-        console.log("Team membership verification complete");
+        if (!teamMembership || teamMembership.length === 0) {
+          console.log("No team membership found, redirecting to no-team");
+          navigate("/no-team");
+          setIsLoading(false);
+          return;
+        }
 
+        setIsLoading(false);
       } catch (error) {
         console.error('Error in checkUser:', error);
-        if (error instanceof Error) {
-          toast.error(error.message);
-        } else {
-          toast.error('An unexpected error occurred');
-        }
-        
-        if (location.pathname !== '/login') {
-          navigate("/login");
-        }
-      } finally {
+        toast.error('An error occurred while checking your session');
         setIsLoading(false);
+        navigate("/login");
       }
     };
 
@@ -99,7 +75,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, [navigate, location.pathname]);
 
-  if (location.pathname === '/login' || location.pathname === '/no-team') {
+  // Don't show sidebar on login page
+  if (location.pathname === '/login') {
     return <main className="flex-1">{children}</main>;
   }
 

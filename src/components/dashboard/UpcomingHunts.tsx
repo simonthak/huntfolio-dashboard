@@ -17,47 +17,20 @@ const UpcomingHunts = () => {
       console.log("Fetching upcoming hunts for dashboard...");
       const today = new Date().toISOString().split('T')[0];
       
-      // Get current user
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) {
-        console.error("Auth error:", authError);
-        throw authError;
-      }
-      if (!user) {
-        console.error("No authenticated user found");
-        throw new Error("Not authenticated");
-      }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
-      // Get active team from localStorage
-      const activeTeamId = localStorage.getItem('activeTeamId');
-      console.log("Active team ID from localStorage:", activeTeamId);
-      
-      if (!activeTeamId) {
-        console.log("No active team ID found in localStorage");
-        // Get user's first team
-        const { data: teamMember, error: teamError } = await supabase
-          .from('team_members')
-          .select('team_id')
-          .eq('user_id', user.id)
-          .limit(1)
-          .single();
+      const { data: teamMember } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', user.id)
+        .single();
 
-        if (teamError) {
-          console.error("Error fetching team:", teamError);
-          throw teamError;
-        }
-
-        if (!teamMember?.team_id) {
-          console.log("No team found for user");
-          return [];
-        }
-
-        // Store the first team as active
-        localStorage.setItem('activeTeamId', teamMember.team_id);
-        console.log("Set first team as active:", teamMember.team_id);
+      if (!teamMember?.team_id) {
+        console.log("No team found");
+        return [];
       }
 
-      // Fetch events for the active team
       const { data, error } = await supabase
         .from("events")
         .select(`
@@ -65,7 +38,7 @@ const UpcomingHunts = () => {
           event_participants(user_id),
           hunt_type:hunt_types(name)
         `)
-        .eq('team_id', activeTeamId || '')
+        .eq('team_id', teamMember.team_id)
         .gte('date', today)
         .order('date', { ascending: true })
         .limit(3);
