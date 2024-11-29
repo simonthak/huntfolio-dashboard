@@ -8,15 +8,17 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import TeamForm from "./form/TeamForm";
 import type { TeamFormValues } from "./form/TeamFormSchema";
 
-const CreateTeamDialog = () => {
+interface CreateTeamDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+const CreateTeamDialog = ({ open, onOpenChange }: CreateTeamDialogProps) => {
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
   const handleSubmit = async (values: TeamFormValues) => {
@@ -68,11 +70,11 @@ const CreateTeamDialog = () => {
       toast.success("Team created successfully");
       
       // Close the dialog first
-      setIsOpen(false);
+      onOpenChange(false);
       
       // Small delay to ensure state updates are processed
       setTimeout(() => {
-        navigate("/");
+        window.location.reload();
       }, 100);
       
     } catch (error: any) {
@@ -84,13 +86,7 @@ const CreateTeamDialog = () => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-[#13B67F] hover:bg-[#0ea16f]">
-          <Plus className="w-4 h-4 mr-2" />
-          Create Team
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create New Team</DialogTitle>
