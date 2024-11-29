@@ -12,40 +12,67 @@ import {
 } from "@/components/ui/dropdown-menu";
 import CreateTeamDialog from "../teams/CreateTeamDialog";
 import JoinTeamDialog from "../teams/JoinTeamDialog";
+import { toast } from "sonner";
 
 const TeamDropdown = () => {
   const navigate = useNavigate();
   const [showJoinTeamDialog, setShowJoinTeamDialog] = useState(false);
 
-  const { data: teams = [] } = useQuery({
+  const { data: teams = [], isError } = useQuery({
     queryKey: ["user-teams"],
     queryFn: async () => {
-      console.log("Fetching user teams...");
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      try {
+        console.log("Starting to fetch user teams...");
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        
+        if (authError) {
+          console.error("Auth error:", authError);
+          throw new Error("Authentication error");
+        }
 
-      const { data, error } = await supabase
-        .from('team_members')
-        .select(`
-          role,
-          teams (
-            id,
-            name,
-            location
-          )
-        `)
-        .eq('user_id', user.id);
+        if (!user) {
+          console.log("No authenticated user found");
+          throw new Error("Not authenticated");
+        }
 
-      if (error) {
-        console.error("Error fetching teams:", error);
+        console.log("Fetching team memberships for user:", user.id);
+        const { data: teamMemberships, error: membershipError } = await supabase
+          .from('team_members')
+          .select(`
+            role,
+            teams (
+              id,
+              name,
+              location
+            )
+          `)
+          .eq('user_id', user.id);
+
+        if (membershipError) {
+          console.error("Error fetching team memberships:", membershipError);
+          throw membershipError;
+        }
+
+        if (!teamMemberships) {
+          console.log("No team memberships found");
+          return [];
+        }
+
+        console.log("Successfully fetched teams:", teamMemberships);
+        return teamMemberships.map(tm => ({
+          ...tm.teams,
+          role: tm.role
+        }));
+      } catch (error) {
+        console.error("Error in team fetch:", error);
         throw error;
       }
-
-      console.log("Teams fetched:", data);
-      return data.map(tm => ({
-        ...tm.teams,
-        role: tm.role
-      }));
+    },
+    meta: {
+      onError: (error: Error) => {
+        console.error("Query error:", error);
+        toast.error("Failed to fetch teams");
+      }
     }
   });
 
