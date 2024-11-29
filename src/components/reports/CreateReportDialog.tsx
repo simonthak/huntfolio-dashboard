@@ -43,24 +43,26 @@ const CreateReportDialog = ({ open, onOpenChange, onReportCreated }: CreateRepor
         return;
       }
 
-      console.log("Getting user's team...");
-      const { data: teamMember, error: teamError } = await supabase
+      console.log("Getting user's team membership...");
+      const { data: teamMemberships, error: teamError } = await supabase
         .from('team_members')
-        .select('team_id')
-        .eq('user_id', user.id)
-        .single();
+        .select('team_id, teams(name)')
+        .eq('user_id', user.id);
 
       if (teamError) {
-        console.error("Team fetch error:", teamError);
-        toast.error("Error fetching user's team. Please try again.");
+        console.error("Team membership fetch error:", teamError);
+        toast.error(`Error fetching team membership: ${teamError.message}`);
         return;
       }
 
-      if (!teamMember?.team_id) {
-        console.error("No team_id found for user");
-        toast.error("You must be part of a team to create reports");
+      if (!teamMemberships || teamMemberships.length === 0) {
+        console.error("No team memberships found for user");
+        toast.error("You must be part of a team to create reports. Please join a team first.");
         return;
       }
+
+      const teamMember = teamMemberships[0];
+      console.log("Found team membership:", teamMember);
 
       const reportData = {
         hunt_type_id: data.hunt_type_id,
