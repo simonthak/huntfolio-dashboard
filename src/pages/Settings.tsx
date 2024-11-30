@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -18,22 +17,21 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-const formSchema = z.object({
+const emailFormSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters").optional(),
-  confirmPassword: z.string().optional(),
-}).refine((data) => {
-  if (data.password && data.password !== data.confirmPassword) {
-    return false;
-  }
-  return true;
-}, {
+});
+
+const passwordFormSchema = z.object({
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
 });
 
 const Settings = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch current user settings
@@ -53,11 +51,18 @@ const Settings = () => {
     },
   });
 
-  // Form for email and password
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  // Form for email
+  const emailForm = useForm<z.infer<typeof emailFormSchema>>({
+    resolver: zodResolver(emailFormSchema),
     defaultValues: {
       email: "",
+    },
+  });
+
+  // Form for password
+  const passwordForm = useForm<z.infer<typeof passwordFormSchema>>({
+    resolver: zodResolver(passwordFormSchema),
+    defaultValues: {
       password: "",
       confirmPassword: "",
     },
@@ -83,35 +88,41 @@ const Settings = () => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onEmailSubmit = async (values: z.infer<typeof emailFormSchema>) => {
     try {
-      setIsLoading(true);
+      setIsEmailLoading(true);
+      const { error } = await supabase.auth.updateUser({
+        email: values.email,
+      });
       
-      // Update email if changed
-      if (values.email) {
-        const { error: emailError } = await supabase.auth.updateUser({
-          email: values.email,
-        });
-        
-        if (emailError) throw emailError;
-      }
+      if (error) throw error;
 
-      // Update password if provided
-      if (values.password) {
-        const { error: passwordError } = await supabase.auth.updateUser({
-          password: values.password,
-        });
-
-        if (passwordError) throw passwordError;
-      }
-
-      toast.success("Settings updated successfully");
-      form.reset();
+      toast.success("Email update request sent. Please check your inbox.");
+      emailForm.reset();
     } catch (error: any) {
-      console.error("Error updating settings:", error);
-      toast.error(error.message || "Failed to update settings");
+      console.error("Error updating email:", error);
+      toast.error(error.message || "Failed to update email");
     } finally {
-      setIsLoading(false);
+      setIsEmailLoading(false);
+    }
+  };
+
+  const onPasswordSubmit = async (values: z.infer<typeof passwordFormSchema>) => {
+    try {
+      setIsPasswordLoading(true);
+      const { error } = await supabase.auth.updateUser({
+        password: values.password,
+      });
+
+      if (error) throw error;
+
+      toast.success("Password updated successfully");
+      passwordForm.reset();
+    } catch (error: any) {
+      console.error("Error updating password:", error);
+      toast.error(error.message || "Failed to update password");
+    } finally {
+      setIsPasswordLoading(false);
     }
   };
 
@@ -120,17 +131,17 @@ const Settings = () => {
       <div>
         <h2 className="text-2xl font-bold mb-4">Settings</h2>
         <div className="space-y-8">
-          {/* Email & Password Form */}
+          {/* Email Form */}
           <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-4">Update Email & Password</h3>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <h3 className="text-lg font-semibold mb-4">Update Email Address</h3>
+            <Form {...emailForm}>
+              <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4">
                 <FormField
-                  control={form.control}
+                  control={emailForm.control}
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>New Email</FormLabel>
                       <FormControl>
                         <Input placeholder="New email address" {...field} />
                       </FormControl>
@@ -139,8 +150,20 @@ const Settings = () => {
                   )}
                 />
 
+                <Button type="submit" disabled={isEmailLoading} className="bg-[#13B67F] hover:bg-[#0ea16f]">
+                  {isEmailLoading ? "Updating..." : "Update Email"}
+                </Button>
+              </form>
+            </Form>
+          </div>
+
+          {/* Password Form */}
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-semibold mb-4">Change Password</h3>
+            <Form {...passwordForm}>
+              <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
                 <FormField
-                  control={form.control}
+                  control={passwordForm.control}
                   name="password"
                   render={({ field }) => (
                     <FormItem>
@@ -154,7 +177,7 @@ const Settings = () => {
                 />
 
                 <FormField
-                  control={form.control}
+                  control={passwordForm.control}
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
@@ -167,8 +190,8 @@ const Settings = () => {
                   )}
                 />
 
-                <Button type="submit" disabled={isLoading} className="bg-[#13B67F] hover:bg-[#0ea16f]">
-                  {isLoading ? "Updating..." : "Update"}
+                <Button type="submit" disabled={isPasswordLoading} className="bg-[#13B67F] hover:bg-[#0ea16f]">
+                  {isPasswordLoading ? "Updating..." : "Update Password"}
                 </Button>
               </form>
             </Form>
