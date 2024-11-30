@@ -26,12 +26,10 @@ const NavigationMenu = () => {
   return (
     <>
       {menuItems.map((item) => {
-        // Only add team parameter if we're not on profile or settings pages
-        const to = item.path === '/profile' || item.path === '/settings'
-          ? item.path 
-          : currentTeam 
-            ? `${item.path}?team=${currentTeam}`
-            : item.path;
+        // Always include team parameter if it exists
+        const to = currentTeam 
+          ? `${item.path}?team=${currentTeam}`
+          : item.path;
 
         return (
           <Link
