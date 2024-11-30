@@ -5,7 +5,13 @@ import { toast } from "sonner";
 import Sidebar from "./Sidebar";
 
 // Pages that don't require automatic team selection
-const TEAM_OPTIONAL_ROUTES = ['/profile', '/settings', '/no-team', '/login'];
+const TEAM_OPTIONAL_ROUTES = [
+  '/profile', 
+  '/settings', 
+  '/no-team', 
+  '/login',
+  '/notifications'
+];
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
