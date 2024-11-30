@@ -11,6 +11,7 @@ import Profile from "./pages/Profile";
 import Reports from "./pages/Reports";
 import NoTeam from "./pages/NoTeam";
 import Team from "./pages/Team";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => {
             <Route path="/profile" element={<Layout><Profile /></Layout>} />
             <Route path="/reports" element={<Layout><Reports /></Layout>} />
             <Route path="/team" element={<Layout><Team /></Layout>} />
+            <Route path="/settings" element={<Layout><Settings /></Layout>} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
