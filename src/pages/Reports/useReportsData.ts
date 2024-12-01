@@ -29,8 +29,12 @@ export const useReportsData = (currentTeamId: string | null) => {
       const { data, error } = await supabase
         .from("hunting_reports")
         .select(`
-          *,
-          hunt_type:hunt_types(name),
+          id,
+          date,
+          participant_count,
+          description,
+          created_by,
+          hunt_type:hunt_types(id, name),
           created_by_profile:profiles!hunting_reports_created_by_fkey(
             firstname,
             lastname

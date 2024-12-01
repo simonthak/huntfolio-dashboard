@@ -58,7 +58,7 @@ const ReportsTable = ({
                   onClick={() => onView(report)}
                 >
                   <TableCell>{format(new Date(report.date), "MMM d, yyyy")}</TableCell>
-                  <TableCell>{report.hunt_type.name}</TableCell>
+                  <TableCell>{report.hunt_type?.name || "Unknown"}</TableCell>
                   <TableCell>
                     {report.report_animals.map((animal, index) => (
                       <div key={index}>
