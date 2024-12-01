@@ -48,7 +48,6 @@ const Login = () => {
               }
             }
           }}
-          providers={["google"]}
           redirectTo={`${window.location.origin}/`}
         />
       </Card>

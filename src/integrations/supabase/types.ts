@@ -56,6 +56,30 @@ export type Database = {
         }
         Relationships: []
       }
+      email_notification_history: {
+        Row: {
+          id: string
+          notification_type: string
+          sent_at: string
+          sent_date: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          notification_type: string
+          sent_at?: string
+          sent_date?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          notification_type?: string
+          sent_at?: string
+          sent_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       event_participants: {
         Row: {
           event_id: string
