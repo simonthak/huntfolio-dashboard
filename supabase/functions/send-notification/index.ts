@@ -24,21 +24,24 @@ interface EmailRequest {
 const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
 async function getUserEmail(userId: string): Promise<string | null> {
+  console.log("Fetching email for user:", userId);
   const { data: profile, error } = await supabase
     .from("profiles")
     .select("email")
     .eq("id", userId)
     .single();
 
-  if (error || !profile?.email) {
+  if (error) {
     console.error("Error fetching user email:", error);
     return null;
   }
 
-  return profile.email;
+  console.log("Found email:", profile?.email);
+  return profile?.email;
 }
 
 async function logEmailNotification(userId: string, type: string) {
+  console.log("Logging email notification:", { userId, type });
   const { error } = await supabase
     .from("email_notification_history")
     .insert({ user_id: userId, notification_type: type });
@@ -49,6 +52,13 @@ async function logEmailNotification(userId: string, type: string) {
 }
 
 async function sendEmail(to: string, subject: string, html: string) {
+  console.log("Sending email:", { to, subject });
+  
+  if (!RESEND_API_KEY) {
+    console.error("RESEND_API_KEY is not set");
+    throw new Error("RESEND_API_KEY is not set");
+  }
+
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -65,23 +75,28 @@ async function sendEmail(to: string, subject: string, html: string) {
 
   if (!res.ok) {
     const error = await res.text();
+    console.error("Resend API error:", error);
     throw new Error(`Failed to send email: ${error}`);
   }
 
+  console.log("Email sent successfully");
   return await res.json();
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log("Received request:", req.method);
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { userId, type, data }: EmailRequest = await req.json();
-    console.log("Received email request:", { userId, type, data });
+    console.log("Processing notification request:", { userId, type, data });
 
     const userEmail = await getUserEmail(userId);
     if (!userEmail) {
+      console.error("User email not found");
       throw new Error("User email not found");
     }
 
@@ -166,6 +181,7 @@ const handler = async (req: Request): Promise<Response> => {
         throw new Error(`Unknown notification type: ${type}`);
     }
 
+    console.log("Sending email with:", { subject, userEmail });
     const result = await sendEmail(userEmail, subject, html);
     await logEmailNotification(userId, type);
 

@@ -9,8 +9,8 @@ export const useNotifications = () => {
     }
   ) => {
     try {
-      console.log("Sending notification:", { userId, type, data });
-      const response = await fetch("/functions/v1/send-notification", {
+      console.log("Starting notification process:", { userId, type, data });
+      const response = await fetch("/api/functions/v1/send-notification", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -24,6 +24,7 @@ export const useNotifications = () => {
 
       if (!response.ok) {
         const error = await response.text();
+        console.error("Failed to send notification:", error);
         throw new Error(`Failed to send notification: ${error}`);
       }
 
