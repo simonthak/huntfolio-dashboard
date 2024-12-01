@@ -70,10 +70,8 @@ const CreateTeamDialog = () => {
       // Close the dialog first
       setIsOpen(false);
       
-      // Small delay to ensure state updates are processed
-      setTimeout(() => {
-        navigate("/");
-      }, 100);
+      // Navigate to the index page with the new team selected
+      navigate(`/?team=${team.id}`);
       
     } catch (error: any) {
       console.error("Error creating team:", error);
