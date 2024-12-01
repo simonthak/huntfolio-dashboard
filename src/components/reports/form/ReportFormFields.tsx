@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import HuntTypeSelector from "./HuntTypeSelector";
 import AnimalEntriesList from "./AnimalEntriesList";
+import { useAnimalTypes } from "@/hooks/useAnimalTypes";
 
 interface ReportFormFieldsProps {
   initialData?: {
@@ -49,52 +50,9 @@ const ReportFormFields = ({ onChange, initialData }: ReportFormFieldsProps) => {
     quantity: number;
   }>>(initialData?.animals || []);
   
-  const [animalTypes, setAnimalTypes] = useState<any[]>([]);
-  const [animalSubtypes, setAnimalSubtypes] = useState<Record<number, any[]>>({});
-
-  useEffect(() => {
-    const fetchAnimalTypes = async () => {
-      const { data, error } = await supabase
-        .from('animal_types')
-        .select('*')
-        .order('name');
-      
-      if (error) {
-        console.error('Error fetching animal types:', error);
-        toast.error('Failed to load animal types');
-        return;
-      }
-      setAnimalTypes(data);
-    };
-
-    const fetchAnimalSubtypes = async () => {
-      const { data, error } = await supabase
-        .from('animal_subtypes')
-        .select('*')
-        .order('name');
-      
-      if (error) {
-        console.error('Error fetching animal subtypes:', error);
-        toast.error('Failed to load animal subtypes');
-        return;
-      }
-
-      const subtypesByType = data.reduce((acc: Record<number, any[]>, subtype) => {
-        if (subtype.animal_type_id) {
-          acc[subtype.animal_type_id] = [
-            ...(acc[subtype.animal_type_id] || []),
-            subtype
-          ];
-        }
-        return acc;
-      }, {});
-
-      setAnimalSubtypes(subtypesByType);
-    };
-
-    fetchAnimalTypes();
-    fetchAnimalSubtypes();
-  }, []);
+  const { data: animalData, isLoading: isLoadingAnimals } = useAnimalTypes();
+  const animalTypes = animalData?.types || [];
+  const animalSubtypes = animalData?.subtypesByType || {};
 
   useEffect(() => {
     onChange({
@@ -119,6 +77,14 @@ const ReportFormFields = ({ onChange, initialData }: ReportFormFieldsProps) => {
     newAnimals[index] = data;
     setAnimals(newAnimals);
   };
+
+  if (isLoadingAnimals) {
+    return <div className="space-y-4">
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-32 w-full" />
+    </div>;
+  }
 
   return (
     <div className="space-y-4">

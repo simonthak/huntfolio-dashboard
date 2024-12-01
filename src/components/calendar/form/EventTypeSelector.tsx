@@ -1,12 +1,7 @@
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-
-interface HuntType {
-  id: number;
-  name: string;
-}
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useHuntTypes } from "@/hooks/useHuntTypes";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface EventTypeSelectorProps {
   value: number;
@@ -14,37 +9,35 @@ interface EventTypeSelectorProps {
 }
 
 const EventTypeSelector = ({ value, onChange }: EventTypeSelectorProps) => {
-  const { data: huntTypes = [] } = useQuery({
-    queryKey: ["hunt-types"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("hunt_types")
-        .select("*")
-        .order("name");
+  const { data: huntTypes, isLoading } = useHuntTypes();
 
-      if (error) throw error;
-      return data as HuntType[];
-    },
-  });
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        <Label>Hunt Type</Label>
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2">
       <Label>Hunt Type</Label>
-      <RadioGroup 
-        value={value?.toString()} 
-        onValueChange={(value) => {
-          console.log("Selected hunt type:", value);
-          onChange(parseInt(value));
-        }}
-        className="flex flex-wrap gap-4"
+      <Select 
+        value={value ? value.toString() : ""} 
+        onValueChange={(value) => onChange(parseInt(value))}
       >
-        {huntTypes.map((huntType) => (
-          <div key={huntType.id} className="flex items-center space-x-2">
-            <RadioGroupItem value={huntType.id.toString()} id={huntType.id.toString()} />
-            <Label htmlFor={huntType.id.toString()}>{huntType.name}</Label>
-          </div>
-        ))}
-      </RadioGroup>
+        <SelectTrigger>
+          <SelectValue placeholder="Select hunt type" />
+        </SelectTrigger>
+        <SelectContent>
+          {huntTypes?.map((type) => (
+            <SelectItem key={type.id} value={type.id.toString()}>
+              {type.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 };

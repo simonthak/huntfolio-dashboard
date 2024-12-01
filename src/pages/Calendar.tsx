@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import CreateEventDialog from "@/components/calendar/CreateEventDialog";
 import EventsList from "@/components/calendar/EventsList";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, isBefore, startOfDay } from "date-fns";
@@ -14,6 +14,7 @@ import { Users } from "lucide-react";
 import { Event } from "@/components/calendar/types";
 
 const Calendar = () => {
+  const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -28,6 +29,22 @@ const Calendar = () => {
     };
     getCurrentUser();
   }, []);
+
+  // Prefetch hunt types when calendar loads
+  useEffect(() => {
+    queryClient.prefetchQuery({
+      queryKey: ["hunt-types"],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from("hunt_types")
+          .select("*")
+          .order("name");
+        
+        if (error) throw error;
+        return data;
+      },
+    });
+  }, [queryClient]);
 
   const { data: events = [], refetch: refetchEvents, isError } = useQuery({
     queryKey: ["events", currentTeamId],
