@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import HuntTypeSelector from "./HuntTypeSelector";
 import AnimalEntriesList from "./AnimalEntriesList";
 import { useAnimalTypes } from "@/hooks/useAnimalTypes";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ReportFormFieldsProps {
   initialData?: {
@@ -156,3 +157,4 @@ const ReportFormFields = ({ onChange, initialData }: ReportFormFieldsProps) => {
 };
 
 export default ReportFormFields;
+
