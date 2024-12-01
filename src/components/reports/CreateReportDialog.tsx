@@ -53,7 +53,8 @@ const CreateReportDialog = ({ open, onOpenChange, onReportCreated }: CreateRepor
             name
           )
         `)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .single();  // Changed from maybeSingle to single to ensure we get an error if no team found
 
       if (teamError) {
         console.error("Team membership fetch error:", teamError);
@@ -61,20 +62,13 @@ const CreateReportDialog = ({ open, onOpenChange, onReportCreated }: CreateRepor
         return;
       }
 
-      if (!teamMemberships || teamMemberships.length === 0) {
-        console.error("No team memberships found for user:", user.id);
+      if (!teamMemberships || !teamMemberships.team_id) {
+        console.error("No team membership found for user:", user.id);
         toast.error("You must be part of a team to create reports. Please join a team first.");
         return;
       }
 
-      const teamMember = teamMemberships[0];
-      console.log("Found team membership:", JSON.stringify(teamMember, null, 2));
-
-      if (!teamMember.team_id) {
-        console.error("Invalid team membership data:", teamMember);
-        toast.error("Invalid team data. Please try rejoining your team.");
-        return;
-      }
+      console.log("Found team membership:", JSON.stringify(teamMemberships, null, 2));
 
       const reportData = {
         hunt_type_id: data.hunt_type_id,
@@ -82,7 +76,7 @@ const CreateReportDialog = ({ open, onOpenChange, onReportCreated }: CreateRepor
         participant_count: data.participant_count,
         description: data.description,
         created_by: user.id,
-        team_id: teamMember.team_id
+        team_id: teamMemberships.team_id
       };
 
       console.log("Creating report with data:", reportData);
@@ -103,6 +97,8 @@ const CreateReportDialog = ({ open, onOpenChange, onReportCreated }: CreateRepor
         toast.error("Error creating report: No data returned");
         return;
       }
+
+      console.log("Created report:", createdReport);
 
       if (data.animals.length > 0) {
         console.log("Adding animals to report:", createdReport.id);
