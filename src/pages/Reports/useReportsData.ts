@@ -44,6 +44,14 @@ export const useReportsData = (currentTeamId: string | null) => {
         return [];
       }
 
+      // Let's add a debug query to check if there are any reports at all for this team
+      const { count, error: countError } = await supabase
+        .from("hunting_reports")
+        .select('*', { count: 'exact', head: true })
+        .eq('team_id', currentTeamId);
+        
+      console.log(`Found ${count} reports for team ${currentTeamId}`);
+
       const { data, error } = await supabase
         .from("hunting_reports")
         .select(`
@@ -52,6 +60,7 @@ export const useReportsData = (currentTeamId: string | null) => {
           participant_count,
           description,
           created_by,
+          team_id,
           hunt_type:hunt_types(id, name),
           created_by_profile:profiles!hunting_reports_created_by_fkey(
             firstname,
@@ -72,6 +81,16 @@ export const useReportsData = (currentTeamId: string | null) => {
       }
 
       console.log("Successfully fetched reports for team:", currentTeamId, data);
+      
+      // Add debug information about the returned data
+      if (data && data.length === 0) {
+        console.log("No reports found. Query parameters:", {
+          team_id: currentTeamId,
+          user_id: user.id,
+          teamMembership
+        });
+      }
+
       return data as Report[];
     },
     meta: {
