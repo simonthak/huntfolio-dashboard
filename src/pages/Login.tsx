@@ -42,12 +42,13 @@ const Login = () => {
             variables: {
               default: {
                 colors: {
-                  brand: '#166534',
-                  brandAccent: '#15803d',
+                  brand: '#13B67F',
+                  brandAccent: '#0ea16f',
                 }
               }
             }
           }}
+          providers={[]}
           redirectTo={`${window.location.origin}/`}
         />
       </Card>
