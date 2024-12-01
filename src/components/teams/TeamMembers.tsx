@@ -19,6 +19,7 @@ interface TeamMembersProps {
       firstname: string | null;
       lastname: string | null;
       email: string | null;
+      phone_number: string | null;
     };
   }[];
 }
@@ -38,6 +39,7 @@ const TeamMembers = ({ members }: TeamMembersProps) => {
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
+            <TableHead>Phone</TableHead>
             <TableHead>Role</TableHead>
             <TableHead>Joined</TableHead>
           </TableRow>
@@ -49,6 +51,7 @@ const TeamMembers = ({ members }: TeamMembersProps) => {
                 {member.profiles.firstname} {member.profiles.lastname}
               </TableCell>
               <TableCell>{member.profiles.email}</TableCell>
+              <TableCell>{member.profiles.phone_number || '-'}</TableCell>
               <TableCell className="capitalize">{member.role}</TableCell>
               <TableCell>
                 {new Date(member.joined_at).toLocaleDateString()}

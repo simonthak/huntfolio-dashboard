@@ -57,7 +57,8 @@ const Team = () => {
           profiles (
             firstname,
             lastname,
-            email
+            email,
+            phone_number
           )
         `)
         .eq('team_id', currentTeamId);
