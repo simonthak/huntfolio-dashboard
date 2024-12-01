@@ -121,14 +121,13 @@ export const useCreateReport = (onSuccess: () => void) => {
         }
       }
 
-      // Call onSuccess immediately
+      // Call onSuccess and show success message immediately
       onSuccess();
       toast.success("Report created successfully");
 
       // Send notifications asynchronously
       const sendNotifications = async () => {
         try {
-          // Get team members to notify
           console.log("Fetching team members for notifications...");
           const { data: teamMembers, error: teamMembersError } = await supabase
             .from('team_members')
@@ -159,11 +158,12 @@ export const useCreateReport = (onSuccess: () => void) => {
           console.log("All notifications sent successfully");
         } catch (error) {
           console.error("Error sending notifications:", error);
+          // Don't show error toast to user since the report was created successfully
         }
       };
 
       // Fire and forget notifications
-      sendNotifications();
+      sendNotifications().catch(console.error);
 
     } catch (error) {
       console.error("Detailed error in report creation process:", error);
