@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface CreateReportData {
   hunt_type_id: number;
@@ -19,6 +20,7 @@ export const useCreateReport = (onSuccess: () => void) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchParams] = useSearchParams();
   const currentTeamId = searchParams.get('team');
+  const { sendNotification } = useNotifications();
 
   const createReport = async (data: CreateReportData) => {
     setIsSubmitting(true);
@@ -116,6 +118,37 @@ export const useCreateReport = (onSuccess: () => void) => {
           console.error("Animals creation error:", animalsError);
           toast.error("Report created but failed to add animals");
           return;
+        }
+      }
+
+      // Get team members to notify
+      console.log("Fetching team members for notifications...");
+      const { data: teamMembers, error: teamMembersError } = await supabase
+        .from('team_members')
+        .select('user_id')
+        .eq('team_id', currentTeamId);
+
+      if (teamMembersError) {
+        console.error("Error fetching team members:", teamMembersError);
+      } else if (teamMembers) {
+        // Send notifications to all team members except the creator
+        console.log("Sending notifications to team members...");
+        for (const member of teamMembers) {
+          if (member.user_id !== user.id) {
+            try {
+              await sendNotification(
+                member.user_id,
+                "report_created",
+                {
+                  reportId: createdReport.id,
+                  teamId: currentTeamId
+                }
+              );
+              console.log("Notification sent to user:", member.user_id);
+            } catch (error) {
+              console.error("Error sending notification to user:", member.user_id, error);
+            }
+          }
         }
       }
 
