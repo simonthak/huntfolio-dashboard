@@ -4,10 +4,79 @@ import { Users, Calendar, Target, Trophy } from "lucide-react";
 import GameChart from "@/components/dashboard/GameChart";
 import SpeciesChart from "@/components/dashboard/SpeciesChart";
 import UpcomingHunts from "@/components/dashboard/UpcomingHunts";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { startOfYear, endOfYear } from "date-fns";
 
 const Index = () => {
   const [searchParams] = useSearchParams();
   const currentTeamId = searchParams.get('team');
+
+  const { data: stats = { huntingDays: 0, totalGame: 0, successRate: 0, teamMembers: 0 }, isLoading } = useQuery({
+    queryKey: ["dashboard-stats", currentTeamId],
+    enabled: !!currentTeamId,
+    queryFn: async () => {
+      console.log("Fetching dashboard stats for team:", currentTeamId);
+      
+      // Get current hunting season dates
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      const seasonStart = new Date(today.getMonth() < 6 ? currentYear - 1 : currentYear, 6, 1); // July 1st
+      const seasonEnd = new Date(today.getMonth() < 6 ? currentYear : currentYear + 1, 5, 30); // June 30th
+
+      // Fetch hunting reports for the season
+      const { data: reports, error: reportsError } = await supabase
+        .from("hunting_reports")
+        .select(`
+          date,
+          report_animals (
+            quantity
+          )
+        `)
+        .eq('team_id', currentTeamId)
+        .gte('date', seasonStart.toISOString())
+        .lte('date', seasonEnd.toISOString());
+
+      if (reportsError) {
+        console.error("Error fetching reports:", reportsError);
+        throw reportsError;
+      }
+
+      // Fetch team members count
+      const { count: teamMembers, error: membersError } = await supabase
+        .from('team_members')
+        .select('*', { count: 'exact', head: true })
+        .eq('team_id', currentTeamId);
+
+      if (membersError) {
+        console.error("Error fetching team members:", membersError);
+        throw membersError;
+      }
+
+      // Calculate statistics
+      const uniqueDates = new Set(reports.map(r => r.date));
+      const huntingDays = uniqueDates.size;
+
+      const totalGame = reports.reduce((sum, report) => 
+        sum + report.report_animals.reduce((animalSum, animal) => animalSum + animal.quantity, 0)
+      , 0);
+
+      const reportsWithGame = reports.filter(report => 
+        report.report_animals.some(animal => animal.quantity > 0)
+      ).length;
+
+      const successRate = reports.length > 0 
+        ? Math.round((reportsWithGame / reports.length) * 100) 
+        : 0;
+
+      return {
+        huntingDays,
+        totalGame,
+        successRate,
+        teamMembers: teamMembers || 0
+      };
+    }
+  });
 
   if (!currentTeamId) {
     return (
@@ -18,11 +87,31 @@ const Index = () => {
     );
   }
 
-  const stats = [
-    { label: "Active Teams", value: "12", icon: Users, change: "+2" },
-    { label: "Upcoming Hunts", value: "8", icon: Calendar, change: "+3" },
-    { label: "Success Rate", value: "76%", icon: Target, change: "+5%" },
-    { label: "Season Trophies", value: "23", icon: Trophy, change: "+2" },
+  const dashboardStats = [
+    { 
+      label: "Team Members", 
+      value: stats.teamMembers.toString(), 
+      icon: Users, 
+      change: null 
+    },
+    { 
+      label: "Hunting Days", 
+      value: stats.huntingDays.toString(), 
+      icon: Calendar, 
+      change: null 
+    },
+    { 
+      label: "Success Rate", 
+      value: `${stats.successRate}%`, 
+      icon: Target, 
+      change: null 
+    },
+    { 
+      label: "Season Trophies", 
+      value: stats.totalGame.toString(), 
+      icon: Trophy, 
+      change: null 
+    },
   ];
 
   return (
@@ -33,7 +122,7 @@ const Index = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat) => (
+        {dashboardStats.map((stat) => (
           <Card key={stat.label} className="p-6">
             <div className="flex items-start justify-between">
               <div>
@@ -44,10 +133,12 @@ const Index = () => {
                 <stat.icon className="w-5 h-5 text-[#13B67F]" />
               </div>
             </div>
-            <div className="mt-4 flex items-center text-sm">
-              <span className="text-[#13B67F] font-medium">{stat.change}</span>
-              <span className="text-gray-500 ml-2">vs last month</span>
-            </div>
+            {stat.change && (
+              <div className="mt-4 flex items-center text-sm">
+                <span className="text-[#13B67F] font-medium">{stat.change}</span>
+                <span className="text-gray-500 ml-2">vs last month</span>
+              </div>
+            )}
           </Card>
         ))}
       </div>
