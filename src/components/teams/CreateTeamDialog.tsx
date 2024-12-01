@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +19,7 @@ const CreateTeamDialog = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const queryClient = useQueryClient();
 
   const handleSubmit = async (values: TeamFormValues) => {
     try {
@@ -66,6 +68,9 @@ const CreateTeamDialog = () => {
 
       console.log("Added creator as admin member");
       toast.success("Team created successfully");
+      
+      // Invalidate the teams query to refresh the dropdown
+      await queryClient.invalidateQueries({ queryKey: ["user-teams"] });
       
       // Close the dialog first
       setIsOpen(false);
