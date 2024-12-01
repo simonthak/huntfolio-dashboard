@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { startOfYear, endOfYear, format } from "date-fns";
 
 interface GameChartProps {
   teamId: string;
@@ -24,22 +25,41 @@ const GameChart = ({ teamId }: GameChartProps) => {
   const { data = [] } = useQuery({
     queryKey: ["game-chart", teamId],
     queryFn: async () => {
-      // TODO: Implement actual data fetching from hunting_reports
-      // This is currently using mock data
-      return [
-        { month: "Jan", count: 24 },
-        { month: "Feb", count: 18 },
-        { month: "Mar", count: 32 },
-        { month: "Apr", count: 45 },
-        { month: "May", count: 38 },
-        { month: "Jun", count: 29 },
-        { month: "Jul", count: 35 },
-        { month: "Aug", count: 42 },
-        { month: "Sep", count: 28 },
-        { month: "Oct", count: 33 },
-        { month: "Nov", count: 26 },
-        { month: "Dec", count: 21 },
-      ];
+      console.log("Fetching game chart data for team:", teamId);
+      const startDate = startOfYear(new Date());
+      const endDate = endOfYear(new Date());
+
+      const { data, error } = await supabase
+        .from("hunting_reports")
+        .select(`
+          date,
+          report_animals (
+            quantity
+          )
+        `)
+        .eq('team_id', teamId)
+        .gte('date', startDate.toISOString())
+        .lte('date', endDate.toISOString());
+
+      if (error) {
+        console.error("Error fetching game chart data:", error);
+        throw error;
+      }
+
+      // Group by month and sum quantities
+      const monthlyData = data.reduce((acc: Record<string, number>, report) => {
+        const month = format(new Date(report.date), 'MMM');
+        const totalQuantity = report.report_animals.reduce((sum, animal) => sum + animal.quantity, 0);
+        acc[month] = (acc[month] || 0) + totalQuantity;
+        return acc;
+      }, {});
+
+      // Convert to array format for chart
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return months.map(month => ({
+        month,
+        count: monthlyData[month] || 0
+      }));
     }
   });
 
