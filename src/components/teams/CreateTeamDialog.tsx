@@ -24,7 +24,7 @@ const CreateTeamDialog = () => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-[#13B67F] hover:bg-[#0ea16f]">
+        <Button className="w-full bg-[#13B67F] hover:bg-[#0ea16f]">
           <Plus className="w-4 h-4 mr-2" />
           Create Team
         </Button>

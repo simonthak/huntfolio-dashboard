@@ -20,8 +20,10 @@ const NoTeam = () => {
           </p>
         </div>
 
-        <div className="space-y-4">
-          <CreateTeamDialog />
+        <div className="grid grid-cols-1 gap-4">
+          <div className="w-full">
+            <CreateTeamDialog />
+          </div>
           
           <Button
             variant="outline"
