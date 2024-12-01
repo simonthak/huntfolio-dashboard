@@ -13,7 +13,7 @@ const corsHeaders = {
 
 interface EmailRequest {
   userId: string;
-  type: "event_reminder" | "new_team_member" | "report_created";
+  type: "event_reminder" | "event_created" | "report_created";
   data: {
     eventId?: string;
     teamId?: string;
@@ -108,20 +108,30 @@ const handler = async (req: Request): Promise<Response> => {
         `;
         break;
 
-      case "new_team_member":
-        if (!data.teamId) throw new Error("Team ID is required");
-        const { data: team } = await supabase
-          .from("teams")
-          .select("name")
-          .eq("id", data.teamId)
+      case "event_created":
+        if (!data.eventId) throw new Error("Event ID is required");
+        const { data: newEvent } = await supabase
+          .from("events")
+          .select(`
+            *,
+            hunt_type:hunt_types(name),
+            team:teams(name),
+            created_by_profile:profiles!events_created_by_fkey(firstname, lastname)
+          `)
+          .eq("id", data.eventId)
           .single();
 
-        if (!team) throw new Error("Team not found");
+        if (!newEvent) throw new Error("Event not found");
 
-        subject = `Welcome to ${team.name}`;
+        subject = `New Hunt Event Created - ${newEvent.hunt_type.name}`;
         html = `
-          <h2>Welcome to ${team.name}</h2>
-          <p>You have been added to the team. You can now access all team features and participate in hunts.</p>
+          <h2>New Hunt Event Created</h2>
+          <p>A new hunt has been scheduled for ${newEvent.date}.</p>
+          <p><strong>Type:</strong> ${newEvent.hunt_type.name}</p>
+          <p><strong>Team:</strong> ${newEvent.team.name}</p>
+          <p><strong>Created by:</strong> ${newEvent.created_by_profile.firstname} ${newEvent.created_by_profile.lastname}</p>
+          ${newEvent.description ? `<p><strong>Description:</strong> ${newEvent.description}</p>` : ''}
+          <p><strong>Participant Limit:</strong> ${newEvent.participant_limit}</p>
         `;
         break;
 

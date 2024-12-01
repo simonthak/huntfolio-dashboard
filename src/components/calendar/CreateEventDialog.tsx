@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import EventForm from "./form/EventForm";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface CreateEventDialogProps {
   open: boolean;
@@ -17,6 +18,7 @@ const CreateEventDialog = ({ open, onOpenChange, selectedDate, onEventCreated }:
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchParams] = useSearchParams();
   const currentTeamId = searchParams.get('team');
+  const { sendNotification } = useNotifications();
 
   const handleSubmit = async (data: {
     hunt_type_id: number;
@@ -90,6 +92,30 @@ const CreateEventDialog = ({ open, onOpenChange, selectedDate, onEventCreated }:
       }
 
       console.log("Event created successfully:", createdEvent);
+
+      // Get team members to notify
+      const { data: teamMembers, error: membersError } = await supabase
+        .from('team_members')
+        .select('user_id')
+        .eq('team_id', currentTeamId);
+
+      if (membersError) {
+        console.error("Error fetching team members:", membersError);
+      } else {
+        // Send notifications to all team members
+        console.log("Sending notifications to team members...");
+        for (const member of teamMembers) {
+          if (member.user_id !== user.id) { // Don't notify the creator
+            try {
+              await sendNotification(member.user_id, "event_created", {
+                eventId: createdEvent.id
+              });
+            } catch (error) {
+              console.error("Error sending notification to user:", member.user_id, error);
+            }
+          }
+        }
+      }
 
       console.log("Adding creator as participant...");
       const { error: participantError } = await supabase
