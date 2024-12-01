@@ -53,7 +53,7 @@ export const useReportsData = (currentTeamId: string | null) => {
         throw error;
       }
 
-      console.log("Successfully fetched reports:", data);
+      console.log("Successfully fetched reports for team:", currentTeamId, data);
       return data as Report[];
     },
     meta: {
