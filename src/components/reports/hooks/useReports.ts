@@ -37,12 +37,12 @@ export const useReports = () => {
         throw new Error("Failed to fetch team membership");
       }
 
-      if (!teamMember) {
+      if (!teamMember?.team_id) {
         console.log("No team membership found for user:", user.id);
         return [];
       }
 
-      console.log("Found team membership:", JSON.stringify(teamMember, null, 2));
+      console.log("Found team membership:", teamMember);
       
       const { data, error } = await supabase
         .from("hunting_reports")
@@ -67,7 +67,7 @@ export const useReports = () => {
         throw error;
       }
 
-      console.log("Successfully fetched reports:", data);
+      console.log("Successfully fetched reports for team:", teamMember.team_id, data);
       return data as Report[];
     },
   });

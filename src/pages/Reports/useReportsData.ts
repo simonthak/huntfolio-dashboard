@@ -26,6 +26,24 @@ export const useReportsData = (currentTeamId: string | null) => {
         throw new Error("Not authenticated");
       }
 
+      // First verify the user is a member of this team
+      const { data: teamMembership, error: teamError } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('team_id', currentTeamId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (teamError) {
+        console.error("Error checking team membership:", teamError);
+        throw new Error("Failed to verify team membership");
+      }
+
+      if (!teamMembership) {
+        console.error("User is not a member of this team");
+        return [];
+      }
+
       const { data, error } = await supabase
         .from("hunting_reports")
         .select(`
