@@ -14,18 +14,40 @@ const NotificationSettings = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('No session');
 
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('user_settings')
         .select('*')
         .eq('user_id', session.user.id)
         .single();
 
       if (error) {
-        console.error("Error fetching user settings:", error);
-        throw error;
+        if (error.code === 'PGRST116') {
+          // Settings don't exist yet, create them
+          console.log("No settings found, creating default settings...");
+          const { data: newSettings, error: insertError } = await supabase
+            .from('user_settings')
+            .insert([
+              { 
+                user_id: session.user.id,
+                email_notifications: true 
+              }
+            ])
+            .select()
+            .single();
+
+          if (insertError) {
+            console.error("Error creating user settings:", insertError);
+            throw insertError;
+          }
+
+          data = newSettings;
+        } else {
+          console.error("Error fetching user settings:", error);
+          throw error;
+        }
       }
       
-      console.log("User settings fetched:", data);
+      console.log("User settings:", data);
       return data;
     },
   });
@@ -39,7 +61,8 @@ const NotificationSettings = () => {
 
       const { error } = await supabase
         .from('user_settings')
-        .update({ 
+        .upsert({ 
+          user_id: session.user.id,
           email_notifications: enabled,
           updated_at: new Date().toISOString()
         })
@@ -83,7 +106,7 @@ const NotificationSettings = () => {
           </p>
         </div>
         <Switch
-          checked={settings?.email_notifications || false}
+          checked={settings?.email_notifications ?? false}
           onCheckedChange={(checked) => {
             console.log("Toggle switch clicked, new value:", checked);
             updateNotificationsMutation.mutate(checked);
