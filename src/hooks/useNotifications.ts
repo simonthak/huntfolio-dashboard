@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+
 export const useNotifications = () => {
   const sendNotification = async (
     userId: string,
@@ -10,26 +12,22 @@ export const useNotifications = () => {
   ) => {
     try {
       console.log("Starting notification process:", { userId, type, data });
-      const response = await fetch("/functions/send-notification", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      
+      const { data: response, error } = await supabase.functions.invoke('send-notification', {
+        body: {
           userId,
           type,
           data,
-        }),
+        }
       });
 
-      if (!response.ok) {
-        const error = await response.text();
+      if (error) {
         console.error("Failed to send notification:", error);
-        throw new Error(`Failed to send notification: ${error}`);
+        throw new Error(`Failed to send notification: ${error.message}`);
       }
 
       console.log("Notification sent successfully");
-      return await response.json();
+      return response;
     } catch (error) {
       console.error("Error sending notification:", error);
       throw error;
