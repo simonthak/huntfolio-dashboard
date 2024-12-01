@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -12,6 +13,8 @@ interface CreateReportDialogProps {
 
 const CreateReportDialog = ({ open, onOpenChange, onReportCreated }: CreateReportDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchParams] = useSearchParams();
+  const currentTeamId = searchParams.get('team');
 
   const handleSubmit = async (data: {
     hunt_type_id: number;
@@ -43,32 +46,33 @@ const CreateReportDialog = ({ open, onOpenChange, onReportCreated }: CreateRepor
         return;
       }
 
+      if (!currentTeamId) {
+        console.error("No team selected");
+        toast.error("Please select a team before creating a report");
+        return;
+      }
+
       console.log("Getting user's team membership...");
-      const { data: teamMemberships, error: teamError } = await supabase
+      const { data: teamMembership, error: teamError } = await supabase
         .from('team_members')
-        .select(`
-          team_id,
-          teams (
-            id,
-            name
-          )
-        `)
+        .select('team_id')
         .eq('user_id', user.id)
-        .single();  // Changed from maybeSingle to single to ensure we get an error if no team found
+        .eq('team_id', currentTeamId)
+        .single();
 
       if (teamError) {
         console.error("Team membership fetch error:", teamError);
-        toast.error(`Error fetching team membership: ${teamError.message}`);
+        toast.error("You must be a member of this team to create reports");
         return;
       }
 
-      if (!teamMemberships || !teamMemberships.team_id) {
+      if (!teamMembership) {
         console.error("No team membership found for user:", user.id);
-        toast.error("You must be part of a team to create reports. Please join a team first.");
+        toast.error("You must be part of this team to create reports");
         return;
       }
 
-      console.log("Found team membership:", JSON.stringify(teamMemberships, null, 2));
+      console.log("Found team membership:", JSON.stringify(teamMembership, null, 2));
 
       const reportData = {
         hunt_type_id: data.hunt_type_id,
@@ -76,7 +80,7 @@ const CreateReportDialog = ({ open, onOpenChange, onReportCreated }: CreateRepor
         participant_count: data.participant_count,
         description: data.description,
         created_by: user.id,
-        team_id: teamMemberships.team_id
+        team_id: currentTeamId
       };
 
       console.log("Creating report with data:", reportData);
