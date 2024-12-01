@@ -34,7 +34,14 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md p-8">
-        <h1 className="text-2xl font-bold text-center mb-8">Welcome to Project Antlers</h1>
+        <div className="flex flex-col items-center mb-8">
+          <img 
+            src="https://nlxlpxddixvieiwsxdbu.supabase.co/storage/v1/object/public/logos/symbol.svg?t=2024-12-01T17%3A04%3A25.353Z" 
+            alt="Antlers Logo" 
+            className="w-16 h-16 mb-4"
+          />
+          <h1 className="text-2xl font-bold text-center">Welcome to Antlers</h1>
+        </div>
         <Auth
           supabaseClient={supabase}
           appearance={{
