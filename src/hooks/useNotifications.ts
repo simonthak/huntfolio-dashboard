@@ -10,7 +10,7 @@ export const useNotifications = () => {
   ) => {
     try {
       console.log("Starting notification process:", { userId, type, data });
-      const response = await fetch("/api/functions/v1/send-notification", {
+      const response = await fetch("/functions/send-notification", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
