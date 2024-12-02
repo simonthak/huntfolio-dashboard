@@ -46,7 +46,6 @@ const DateField = ({ date, onDateChange }: DateFieldProps) => {
             selected={date}
             onSelect={onDateChange}
             initialFocus
-            onDayClick={handleCalendarClick}
           />
         </PopoverContent>
       </Popover>
