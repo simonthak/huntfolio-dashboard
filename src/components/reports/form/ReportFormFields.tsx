@@ -99,12 +99,14 @@ const ReportFormFields = ({ onChange, initialData }: ReportFormFieldsProps) => {
                 "w-full justify-start text-left font-normal",
                 !date && "text-muted-foreground"
               )}
+              type="button" // Add this to prevent form submission
+              onClick={(e) => e.stopPropagation()} // Add this to prevent event bubbling
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {date ? format(date, "PPP") : "Pick a date"}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
+          <PopoverContent className="w-auto p-0" onClick={(e) => e.stopPropagation()}>
             <Calendar
               mode="single"
               selected={date}
@@ -157,4 +159,3 @@ const ReportFormFields = ({ onChange, initialData }: ReportFormFieldsProps) => {
 };
 
 export default ReportFormFields;
-
