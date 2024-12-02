@@ -12,11 +12,6 @@ interface DateFieldProps {
 }
 
 const DateField = ({ date, onDateChange }: DateFieldProps) => {
-  const handleCalendarClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
   return (
     <div className="space-y-2">
       <Label>Date</Label>
@@ -29,18 +24,12 @@ const DateField = ({ date, onDateChange }: DateFieldProps) => {
               !date && "text-muted-foreground"
             )}
             type="button"
-            onClick={handleCalendarClick}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {date ? format(date, "PPP") : "Pick a date"}
           </Button>
         </PopoverTrigger>
-        <PopoverContent 
-          className="w-auto p-0" 
-          onClick={handleCalendarClick}
-          onMouseDown={handleCalendarClick}
-          onPointerDown={handleCalendarClick}
-        >
+        <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             mode="single"
             selected={date}
