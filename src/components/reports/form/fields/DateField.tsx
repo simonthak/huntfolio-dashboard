@@ -12,11 +12,6 @@ interface DateFieldProps {
 }
 
 const DateField = ({ date, onDateChange }: DateFieldProps) => {
-  const handleCalendarClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
   return (
     <div className="space-y-2">
       <Label>Date</Label>
@@ -37,8 +32,7 @@ const DateField = ({ date, onDateChange }: DateFieldProps) => {
         <PopoverContent 
           className="w-auto p-0" 
           align="start"
-          onClick={handleCalendarClick}
-          onMouseDown={handleCalendarClick}
+          onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <Calendar
             mode="single"
