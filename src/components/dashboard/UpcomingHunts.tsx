@@ -18,11 +18,11 @@ const UpcomingHunts = ({ teamId }: UpcomingHuntsProps) => {
   const { data: events = [] } = useQuery({
     queryKey: ["upcoming-hunts", teamId],
     queryFn: async () => {
-      console.log("Fetching upcoming hunts for dashboard...");
+      console.log("Hämtar kommande jakter för dashboard...");
       const today = new Date().toISOString().split('T')[0];
       
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      if (!user) throw new Error("Inte autentiserad");
 
       const { data, error } = await supabase
         .from("events")
@@ -37,16 +37,16 @@ const UpcomingHunts = ({ teamId }: UpcomingHuntsProps) => {
         .limit(3);
 
       if (error) {
-        console.error("Error fetching upcoming hunts:", error);
+        console.error("Fel vid hämtning av kommande jakter:", error);
         throw error;
       }
 
-      console.log("Successfully fetched upcoming hunts:", data);
+      console.log("Kommande jakter hämtade:", data);
       return data || [];
     },
     meta: {
       onError: (error: Error) => {
-        console.error("Error in upcoming hunts query:", error);
+        console.error("Fel i kommande jakter-fråga:", error);
       }
     }
   });
@@ -54,14 +54,14 @@ const UpcomingHunts = ({ teamId }: UpcomingHuntsProps) => {
   return (
     <Card className="col-span-4">
       <CardHeader>
-        <CardTitle>Upcoming Hunts</CardTitle>
-        <CardDescription>Next scheduled hunting sessions</CardDescription>
+        <CardTitle>Kommande Jakter</CardTitle>
+        <CardDescription>Nästa planerade jakttillfällen</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           {events.length === 0 ? (
             <p className="text-muted-foreground text-sm text-center py-4">
-              No upcoming hunts scheduled
+              Inga kommande jakter planerade
             </p>
           ) : (
             events.map((hunt) => (
@@ -72,7 +72,7 @@ const UpcomingHunts = ({ teamId }: UpcomingHuntsProps) => {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Calendar className="w-4 h-4" />
-                    <span>{format(new Date(hunt.date), "MMM d, yyyy")}</span>
+                    <span>{format(new Date(hunt.date), "d MMM yyyy")}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <span className="text-primary font-medium">{hunt.hunt_type.name}</span>

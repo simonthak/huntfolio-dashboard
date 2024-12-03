@@ -93,7 +93,7 @@ const Reports = () => {
 
   const handleDelete = async (report: Report) => {
     try {
-      console.log("Deleting report:", report.id);
+      console.log("Tar bort rapport:", report.id);
       const { error } = await supabase
         .from("hunting_reports")
         .delete()
@@ -101,10 +101,10 @@ const Reports = () => {
 
       if (error) throw error;
       await refetch();
-      toast.success("Report deleted successfully");
+      toast.success("Rapporten har tagits bort");
     } catch (error) {
-      console.error("Error deleting report:", error);
-      toast.error("Failed to delete report");
+      console.error("Fel vid borttagning av rapport:", error);
+      toast.error("Kunde inte ta bort rapporten");
     }
   };
 
@@ -166,13 +166,13 @@ const Reports = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Är du säker?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the hunting report.
+              Denna åtgärd kan inte ångras. Rapporten kommer att tas bort permanent.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
             <AlertDialogAction 
               onClick={() => {
                 if (selectedReport) {
@@ -183,7 +183,7 @@ const Reports = () => {
               }} 
               className="bg-red-500 hover:bg-red-600"
             >
-              Delete
+              Ta bort
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
