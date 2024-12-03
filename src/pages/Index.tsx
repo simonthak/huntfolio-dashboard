@@ -16,15 +16,13 @@ const Index = () => {
     queryKey: ["dashboard-stats", currentTeamId],
     enabled: !!currentTeamId,
     queryFn: async () => {
-      console.log("Fetching dashboard stats for team:", currentTeamId);
+      console.log("Hämtar dashboard-statistik för team:", currentTeamId);
       
-      // Get current hunting season dates
       const today = new Date();
       const currentYear = today.getFullYear();
-      const seasonStart = new Date(today.getMonth() < 6 ? currentYear - 1 : currentYear, 6, 1); // July 1st
-      const seasonEnd = new Date(today.getMonth() < 6 ? currentYear : currentYear + 1, 5, 30); // June 30th
+      const seasonStart = new Date(today.getMonth() < 6 ? currentYear - 1 : currentYear, 6, 1);
+      const seasonEnd = new Date(today.getMonth() < 6 ? currentYear : currentYear + 1, 5, 30);
 
-      // Fetch hunting reports for the season
       const { data: reports, error: reportsError } = await supabase
         .from("hunting_reports")
         .select(`
@@ -38,22 +36,20 @@ const Index = () => {
         .lte('date', seasonEnd.toISOString());
 
       if (reportsError) {
-        console.error("Error fetching reports:", reportsError);
+        console.error("Fel vid hämtning av rapporter:", reportsError);
         throw reportsError;
       }
 
-      // Fetch team members count
       const { count: teamMembers, error: membersError } = await supabase
         .from('team_members')
         .select('*', { count: 'exact', head: true })
         .eq('team_id', currentTeamId);
 
       if (membersError) {
-        console.error("Error fetching team members:", membersError);
+        console.error("Fel vid hämtning av teammedlemmar:", membersError);
         throw membersError;
       }
 
-      // Calculate statistics
       const uniqueDates = new Set(reports.map(r => r.date));
       const huntingDays = uniqueDates.size;
 
@@ -81,33 +77,33 @@ const Index = () => {
   if (!currentTeamId) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
-        <h2 className="text-xl font-semibold text-gray-800">No Team Selected</h2>
-        <p className="text-gray-600">Please select a team to view the dashboard</p>
+        <h2 className="text-xl font-semibold text-gray-800">Inget Team Valt</h2>
+        <p className="text-gray-600">Vänligen välj ett team för att se dashboard</p>
       </div>
     );
   }
 
   const dashboardStats = [
     { 
-      label: "Team Members", 
+      label: "Teammedlemmar", 
       value: stats.teamMembers.toString(), 
       icon: Users, 
       change: null 
     },
     { 
-      label: "Hunting Days", 
+      label: "Jaktdagar", 
       value: stats.huntingDays.toString(), 
       icon: Calendar, 
       change: null 
     },
     { 
-      label: "Success Rate", 
+      label: "Framgångsgrad", 
       value: `${stats.successRate}%`, 
       icon: Target, 
       change: null 
     },
     { 
-      label: "Season Trophies", 
+      label: "Säsongens Troféer", 
       value: stats.totalGame.toString(), 
       icon: Trophy, 
       change: null 
@@ -118,7 +114,7 @@ const Index = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 mt-2">Welcome to your hunting management dashboard</p>
+        <p className="text-gray-500 mt-2">Välkommen till din jakthanteringsdashboard</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -136,7 +132,7 @@ const Index = () => {
             {stat.change && (
               <div className="mt-4 flex items-center text-sm">
                 <span className="text-[#13B67F] font-medium">{stat.change}</span>
-                <span className="text-gray-500 ml-2">vs last month</span>
+                <span className="text-gray-500 ml-2">vs förra månaden</span>
               </div>
             )}
           </Card>
