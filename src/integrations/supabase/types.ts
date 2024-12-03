@@ -56,6 +56,54 @@ export type Database = {
         }
         Relationships: []
       }
+      documents: {
+        Row: {
+          content_type: string
+          created_at: string
+          file_path: string
+          id: string
+          name: string
+          size: number
+          team_id: string
+          uploaded_by: string
+        }
+        Insert: {
+          content_type: string
+          created_at?: string
+          file_path: string
+          id?: string
+          name: string
+          size: number
+          team_id: string
+          uploaded_by: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          file_path?: string
+          id?: string
+          name?: string
+          size?: number
+          team_id?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_notification_history: {
         Row: {
           id: string

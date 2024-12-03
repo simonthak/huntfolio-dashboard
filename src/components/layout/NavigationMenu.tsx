@@ -7,12 +7,14 @@ import {
   Users,
   Settings,
   UserCircle,
+  FolderOpen,
 } from "lucide-react";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Calendar, label: "Kalender", path: "/calendar" },
   { icon: FileText, label: "Rapporter", path: "/reports" },
+  { icon: FolderOpen, label: "Dokument", path: "/documents" },
   { icon: Users, label: "Team", path: "/team" },
   { icon: UserCircle, label: "Profil", path: "/profile" },
   { icon: Settings, label: "Inställningar", path: "/settings" },
