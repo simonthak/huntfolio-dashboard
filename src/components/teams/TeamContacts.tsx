@@ -22,11 +22,14 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { Database } from "@/integrations/supabase/types";
+
+type ContactType = Database["public"]["Enums"]["contact_type"];
 
 const contactTypes = [
-  { value: "eftersok", label: "Eftersök" },
-  { value: "granne", label: "Granne" },
-  { value: "markagare", label: "Markägare" },
+  { value: "eftersok" as ContactType, label: "Eftersök" },
+  { value: "granne" as ContactType, label: "Granne" },
+  { value: "markagare" as ContactType, label: "Markägare" },
 ];
 
 interface TeamContactsProps {
@@ -37,7 +40,7 @@ const TeamContacts = ({ teamId }: TeamContactsProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    contact_type: "",
+    contact_type: "" as ContactType,
     note: "",
     phone: "",
     email: "",
@@ -65,8 +68,12 @@ const TeamContacts = ({ teamId }: TeamContactsProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       const { error } = await supabase.from("team_contacts").insert({
         team_id: teamId,
+        created_by: user.id,
         ...formData,
       });
 
@@ -76,7 +83,7 @@ const TeamContacts = ({ teamId }: TeamContactsProps) => {
       setIsOpen(false);
       setFormData({
         name: "",
-        contact_type: "",
+        contact_type: "" as ContactType,
         note: "",
         phone: "",
         email: "",
@@ -136,7 +143,7 @@ const TeamContacts = ({ teamId }: TeamContactsProps) => {
                 <Label htmlFor="type">Typ</Label>
                 <Select
                   value={formData.contact_type}
-                  onValueChange={(value) =>
+                  onValueChange={(value: ContactType) =>
                     setFormData({ ...formData, contact_type: value })
                   }
                   required
