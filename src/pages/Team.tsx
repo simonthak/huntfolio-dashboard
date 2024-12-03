@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import TeamInformation from "@/components/teams/TeamInformation";
 import TeamMembers from "@/components/teams/TeamMembers";
 import TeamActions from "@/components/teams/TeamActions";
+import TeamContacts from "@/components/teams/TeamContacts";
 import { Loader2 } from "lucide-react";
 import { NoTeamSelected } from "./Reports/NoTeamSelected";
 
@@ -41,7 +42,6 @@ const Team = () => {
     }
   });
 
-  // Fetch team members
   const { data: teamMembers, isLoading: isMembersLoading } = useQuery({
     queryKey: ['team-members', currentTeamId],
     enabled: !!currentTeamId,
@@ -93,6 +93,7 @@ const Team = () => {
         <>
           <TeamInformation team={teamData.teams} />
           {teamMembers && <TeamMembers members={teamMembers} />}
+          {currentTeamId && <TeamContacts teamId={currentTeamId} />}
           <TeamActions 
             teamId={teamData.team_id} 
             userRole={teamData.role} 
