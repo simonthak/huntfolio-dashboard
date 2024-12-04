@@ -1,15 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { FileText, Download, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatFileSize } from "@/lib/utils";
-
-interface Document {
-  id: string;
-  name: string;
-  file_path: string;
-  content_type: string;
-  size: number;
-}
+import { Document } from "./types";
 
 interface DocumentListProps {
   documents: Document[];
@@ -18,6 +10,14 @@ interface DocumentListProps {
 }
 
 const DocumentList = ({ documents, onDownload, onDelete }: DocumentListProps) => {
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   return (
     <div className="space-y-4">
       {documents?.map((doc) => (

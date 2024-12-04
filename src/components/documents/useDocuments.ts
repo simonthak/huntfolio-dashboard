@@ -1,13 +1,18 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { deleteDocument } from "./documentOperations";
+import { Document } from "./types";
 
 export const useDocuments = (teamId: string | null) => {
+  const queryClient = useQueryClient();
+  
   const { data: documents, refetch } = useQuery({
     queryKey: ["team-documents", teamId],
     enabled: !!teamId,
     queryFn: async () => {
       console.log("Fetching documents for team:", teamId);
+      
       const { data, error } = await supabase
         .from("documents")
         .select("*")
@@ -24,13 +29,13 @@ export const useDocuments = (teamId: string | null) => {
     },
   });
 
-  const handleDownload = async (docFile: any) => {
+  const handleDownload = async (doc: Document) => {
     try {
-      console.log("Starting download for document:", docFile.name, "Path:", docFile.file_path);
+      console.log("Starting download for document:", doc.name, "Path:", doc.file_path);
       
       const { data, error } = await supabase.storage
         .from("team_documents")
-        .download(docFile.file_path);
+        .download(doc.file_path);
 
       if (error) {
         console.error("Supabase download error:", error);
@@ -47,7 +52,7 @@ export const useDocuments = (teamId: string | null) => {
       const url = URL.createObjectURL(data);
       const a = document.createElement("a");
       a.href = url;
-      a.download = docFile.name;
+      a.download = doc.name;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -60,44 +65,18 @@ export const useDocuments = (teamId: string | null) => {
     }
   };
 
-  const handleDelete = async (doc: any) => {
+  const handleDelete = async (doc: Document) => {
     try {
-      console.log("Starting deletion for document:", doc.name);
+      await deleteDocument(doc);
       
-      // First delete from storage
-      const { error: storageError } = await supabase.storage
-        .from("team_documents")
-        .remove([doc.file_path]);
-
-      if (storageError) {
-        console.error("Storage deletion error:", storageError);
-        toast.error("Kunde inte ta bort dokumentet");
-        return;
-      }
-
-      console.log("Storage file deleted successfully");
-
-      // Then delete from database
-      const { error: dbError } = await supabase
-        .from("documents")
-        .delete()
-        .eq("id", doc.id);
-
-      if (dbError) {
-        console.error("Database deletion error:", dbError);
-        toast.error("Kunde inte ta bort dokumentet");
-        return;
-      }
-
-      console.log("Database record deleted successfully");
-      toast.success("Dokument borttaget");
-      
-      // Immediately refetch to update the UI
+      // Invalidate and refetch
+      await queryClient.invalidateQueries({ queryKey: ["team-documents", teamId] });
       await refetch();
       
-      console.log("Document list refetched after deletion");
+      toast.success("Dokument borttaget");
+      console.log("Document deletion completed and cache updated");
     } catch (error) {
-      console.error("Deletion error:", error);
+      console.error("Handle delete error:", error);
       toast.error("Kunde inte ta bort dokumentet");
     }
   };
