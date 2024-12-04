@@ -69,7 +69,7 @@ export const useDocuments = (teamId: string | null) => {
     try {
       console.log("Starting deletion process for document:", doc.name);
 
-      // Remove from cache immediately
+      // Remove from cache immediately for better UX
       queryClient.setQueryData(["team-documents", teamId], (oldData: Document[] | undefined) => {
         if (!oldData) return [];
         return oldData.filter(d => d.id !== doc.id);
