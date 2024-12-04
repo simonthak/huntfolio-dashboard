@@ -19,6 +19,7 @@ export const useDocuments = (teamId: string | null) => {
         throw error;
       }
 
+      console.log("Documents fetched:", data);
       return data;
     },
   });
@@ -61,8 +62,9 @@ export const useDocuments = (teamId: string | null) => {
 
   const handleDelete = async (doc: any) => {
     try {
-      console.log("Deleting document:", doc.name);
+      console.log("Starting deletion for document:", doc.name);
       
+      // First delete from storage
       const { error: storageError } = await supabase.storage
         .from("team_documents")
         .remove([doc.file_path]);
@@ -73,6 +75,9 @@ export const useDocuments = (teamId: string | null) => {
         return;
       }
 
+      console.log("Storage file deleted successfully");
+
+      // Then delete from database
       const { error: dbError } = await supabase
         .from("documents")
         .delete()
@@ -84,8 +89,13 @@ export const useDocuments = (teamId: string | null) => {
         return;
       }
 
+      console.log("Database record deleted successfully");
       toast.success("Dokument borttaget");
-      refetch();
+      
+      // Immediately refetch to update the UI
+      await refetch();
+      
+      console.log("Document list refetched after deletion");
     } catch (error) {
       console.error("Deletion error:", error);
       toast.error("Kunde inte ta bort dokumentet");
