@@ -10,7 +10,8 @@ export const deleteDocument = async (doc: Document) => {
     const { error: dbError } = await supabase
       .from("documents")
       .delete()
-      .eq("id", doc.id);
+      .eq("id", doc.id)
+      .single();  // Add single() to ensure we're deleting exactly one record
 
     if (dbError) {
       console.error("Database deletion error:", dbError);
@@ -30,6 +31,8 @@ export const deleteDocument = async (doc: Document) => {
     } else {
       console.log("Storage file deleted successfully");
     }
+
+    return true;
   } catch (error) {
     console.error("Deletion error:", error);
     throw error;

@@ -68,26 +68,26 @@ export const useDocuments = (teamId: string | null) => {
   const handleDelete = async (doc: Document) => {
     try {
       console.log("Starting deletion process for document:", doc.name);
-      
-      // Optimistically remove from cache first
+
+      // Remove from cache immediately
       queryClient.setQueryData(["team-documents", teamId], (oldData: Document[] | undefined) => {
         if (!oldData) return [];
-        const newData = oldData.filter(d => d.id !== doc.id);
-        console.log("Optimistically updated cache data:", newData);
-        return newData;
+        return oldData.filter(d => d.id !== doc.id);
       });
 
-      // Then perform the actual deletion
+      // Perform the actual deletion
       await deleteDocument(doc);
-      console.log("Document deletion completed");
-      
-      // Refetch to ensure cache is in sync with server
-      await queryClient.invalidateQueries({ queryKey: ["team-documents", teamId] });
-      
+
+      // Force a refetch to ensure our cache is in sync
+      await queryClient.invalidateQueries({
+        queryKey: ["team-documents", teamId],
+        exact: true
+      });
+
       toast.success("Dokument borttaget");
     } catch (error) {
       console.error("Handle delete error:", error);
-      // Revert the optimistic update on error
+      // On error, refetch to restore the correct state
       await refetch();
       toast.error("Kunde inte ta bort dokumentet");
     }
