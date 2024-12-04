@@ -31,14 +31,14 @@ export const useDocuments = (teamId: string | null) => {
 
   const handleDownload = async (doc: Document) => {
     try {
-      console.log("Starting download for document:", doc.name, "Path:", doc.file_path);
+      console.log("Starting download for document:", doc.name);
       
       const { data, error } = await supabase.storage
         .from("team_documents")
         .download(doc.file_path);
 
       if (error) {
-        console.error("Supabase download error:", error);
+        console.error("Download error:", error);
         toast.error("Fel vid nedladdning av dokument");
         return;
       }
@@ -69,28 +69,26 @@ export const useDocuments = (teamId: string | null) => {
     try {
       console.log("Starting deletion process for document:", doc.name);
       
-      await deleteDocument(doc);
-      
-      console.log("Document deleted, updating cache...");
-      
-      // Immediately remove the document from the cache
+      // Optimistically remove from cache first
       queryClient.setQueryData(["team-documents", teamId], (oldData: Document[] | undefined) => {
         if (!oldData) return [];
         const newData = oldData.filter(d => d.id !== doc.id);
-        console.log("Updated cache data:", newData);
+        console.log("Optimistically updated cache data:", newData);
         return newData;
       });
+
+      // Then perform the actual deletion
+      await deleteDocument(doc);
+      console.log("Document deletion completed");
       
-      // Then refetch to ensure cache is in sync with server
-      console.log("Invalidating queries...");
+      // Refetch to ensure cache is in sync with server
       await queryClient.invalidateQueries({ queryKey: ["team-documents", teamId] });
-      console.log("Refetching data...");
-      await refetch();
       
       toast.success("Dokument borttaget");
-      console.log("Document deletion completed and cache updated");
     } catch (error) {
       console.error("Handle delete error:", error);
+      // Revert the optimistic update on error
+      await refetch();
       toast.error("Kunde inte ta bort dokumentet");
     }
   };
