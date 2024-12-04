@@ -7,15 +7,19 @@ import {
   Users,
   Settings,
   UserCircle,
+  FolderOpen,
+  Phone,
 } from "lucide-react";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: Calendar, label: "Calendar", path: "/calendar" },
-  { icon: FileText, label: "Reports", path: "/reports" },
+  { icon: Calendar, label: "Kalender", path: "/calendar" },
+  { icon: FileText, label: "Rapporter", path: "/reports" },
+  { icon: FolderOpen, label: "Dokument", path: "/documents" },
+  { icon: Phone, label: "Kontakter", path: "/contacts" },
   { icon: Users, label: "Team", path: "/team" },
-  { icon: UserCircle, label: "Profile", path: "/profile" },
-  { icon: Settings, label: "Settings", path: "/settings" },
+  { icon: UserCircle, label: "Profil", path: "/profile" },
+  { icon: Settings, label: "Inställningar", path: "/settings" },
 ];
 
 const NavigationMenu = () => {
@@ -26,7 +30,6 @@ const NavigationMenu = () => {
   return (
     <>
       {menuItems.map((item) => {
-        // Always include team parameter if it exists
         const to = currentTeam 
           ? `${item.path}?team=${currentTeam}`
           : item.path;

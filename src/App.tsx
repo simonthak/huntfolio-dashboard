@@ -12,6 +12,8 @@ import Reports from "./pages/Reports";
 import NoTeam from "./pages/NoTeam";
 import Team from "./pages/Team";
 import Settings from "./pages/Settings";
+import Documents from "./pages/Documents";
+import Contacts from "./pages/Contacts";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +31,8 @@ const App = () => {
             <Route path="/calendar" element={<Layout><Calendar /></Layout>} />
             <Route path="/profile" element={<Layout><Profile /></Layout>} />
             <Route path="/reports" element={<Layout><Reports /></Layout>} />
+            <Route path="/documents" element={<Layout><Documents /></Layout>} />
+            <Route path="/contacts" element={<Layout><Contacts /></Layout>} />
             <Route path="/team" element={<Layout><Team /></Layout>} />
             <Route path="/settings" element={<Layout><Settings /></Layout>} />
           </Routes>

@@ -22,8 +22,10 @@ import {
 import { useReportsData } from "./Reports/useReportsData";
 import { LoadingState } from "./Reports/LoadingState";
 import { NoTeamSelected } from "./Reports/NoTeamSelected";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Reports = () => {
+  const queryClient = useQueryClient();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -43,9 +45,55 @@ const Reports = () => {
     getCurrentUser();
   }, []);
 
+  // Prefetch hunt types and animal types when reports page loads
+  useEffect(() => {
+    // Prefetch hunt types
+    queryClient.prefetchQuery({
+      queryKey: ["hunt-types"],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from("hunt_types")
+          .select("*")
+          .order("name");
+        
+        if (error) throw error;
+        return data;
+      },
+    });
+
+    // Prefetch animal types and subtypes
+    queryClient.prefetchQuery({
+      queryKey: ["animal-types"],
+      queryFn: async () => {
+        const [typesResponse, subtypesResponse] = await Promise.all([
+          supabase.from("animal_types").select("*").order("name"),
+          supabase.from("animal_subtypes").select("*").order("name")
+        ]);
+
+        if (typesResponse.error) throw typesResponse.error;
+        if (subtypesResponse.error) throw subtypesResponse.error;
+
+        const subtypesByType = subtypesResponse.data.reduce((acc: Record<number, any[]>, subtype) => {
+          if (subtype.animal_type_id) {
+            acc[subtype.animal_type_id] = [
+              ...(acc[subtype.animal_type_id] || []),
+              subtype
+            ];
+          }
+          return acc;
+        }, {});
+
+        return {
+          types: typesResponse.data,
+          subtypesByType
+        };
+      },
+    });
+  }, [queryClient]);
+
   const handleDelete = async (report: Report) => {
     try {
-      console.log("Deleting report:", report.id);
+      console.log("Tar bort rapport:", report.id);
       const { error } = await supabase
         .from("hunting_reports")
         .delete()
@@ -53,10 +101,10 @@ const Reports = () => {
 
       if (error) throw error;
       await refetch();
-      toast.success("Report deleted successfully");
+      toast.success("Rapporten har tagits bort");
     } catch (error) {
-      console.error("Error deleting report:", error);
-      toast.error("Failed to delete report");
+      console.error("Fel vid borttagning av rapport:", error);
+      toast.error("Kunde inte ta bort rapporten");
     }
   };
 
@@ -118,13 +166,13 @@ const Reports = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Är du säker?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the hunting report.
+              Denna åtgärd kan inte ångras. Rapporten kommer att tas bort permanent.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
             <AlertDialogAction 
               onClick={() => {
                 if (selectedReport) {
@@ -135,7 +183,7 @@ const Reports = () => {
               }} 
               className="bg-red-500 hover:bg-red-600"
             >
-              Delete
+              Ta bort
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

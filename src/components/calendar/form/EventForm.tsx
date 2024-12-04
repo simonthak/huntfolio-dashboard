@@ -32,22 +32,22 @@ const EventForm = ({
     e.preventDefault();
     
     if (!selectedDate) {
-      toast.error("Please select a date");
+      toast.error("Vänligen välj ett datum");
       return;
     }
 
     const limit = parseInt(participantLimit);
     if (!participantLimit || limit < 1) {
-      toast.error("Please enter a valid participant limit");
+      toast.error("Vänligen ange en giltig deltagargräns");
       return;
     }
 
     if (!huntTypeId) {
-      toast.error("Please select a hunt type");
+      toast.error("Vänligen välj en jakttyp");
       return;
     }
 
-    console.log("Submitting form with hunt type id:", huntTypeId);
+    console.log("Skickar formulär med jakttyp-id:", huntTypeId);
     await onSubmit({
       hunt_type_id: huntTypeId,
       description,
@@ -58,7 +58,7 @@ const EventForm = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label>Selected Date</Label>
+        <Label>Valt Datum</Label>
         <Input
           value={selectedDate ? format(selectedDate, "MMMM d, yyyy") : ""}
           disabled
@@ -69,18 +69,18 @@ const EventForm = ({
       <EventTypeSelector value={huntTypeId} onChange={setHuntTypeId} />
 
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description">Beskrivning</Label>
         <Textarea
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Add details about the hunt..."
+          placeholder="Lägg till detaljer om jakten..."
           rows={3}
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="participantLimit">Participant Limit</Label>
+        <Label htmlFor="participantLimit">Deltagargräns</Label>
         <Input
           id="participantLimit"
           type="number"
@@ -88,16 +88,16 @@ const EventForm = ({
           value={participantLimit}
           onChange={(e) => setParticipantLimit(e.target.value)}
           required
-          placeholder="Enter maximum number of participants"
+          placeholder="Ange maximalt antal deltagare"
         />
       </div>
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
+          Avbryt
         </Button>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Creating..." : "Create Event"}
+          {isSubmitting ? "Skapar..." : "Skapa Händelse"}
         </Button>
       </div>
     </form>

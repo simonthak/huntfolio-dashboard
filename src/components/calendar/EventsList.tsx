@@ -19,7 +19,7 @@ const EventsList = ({ events }: EventsListProps) => {
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-lg">
           <CalendarIcon className="w-5 h-5 text-primary" />
-          Upcoming Hunts
+          Kommande Jakter
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -27,7 +27,7 @@ const EventsList = ({ events }: EventsListProps) => {
           <div className="space-y-4">
             {upcomingEvents.length === 0 ? (
               <p className="text-muted-foreground text-sm text-center py-4">
-                No upcoming hunts scheduled
+                Inga kommande jakter planerade
               </p>
             ) : (
               upcomingEvents.map((event) => (
@@ -39,7 +39,7 @@ const EventsList = ({ events }: EventsListProps) => {
                     <div>
                       <h3 className="font-medium text-gray-900">{event.hunt_type.name}</h3>
                       <p className="text-sm text-gray-500">
-                        {format(new Date(event.date), "MMMM d, yyyy")}
+                        {format(new Date(event.date), "d MMMM yyyy")}
                       </p>
                     </div>
                     <div className="flex items-center gap-1 text-sm text-gray-500">

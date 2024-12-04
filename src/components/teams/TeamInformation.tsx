@@ -18,12 +18,12 @@ const TeamInformation = ({ team }: TeamInformationProps) => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h3 className="font-semibold text-gray-700">Location</h3>
-            <p>{team.location || "Not specified"}</p>
+            <h3 className="font-semibold text-gray-700">Plats</h3>
+            <p>{team.location || "Ej angivet"}</p>
           </div>
           <div>
             <h3 className="font-semibold text-gray-700">Areal</h3>
-            <p>{team.areal ? `${team.areal} hectares` : "Not specified"}</p>
+            <p>{team.areal ? `${team.areal} hektar` : "Ej angivet"}</p>
           </div>
         </div>
       </div>

@@ -22,13 +22,57 @@ export const useCreateReport = (onSuccess: () => void) => {
   const currentTeamId = searchParams.get('team');
   const { sendNotification } = useNotifications();
 
+  const sendNotificationsAsync = async (reportId: string, currentUserId: string) => {
+    try {
+      console.log("Fetching team members for notifications...");
+      const { data: teamMembers, error: teamMembersError } = await supabase
+        .from('team_members')
+        .select('user_id')
+        .eq('team_id', currentTeamId);
+
+      if (teamMembersError) {
+        console.error("Error fetching team members:", teamMembersError);
+        return;
+      }
+
+      // Filter out current user and prepare notification promises
+      const notificationPromises = teamMembers
+        .filter(member => member.user_id !== currentUserId)
+        .map(member => 
+          sendNotification(
+            member.user_id,
+            "report_created",
+            {
+              reportId,
+              teamId: currentTeamId
+            }
+          )
+        );
+
+      // Execute all notifications in parallel
+      await Promise.all(notificationPromises);
+      console.log("All notifications sent successfully");
+    } catch (error) {
+      console.error("Error sending notifications:", error);
+    }
+  };
+
   const createReport = async (data: CreateReportData) => {
     setIsSubmitting(true);
     console.log("Starting report creation with data:", JSON.stringify(data, null, 2));
 
     try {
-      console.log("Getting authenticated user...");
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      // Get user data and validate team membership in parallel
+      const [userResponse, teamMembershipResponse] = await Promise.all([
+        supabase.auth.getUser(),
+        currentTeamId ? supabase
+          .from('team_members')
+          .select('team_id')
+          .eq('team_id', currentTeamId)
+          .single() : Promise.reject(new Error("No team selected"))
+      ]);
+
+      const { data: { user }, error: authError } = userResponse;
       
       if (authError) {
         console.error("Auth error:", authError);
@@ -42,34 +86,14 @@ export const useCreateReport = (onSuccess: () => void) => {
         return;
       }
 
-      if (!currentTeamId) {
-        console.error("No team selected");
-        toast.error("Please select a team before creating a report");
-        return;
-      }
-
-      console.log("Getting user's team membership...");
-      const { data: teamMembership, error: teamError } = await supabase
-        .from('team_members')
-        .select('team_id')
-        .eq('user_id', user.id)
-        .eq('team_id', currentTeamId)
-        .single();
-
+      const { error: teamError } = teamMembershipResponse;
       if (teamError) {
         console.error("Team membership fetch error:", teamError);
         toast.error("You must be a member of this team to create reports");
         return;
       }
 
-      if (!teamMembership) {
-        console.error("No team membership found for user:", user.id);
-        toast.error("You must be part of this team to create reports");
-        return;
-      }
-
-      console.log("Found team membership:", JSON.stringify(teamMembership, null, 2));
-
+      // Prepare report data
       const reportData = {
         hunt_type_id: data.hunt_type_id,
         date: data.date.toISOString().split('T')[0],
@@ -79,6 +103,7 @@ export const useCreateReport = (onSuccess: () => void) => {
         team_id: currentTeamId
       };
 
+      // Create report
       console.log("Creating report with data:", reportData);
       const { error: reportError, data: createdReport } = await supabase
         .from("hunting_reports")
@@ -92,14 +117,7 @@ export const useCreateReport = (onSuccess: () => void) => {
         return;
       }
 
-      if (!createdReport) {
-        console.error("No report data returned after creation");
-        toast.error("Error creating report: No data returned");
-        return;
-      }
-
-      console.log("Created report:", createdReport);
-
+      // If there are animals, insert them
       if (data.animals.length > 0) {
         console.log("Adding animals to report:", createdReport.id);
         const animalData = data.animals.map(animal => ({
@@ -109,7 +127,6 @@ export const useCreateReport = (onSuccess: () => void) => {
           quantity: animal.quantity,
         }));
 
-        console.log("Animal data to insert:", animalData);
         const { error: animalsError } = await supabase
           .from("report_animals")
           .insert(animalData);
@@ -121,40 +138,13 @@ export const useCreateReport = (onSuccess: () => void) => {
         }
       }
 
-      // Get team members to notify
-      console.log("Fetching team members for notifications...");
-      const { data: teamMembers, error: teamMembersError } = await supabase
-        .from('team_members')
-        .select('user_id')
-        .eq('team_id', currentTeamId);
-
-      if (teamMembersError) {
-        console.error("Error fetching team members:", teamMembersError);
-      } else if (teamMembers) {
-        // Send notifications to all team members except the creator
-        console.log("Sending notifications to team members...");
-        for (const member of teamMembers) {
-          if (member.user_id !== user.id) {
-            try {
-              await sendNotification(
-                member.user_id,
-                "report_created",
-                {
-                  reportId: createdReport.id,
-                  teamId: currentTeamId
-                }
-              );
-              console.log("Notification sent to user:", member.user_id);
-            } catch (error) {
-              console.error("Error sending notification to user:", member.user_id, error);
-            }
-          }
-        }
-      }
-
-      console.log("Report created successfully");
+      // Show success immediately
       onSuccess();
       toast.success("Report created successfully");
+
+      // Fire and forget notifications
+      sendNotificationsAsync(createdReport.id, user.id);
+
     } catch (error) {
       console.error("Detailed error in report creation process:", error);
       if (error instanceof Error) {

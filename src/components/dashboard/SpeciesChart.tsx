@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { startOfYear, endOfYear } from "date-fns";
 
 interface SpeciesChartProps {
   teamId: string;
@@ -24,16 +25,40 @@ const SpeciesChart = ({ teamId }: SpeciesChartProps) => {
   const { data = [] } = useQuery({
     queryKey: ["species-chart", teamId],
     queryFn: async () => {
-      // TODO: Implement actual data fetching from hunting_reports and report_animals
-      // This is currently using mock data
-      return [
-        { species: "Deer", count: 45 },
-        { species: "Wild Boar", count: 32 },
-        { species: "Duck", count: 28 },
-        { species: "Pheasant", count: 24 },
-        { species: "Rabbit", count: 18 },
-        { species: "Turkey", count: 15 },
-      ];
+      console.log("Fetching species chart data for team:", teamId);
+      const startDate = startOfYear(new Date());
+      const endDate = endOfYear(new Date());
+
+      const { data, error } = await supabase
+        .from("hunting_reports")
+        .select(`
+          report_animals (
+            quantity,
+            animal_type:animal_types(name)
+          )
+        `)
+        .eq('team_id', teamId)
+        .gte('date', startDate.toISOString())
+        .lte('date', endDate.toISOString());
+
+      if (error) {
+        console.error("Error fetching species chart data:", error);
+        throw error;
+      }
+
+      // Group by species and sum quantities
+      const speciesData = data.flatMap(report => report.report_animals)
+        .reduce((acc: Record<string, number>, animal) => {
+          const species = animal.animal_type.name;
+          acc[species] = (acc[species] || 0) + animal.quantity;
+          return acc;
+        }, {});
+
+      // Convert to array and sort by count
+      return Object.entries(speciesData)
+        .map(([species, count]) => ({ species, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 6); // Top 6 species
     }
   });
 

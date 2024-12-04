@@ -56,6 +56,54 @@ export type Database = {
         }
         Relationships: []
       }
+      documents: {
+        Row: {
+          content_type: string
+          created_at: string
+          file_path: string
+          id: string
+          name: string
+          size: number
+          team_id: string
+          uploaded_by: string
+        }
+        Insert: {
+          content_type: string
+          created_at?: string
+          file_path: string
+          id?: string
+          name: string
+          size: number
+          team_id: string
+          uploaded_by: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          file_path?: string
+          id?: string
+          name?: string
+          size?: number
+          team_id?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_notification_history: {
         Row: {
           id: string
@@ -326,6 +374,57 @@ export type Database = {
           },
         ]
       }
+      team_contacts: {
+        Row: {
+          contact_type: Database["public"]["Enums"]["contact_type"]
+          created_at: string
+          created_by: string
+          email: string | null
+          id: string
+          name: string
+          note: string | null
+          phone: string | null
+          team_id: string
+        }
+        Insert: {
+          contact_type: Database["public"]["Enums"]["contact_type"]
+          created_at?: string
+          created_by: string
+          email?: string | null
+          id?: string
+          name: string
+          note?: string | null
+          phone?: string | null
+          team_id: string
+        }
+        Update: {
+          contact_type?: Database["public"]["Enums"]["contact_type"]
+          created_at?: string
+          created_by?: string
+          email?: string | null
+          id?: string
+          name?: string
+          note?: string | null
+          phone?: string | null
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_contacts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_contacts_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_members: {
         Row: {
           joined_at: string
@@ -435,7 +534,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      contact_type: "eftersok" | "granne" | "markagare"
     }
     CompositeTypes: {
       [_ in never]: never

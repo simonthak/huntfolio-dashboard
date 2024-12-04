@@ -31,34 +31,34 @@ const ReportsTable = ({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead>Hunt Type</TableHead>
-            <TableHead>Animals</TableHead>
-            <TableHead>Participants</TableHead>
-            <TableHead>Reported By</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>Datum</TableHead>
+            <TableHead>Jakttyp</TableHead>
+            <TableHead>Byten</TableHead>
+            <TableHead>Deltagare</TableHead>
+            <TableHead>Rapporterad av</TableHead>
+            <TableHead className="text-right">Åtgärder</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {reports.length === 0 ? (
             <TableRow>
               <TableCell colSpan={6} className="text-center text-muted-foreground">
-                No reports found
+                Inga rapporter hittades
               </TableCell>
             </TableRow>
           ) : (
             reports.map((report) => {
               const fullName = report.created_by_profile?.firstname && report.created_by_profile?.lastname
                 ? `${report.created_by_profile.firstname} ${report.created_by_profile.lastname}`
-                : "Unknown";
+                : "Okänd";
               return (
                 <TableRow 
                   key={report.id}
                   className="cursor-pointer hover:bg-gray-50"
                   onClick={() => onView(report)}
                 >
-                  <TableCell>{format(new Date(report.date), "MMM d, yyyy")}</TableCell>
-                  <TableCell>{report.hunt_type?.name || "Unknown"}</TableCell>
+                  <TableCell>{format(new Date(report.date), "d MMM yyyy")}</TableCell>
+                  <TableCell>{report.hunt_type?.name || "Okänd"}</TableCell>
                   <TableCell>
                     {report.report_animals.map((animal, index) => (
                       <div key={index}>
@@ -72,7 +72,7 @@ const ReportsTable = ({
                   <TableCell className="text-right">
                     <div 
                       className="flex justify-end gap-2"
-                      onClick={(e) => e.stopPropagation()} // Prevent row click when clicking actions
+                      onClick={(e) => e.stopPropagation()}
                     >
                       {report.created_by === currentUserId && (
                         <>

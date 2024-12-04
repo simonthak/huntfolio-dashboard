@@ -41,7 +41,6 @@ const Team = () => {
     }
   });
 
-  // Fetch team members
   const { data: teamMembers, isLoading: isMembersLoading } = useQuery({
     queryKey: ['team-members', currentTeamId],
     enabled: !!currentTeamId,
