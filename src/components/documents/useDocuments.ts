@@ -71,14 +71,20 @@ export const useDocuments = (teamId: string | null) => {
       
       await deleteDocument(doc);
       
+      console.log("Document deleted, updating cache...");
+      
       // Immediately remove the document from the cache
       queryClient.setQueryData(["team-documents", teamId], (oldData: Document[] | undefined) => {
         if (!oldData) return [];
-        return oldData.filter(d => d.id !== doc.id);
+        const newData = oldData.filter(d => d.id !== doc.id);
+        console.log("Updated cache data:", newData);
+        return newData;
       });
       
       // Then refetch to ensure cache is in sync with server
+      console.log("Invalidating queries...");
       await queryClient.invalidateQueries({ queryKey: ["team-documents", teamId] });
+      console.log("Refetching data...");
       await refetch();
       
       toast.success("Dokument borttaget");

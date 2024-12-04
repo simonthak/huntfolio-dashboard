@@ -18,6 +18,8 @@ const DocumentList = ({ documents, onDownload, onDelete }: DocumentListProps) =>
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  console.log("Rendering DocumentList with documents:", documents);
+
   return (
     <div className="space-y-4">
       {documents?.map((doc) => (
