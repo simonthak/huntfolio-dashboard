@@ -77,24 +77,34 @@ const Documents = () => {
 
   const handleDownload = async (document: any) => {
     try {
-      console.log("Downloading document:", document.name);
+      console.log("Starting download for document:", document.name, "Path:", document.file_path);
+      
       const { data, error } = await supabase.storage
         .from("team_documents")
         .download(document.file_path);
 
       if (error) {
-        console.error("Error downloading file:", error);
-        throw error;
+        console.error("Supabase download error:", error);
+        throw new Error(`Failed to download: ${error.message}`);
       }
 
+      if (!data) {
+        console.error("No data received from download");
+        throw new Error("No data received from download");
+      }
+
+      console.log("Download successful, creating blob URL");
       const url = URL.createObjectURL(data);
       const a = document.createElement("a");
       a.href = url;
       a.download = document.name;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      console.log("Download completed successfully");
     } catch (error) {
-      console.error("Error in file download:", error);
+      console.error("Detailed download error:", error);
       toast.error("Fel vid nedladdning av dokument");
     }
   };
