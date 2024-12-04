@@ -67,9 +67,17 @@ export const useDocuments = (teamId: string | null) => {
 
   const handleDelete = async (doc: Document) => {
     try {
+      console.log("Starting deletion process for document:", doc.name);
+      
       await deleteDocument(doc);
       
-      // Invalidate and refetch
+      // Immediately remove the document from the cache
+      queryClient.setQueryData(["team-documents", teamId], (oldData: Document[] | undefined) => {
+        if (!oldData) return [];
+        return oldData.filter(d => d.id !== doc.id);
+      });
+      
+      // Then refetch to ensure cache is in sync with server
       await queryClient.invalidateQueries({ queryKey: ["team-documents", teamId] });
       await refetch();
       
