@@ -75,13 +75,13 @@ const Documents = () => {
     }
   };
 
-  const handleDownload = async (document: any) => {
+  const handleDownload = async (docFile: any) => {
     try {
-      console.log("Starting download for document:", document.name, "Path:", document.file_path);
+      console.log("Starting download for document:", docFile.name, "Path:", docFile.file_path);
       
       const { data, error } = await supabase.storage
         .from("team_documents")
-        .download(document.file_path);
+        .download(docFile.file_path);
 
       if (error) {
         console.error("Supabase download error:", error);
@@ -97,7 +97,7 @@ const Documents = () => {
       const url = URL.createObjectURL(data);
       const a = document.createElement("a");
       a.href = url;
-      a.download = document.name;
+      a.download = docFile.name;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
