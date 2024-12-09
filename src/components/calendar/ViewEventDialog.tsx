@@ -1,6 +1,4 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Trash2, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { handleEventDeletion } from "./eventHandlers";
@@ -9,6 +7,8 @@ import { Event } from "./types";
 import EventDetails from "./dialog/EventDetails";
 import ParticipantList from "./dialog/ParticipantList";
 import ParticipantCounts from "./dialog/ParticipantCounts";
+import DialogActions from "./dialog/DialogActions";
+import JoinEventButtons from "./dialog/JoinEventButtons";
 
 interface ViewEventDialogProps {
   event: Event | null;
@@ -17,7 +17,12 @@ interface ViewEventDialogProps {
   onEventJoin: () => Promise<void>;
 }
 
-const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDialogProps) => {
+const ViewEventDialog = ({ 
+  event, 
+  open, 
+  onOpenChange, 
+  onEventJoin 
+}: ViewEventDialogProps) => {
   const [isUserOrganizer, setIsUserOrganizer] = useState(false);
   const [isUserParticipant, setIsUserParticipant] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -77,71 +82,36 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
           <DialogTitle>{event.hunt_type.name}</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
-          <EventDetails event={event} />
+        <div className="space-y-6">
+          <div className="space-y-4 border-b pb-4">
+            <EventDetails event={event} />
+          </div>
           
-          <div className="space-y-2">
+          <div className="space-y-4">
             <ParticipantCounts event={event} />
             <ParticipantList participants={event.event_participants} />
           </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="space-y-4">
             {!isUserParticipant && (
-              <div className="flex flex-col gap-2">
-                <div className="flex gap-2">
-                  <Button
-                    variant={joinType === 'shooter' ? 'default' : 'outline'}
-                    onClick={() => setJoinType('shooter')}
-                    className="flex-1"
-                    disabled={isShootersFull}
-                  >
-                    Skytt {isShootersFull ? '(Full)' : ''}
-                  </Button>
-                  {event.dog_handlers_limit > 0 && (
-                    <Button
-                      variant={joinType === 'dog_handler' ? 'default' : 'outline'}
-                      onClick={() => setJoinType('dog_handler')}
-                      className="flex-1"
-                      disabled={isDogHandlersFull}
-                    >
-                      Hundförare {isDogHandlersFull ? '(Full)' : ''}
-                    </Button>
-                  )}
-                </div>
-                <Button
-                  onClick={handleJoinEvent}
-                  disabled={(joinType === 'shooter' && isShootersFull) || 
-                          (joinType === 'dog_handler' && isDogHandlersFull)}
-                  className="w-full"
-                >
-                  Anmäl dig som {joinType === 'shooter' ? 'skytt' : 'hundförare'}
-                </Button>
-              </div>
+              <JoinEventButtons
+                isShootersFull={isShootersFull}
+                isDogHandlersFull={isDogHandlersFull}
+                joinType={joinType}
+                setJoinType={setJoinType}
+                onJoin={handleJoinEvent}
+                showDogHandlers={event.dog_handlers_limit > 0}
+              />
             )}
 
-            <div className="flex justify-end gap-2">
-              {isUserOrganizer && (
-                <Button 
-                  variant="destructive" 
-                  onClick={handleDeleteEvent}
-                  disabled={isDeleting}
-                  className="flex items-center gap-2"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  {isDeleting ? "Deleting..." : "Delete Event"}
-                </Button>
-              )}
-              {isUserParticipant && (
-                <Button 
-                  variant="outline" 
-                  onClick={handleLeaveEvent}
-                  className="flex items-center gap-2"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Leave Event
-                </Button>
-              )}
-            </div>
+            <DialogActions
+              event={event}
+              isUserOrganizer={isUserOrganizer}
+              isUserParticipant={isUserParticipant}
+              isDeleting={isDeleting}
+              onDelete={handleDeleteEvent}
+              onLeave={handleLeaveEvent}
+            />
           </div>
         </div>
       </DialogContent>
