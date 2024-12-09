@@ -45,6 +45,7 @@ const Calendar = () => {
           *,
           event_participants(
             user_id,
+            participant_type,
             profile:profiles(
               firstname,
               lastname

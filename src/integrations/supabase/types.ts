@@ -132,16 +132,19 @@ export type Database = {
         Row: {
           event_id: string
           joined_at: string
+          participant_type: string
           user_id: string
         }
         Insert: {
           event_id: string
           joined_at?: string
+          participant_type?: string
           user_id: string
         }
         Update: {
           event_id?: string
           joined_at?: string
+          participant_type?: string
           user_id?: string
         }
         Relationships: [
