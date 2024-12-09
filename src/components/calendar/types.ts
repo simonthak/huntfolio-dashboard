@@ -15,6 +15,7 @@ export interface Event {
   };
   event_participants: {
     user_id: string;
+    participant_type: 'shooter' | 'dog_handler';
     profile?: {
       firstname: string | null;
       lastname: string | null;

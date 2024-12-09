@@ -17,7 +17,6 @@ interface ViewEventDialogProps {
   onEventJoin: () => Promise<void>;
 }
 
-// Separate component for participant list to keep the main component cleaner
 const ParticipantList = ({ participants }: { participants: Event['event_participants'] }) => (
   <ScrollArea className="h-[100px] w-full rounded-md border p-2">
     <div className="space-y-1">
@@ -42,6 +41,7 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
   const [isUserOrganizer, setIsUserOrganizer] = useState(false);
   const [isUserParticipant, setIsUserParticipant] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [joinType, setJoinType] = useState<'shooter' | 'dog_handler'>('shooter');
 
   useEffect(() => {
     const checkUserRoles = async () => {
@@ -59,7 +59,7 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
 
   const handleJoinEvent = async () => {
     if (!event) return;
-    await handleEventParticipation.join(event, onEventJoin, onOpenChange);
+    await handleEventParticipation.join(event, onEventJoin, onOpenChange, joinType);
   };
 
   const handleLeaveEvent = async () => {
@@ -88,6 +88,10 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
   if (!event) return null;
 
   const isMultiDayEvent = event.end_date && event.end_date !== event.date;
+  const currentShooters = event.event_participants.filter(p => p.participant_type === 'shooter').length;
+  const currentDogHandlers = event.event_participants.filter(p => p.participant_type === 'dog_handler').length;
+  const isShootersFull = currentShooters >= event.participant_limit;
+  const isDogHandlersFull = event.dog_handlers_limit > 0 && currentDogHandlers >= event.dog_handlers_limit;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -115,13 +119,13 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Users className="w-4 h-4" />
                 <span>
-                  {event.event_participants.length}/{event.participant_limit} antal skyttar
+                  {currentShooters}/{event.participant_limit} antal skyttar
                 </span>
               </div>
               {event.dog_handlers_limit > 0 && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Dog className="w-4 h-4" />
-                  <span>Max {event.dog_handlers_limit} hundförare</span>
+                  <span>{currentDogHandlers}/{event.dog_handlers_limit} hundförare</span>
                 </div>
               )}
             </div>
@@ -129,37 +133,65 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
             <ParticipantList participants={event.event_participants} />
           </div>
 
-          <div className="flex justify-end gap-2">
-            {isUserOrganizer && (
-              <Button 
-                variant="destructive" 
-                onClick={handleDeleteEvent}
-                disabled={isDeleting}
-                className="flex items-center gap-2"
-              >
-                <Trash2 className="w-4 h-4" />
-                {isDeleting ? "Deleting..." : "Delete Event"}
-              </Button>
+          <div className="flex flex-col gap-4">
+            {!isUserParticipant && (
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <Button
+                    variant={joinType === 'shooter' ? 'default' : 'outline'}
+                    onClick={() => setJoinType('shooter')}
+                    className="flex-1"
+                    disabled={isShootersFull}
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    Skytt {isShootersFull ? '(Full)' : ''}
+                  </Button>
+                  {event.dog_handlers_limit > 0 && (
+                    <Button
+                      variant={joinType === 'dog_handler' ? 'default' : 'outline'}
+                      onClick={() => setJoinType('dog_handler')}
+                      className="flex-1"
+                      disabled={isDogHandlersFull}
+                    >
+                      <Dog className="w-4 h-4 mr-2" />
+                      Hundförare {isDogHandlersFull ? '(Full)' : ''}
+                    </Button>
+                  )}
+                </div>
+                <Button
+                  onClick={handleJoinEvent}
+                  disabled={(joinType === 'shooter' && isShootersFull) || 
+                          (joinType === 'dog_handler' && isDogHandlersFull)}
+                  className="w-full"
+                >
+                  Anmäl dig som {joinType === 'shooter' ? 'skytt' : 'hundförare'}
+                </Button>
+              </div>
             )}
-            {isUserParticipant ? (
-              <Button 
-                variant="outline" 
-                onClick={handleLeaveEvent}
-                className="flex items-center gap-2"
-              >
-                <LogOut className="w-4 h-4" />
-                Leave Event
-              </Button>
-            ) : (
-              <Button
-                onClick={handleJoinEvent}
-                disabled={event.event_participants.length >= event.participant_limit}
-              >
-                {event.event_participants.length >= event.participant_limit
-                  ? "Event Full"
-                  : "Join Hunt"}
-              </Button>
-            )}
+
+            <div className="flex justify-end gap-2">
+              {isUserOrganizer && (
+                <Button 
+                  variant="destructive" 
+                  onClick={handleDeleteEvent}
+                  disabled={isDeleting}
+                  className="flex items-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  {isDeleting ? "Deleting..." : "Delete Event"}
+                </Button>
+              )}
+              {isUserParticipant && (
+                <Button 
+                  variant="outline" 
+                  onClick={handleLeaveEvent}
+                  className="flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Leave Event
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </DialogContent>
