@@ -38,6 +38,7 @@ const CalendarGrid = ({
       id: event.id,
       title: event.hunt_type.name,
       date: event.date,
+      end: event.end_date,
       backgroundColor: isParticipating ? '#13B67F' : '#ffffff',
       borderColor: '#13B67F',
       textColor: isParticipating ? '#ffffff' : '#13B67F',
@@ -45,7 +46,9 @@ const CalendarGrid = ({
         description: event.description,
         participantLimit: event.participant_limit,
         currentParticipants: event.event_participants.length,
-        createdBy: event.created_by_profile.firstname + ' ' + event.created_by_profile.lastname
+        createdBy: event.created_by_profile.firstname + ' ' + event.created_by_profile.lastname,
+        startTime: event.start_time,
+        endDate: event.end_date
       }
     };
   });
