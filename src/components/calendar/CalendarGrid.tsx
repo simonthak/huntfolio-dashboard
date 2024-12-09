@@ -48,7 +48,8 @@ const CalendarGrid = ({
         currentParticipants: event.event_participants.length,
         createdBy: event.created_by_profile.firstname + ' ' + event.created_by_profile.lastname,
         startTime: event.start_time,
-        endDate: event.end_date
+        endDate: event.end_date,
+        isParticipating
       }
     };
   });
@@ -73,9 +74,9 @@ const CalendarGrid = ({
         height="auto"
         dayCellClassNames="cursor-pointer hover:bg-gray-50"
         eventContent={(eventInfo) => (
-          <div className={`p-2 rounded-md text-sm border border-green-500`}>
+          <div className={`p-2 rounded-md text-sm border border-green-500 ${eventInfo.event.extendedProps.isParticipating ? 'bg-[#13B67F] text-white' : 'bg-white text-[#13B67F]'}`}>
             <div className="font-medium truncate">{eventInfo.event.title}</div>
-            <div className="text-xs opacity-90 flex items-center gap-1">
+            <div className={`text-xs opacity-90 flex items-center gap-1 ${eventInfo.event.extendedProps.isParticipating ? 'text-white' : 'text-[#13B67F]'}`}>
               <Users className="w-3.5 h-3.5" />
               {eventInfo.event.extendedProps.currentParticipants}/
               {eventInfo.event.extendedProps.participantLimit}
