@@ -123,7 +123,7 @@ const EventForm = ({
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="participantLimit">Deltagargräns</Label>
+          <Label htmlFor="participantLimit">Skyttar</Label>
           <Input
             id="participantLimit"
             type="number"
