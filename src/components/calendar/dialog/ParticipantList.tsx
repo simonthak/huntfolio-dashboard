@@ -18,11 +18,21 @@ const ParticipantList = ({ participants }: ParticipantListProps) => {
       ? `${firstName} ${lastName}`.trim()
       : 'Unnamed Hunter';
     const initials = `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
+    const avatarUrl = participant.profile?.avatar_url;
+
+    console.log('Participant avatar URL:', avatarUrl); // Debug log
     
     return (
       <div className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 transition-colors">
         <Avatar className="h-8 w-8">
-          <AvatarImage src={participant.profile?.avatar_url || undefined} />
+          <AvatarImage 
+            src={avatarUrl || undefined} 
+            alt={displayName}
+            onError={(e) => {
+              console.log('Avatar image failed to load:', e);
+              e.currentTarget.src = ''; // Clear src on error to show fallback
+            }}
+          />
           <AvatarFallback className="text-xs bg-primary/10 text-primary">
             {initials || '?'}
           </AvatarFallback>
