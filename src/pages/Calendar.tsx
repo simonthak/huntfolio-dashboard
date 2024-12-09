@@ -62,8 +62,17 @@ const Calendar = () => {
         throw error;
       }
 
-      console.log("Events fetched successfully:", data);
-      return data || [];
+      // Transform the data to ensure participant_type is correctly typed
+      const typedData = data?.map(event => ({
+        ...event,
+        event_participants: event.event_participants.map(participant => ({
+          ...participant,
+          participant_type: participant.participant_type as "shooter" | "dog_handler"
+        }))
+      })) as Event[];
+
+      console.log("Events fetched successfully:", typedData);
+      return typedData || [];
     },
     meta: {
       onError: (error: Error) => {
