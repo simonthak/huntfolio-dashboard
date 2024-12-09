@@ -19,6 +19,7 @@ export interface Event {
     profile?: {
       firstname: string | null;
       lastname: string | null;
+      avatar_url?: string | null;
     };
   }[];
 }
