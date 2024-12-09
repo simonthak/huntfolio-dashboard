@@ -1,7 +1,7 @@
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { Users } from "lucide-react";
+import { Users, Dog } from "lucide-react";
 import { Event } from "./types";
 import { isBefore, startOfDay } from "date-fns";
 import { toast } from "sonner";
@@ -33,6 +33,8 @@ const CalendarGrid = ({
 
   const calendarEvents = events.map(event => {
     const isParticipating = event.event_participants.some(p => p.user_id === currentUserId);
+    const shooters = event.event_participants.filter(p => p.participant_type === 'shooter').length;
+    const dogHandlers = event.event_participants.filter(p => p.participant_type === 'dog_handler').length;
 
     return {
       id: event.id,
@@ -45,7 +47,9 @@ const CalendarGrid = ({
       extendedProps: {
         description: event.description,
         participantLimit: event.participant_limit,
-        currentParticipants: event.event_participants.length,
+        dogHandlersLimit: event.dog_handlers_limit,
+        currentShooters: shooters,
+        currentDogHandlers: dogHandlers,
         createdBy: event.created_by_profile.firstname + ' ' + event.created_by_profile.lastname,
         startTime: event.start_time,
         endDate: event.end_date,
@@ -76,10 +80,19 @@ const CalendarGrid = ({
         eventContent={(eventInfo) => (
           <div className={`p-2 rounded-md text-sm border border-green-500 ${eventInfo.event.extendedProps.isParticipating ? 'bg-[#13B67F] text-white' : 'bg-white text-[#13B67F]'}`}>
             <div className="font-medium truncate">{eventInfo.event.title}</div>
-            <div className={`text-xs opacity-90 flex items-center gap-1 ${eventInfo.event.extendedProps.isParticipating ? 'text-white' : 'text-[#13B67F]'}`}>
-              <Users className="w-3.5 h-3.5" />
-              {eventInfo.event.extendedProps.currentParticipants}/
-              {eventInfo.event.extendedProps.participantLimit}
+            <div className="flex flex-col gap-0.5">
+              <div className={`text-xs opacity-90 flex items-center gap-1 ${eventInfo.event.extendedProps.isParticipating ? 'text-white' : 'text-[#13B67F]'}`}>
+                <Users className="w-3.5 h-3.5" />
+                {eventInfo.event.extendedProps.currentShooters}/
+                {eventInfo.event.extendedProps.participantLimit}
+              </div>
+              {eventInfo.event.extendedProps.dogHandlersLimit > 0 && (
+                <div className={`text-xs opacity-90 flex items-center gap-1 ${eventInfo.event.extendedProps.isParticipating ? 'text-white' : 'text-[#13B67F]'}`}>
+                  <Dog className="w-3.5 h-3.5" />
+                  {eventInfo.event.extendedProps.currentDogHandlers}/
+                  {eventInfo.event.extendedProps.dogHandlersLimit}
+                </div>
+              )}
             </div>
           </div>
         )}
