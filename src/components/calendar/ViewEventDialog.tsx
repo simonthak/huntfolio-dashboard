@@ -100,8 +100,8 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Clock className="w-4 h-4" />
               <span>
-                {format(new Date(event.date), "MMMM d, yyyy")}
-                {isMultiDayEvent && ` - ${format(new Date(event.end_date), "MMMM d, yyyy")}`}
+                {format(new Date(event.date), "d MMMM yyyy")}
+                {isMultiDayEvent && ` - ${format(new Date(event.end_date), "d MMMM yyyy")}`}
                 {event.start_time && `, kl ${event.start_time}`}
               </span>
             </div>
@@ -115,7 +115,7 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Users className="w-4 h-4" />
                 <span>
-                  {event.event_participants.length}/{event.participant_limit} deltagare
+                  {event.event_participants.length}/{event.participant_limit} antal skyttar
                 </span>
               </div>
               {event.dog_handlers_limit > 0 && (
