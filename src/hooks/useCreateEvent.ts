@@ -8,6 +8,9 @@ interface CreateEventData {
   hunt_type_id: number;
   description: string;
   participantLimit: number;
+  dogHandlersLimit: number;
+  endDate?: string;
+  startTime?: string;
 }
 
 export const useCreateEvent = (
@@ -69,8 +72,11 @@ export const useCreateEvent = (
         date: formattedDate,
         description: data.description,
         participant_limit: data.participantLimit,
+        dog_handlers_limit: data.dogHandlersLimit,
         created_by: user.id,
-        team_id: currentTeamId
+        team_id: currentTeamId,
+        end_date: data.endDate || null,
+        start_time: data.startTime || null
       };
 
       console.log("Creating event with data:", eventData);
