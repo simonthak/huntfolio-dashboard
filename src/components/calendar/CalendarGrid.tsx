@@ -37,8 +37,8 @@ const CalendarGrid = ({
     return {
       id: event.id,
       title: event.hunt_type.name,
-      date: event.date,
-      end: event.end_date,
+      start: event.date,
+      end: event.end_date ? new Date(new Date(event.end_date).setHours(23, 59, 59)) : undefined,
       backgroundColor: isParticipating ? '#13B67F' : '#ffffff',
       borderColor: '#13B67F',
       textColor: isParticipating ? '#ffffff' : '#13B67F',
