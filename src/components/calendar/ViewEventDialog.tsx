@@ -76,6 +76,7 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
         <DialogHeader>
           <DialogTitle>{event.hunt_type.name}</DialogTitle>
         </DialogHeader>
+        
         <div className="space-y-4">
           <EventDetails event={event} />
           

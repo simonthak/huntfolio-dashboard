@@ -13,7 +13,7 @@ const EventDetails = ({ event }: EventDetailsProps) => {
   const formattedTime = event.start_time ? format(new Date(`2000-01-01T${event.start_time}`), "HH:mm") : null;
 
   return (
-    <div>
+    <div className="space-y-2">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Clock className="w-4 h-4" />
         <span>
@@ -23,7 +23,7 @@ const EventDetails = ({ event }: EventDetailsProps) => {
         </span>
       </div>
       {event.description && (
-        <p className="mt-2 text-sm">{event.description}</p>
+        <p className="text-sm">{event.description}</p>
       )}
     </div>
   );
