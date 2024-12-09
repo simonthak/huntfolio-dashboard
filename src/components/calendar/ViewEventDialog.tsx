@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Users, Trash2, LogOut } from "lucide-react";
+import { Users, Dog, Trash2, LogOut, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -87,6 +87,8 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
 
   if (!event) return null;
 
+  const isMultiDayEvent = event.end_date && event.end_date !== event.date;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
@@ -95,20 +97,33 @@ const ViewEventDialog = ({ event, open, onOpenChange, onEventJoin }: ViewEventDi
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <p className="text-sm text-muted-foreground">
-              {format(new Date(event.date), "MMMM d, yyyy")}
-            </p>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="w-4 h-4" />
+              <span>
+                {format(new Date(event.date), "MMMM d, yyyy")}
+                {isMultiDayEvent && ` - ${format(new Date(event.end_date), "MMMM d, yyyy")}`}
+                {event.start_time && `, kl ${event.start_time}`}
+              </span>
+            </div>
             {event.description && (
               <p className="mt-2 text-sm">{event.description}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="w-4 h-4" />
-              <span>
-                {event.event_participants.length}/{event.participant_limit} participants
-              </span>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Users className="w-4 h-4" />
+                <span>
+                  {event.event_participants.length}/{event.participant_limit} deltagare
+                </span>
+              </div>
+              {event.dog_handlers_limit > 0 && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Dog className="w-4 h-4" />
+                  <span>Max {event.dog_handlers_limit} hundförare</span>
+                </div>
+              )}
             </div>
             
             <ParticipantList participants={event.event_participants} />

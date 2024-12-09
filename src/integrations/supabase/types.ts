@@ -167,9 +167,12 @@ export type Database = {
           created_by: string
           date: string
           description: string | null
+          dog_handlers_limit: number
+          end_date: string | null
           hunt_type_id: number
           id: string
           participant_limit: number
+          start_time: string | null
           team_id: string | null
         }
         Insert: {
@@ -177,9 +180,12 @@ export type Database = {
           created_by: string
           date: string
           description?: string | null
+          dog_handlers_limit?: number
+          end_date?: string | null
           hunt_type_id: number
           id?: string
           participant_limit: number
+          start_time?: string | null
           team_id?: string | null
         }
         Update: {
@@ -187,9 +193,12 @@ export type Database = {
           created_by?: string
           date?: string
           description?: string | null
+          dog_handlers_limit?: number
+          end_date?: string | null
           hunt_type_id?: number
           id?: string
           participant_limit?: number
+          start_time?: string | null
           team_id?: string | null
         }
         Relationships: [
