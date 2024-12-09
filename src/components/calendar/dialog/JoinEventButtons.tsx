@@ -17,6 +17,22 @@ const JoinEventButtons = ({
   onJoin,
   showDogHandlers
 }: JoinEventButtonsProps) => {
+  // If there are no dog handlers allowed, show only the shooter button
+  if (!showDogHandlers) {
+    return (
+      <div className="flex flex-col gap-2">
+        <Button
+          onClick={onJoin}
+          disabled={isShootersFull}
+          className="w-full"
+        >
+          Anmäl dig som skytt {isShootersFull ? '(Full)' : ''}
+        </Button>
+      </div>
+    );
+  }
+
+  // If dog handlers are allowed, show both options
   return (
     <div className="flex flex-col gap-2">
       <div className="flex gap-2">
@@ -28,16 +44,14 @@ const JoinEventButtons = ({
         >
           Skytt {isShootersFull ? '(Full)' : ''}
         </Button>
-        {showDogHandlers && (
-          <Button
-            variant={joinType === 'dog_handler' ? 'default' : 'outline'}
-            onClick={() => setJoinType('dog_handler')}
-            className="flex-1"
-            disabled={isDogHandlersFull}
-          >
-            Hundförare {isDogHandlersFull ? '(Full)' : ''}
-          </Button>
-        )}
+        <Button
+          variant={joinType === 'dog_handler' ? 'default' : 'outline'}
+          onClick={() => setJoinType('dog_handler')}
+          className="flex-1"
+          disabled={isDogHandlersFull}
+        >
+          Hundförare {isDogHandlersFull ? '(Full)' : ''}
+        </Button>
       </div>
       <Button
         onClick={onJoin}
