@@ -73,14 +73,12 @@ const CalendarGrid = ({
         height="auto"
         dayCellClassNames="cursor-pointer hover:bg-gray-50"
         eventContent={(eventInfo) => (
-          <div className="p-1 w-full">
-            <div className={`p-2 rounded-md text-sm border border-green-500`}>
-              <div className="font-medium truncate">{eventInfo.event.title}</div>
-              <div className="text-xs opacity-90 flex items-center gap-1">
-                <Users className="w-3.5 h-3.5" />
-                {eventInfo.event.extendedProps.currentParticipants}/
-                {eventInfo.event.extendedProps.participantLimit}
-              </div>
+          <div className={`p-2 rounded-md text-sm border border-green-500`}>
+            <div className="font-medium truncate">{eventInfo.event.title}</div>
+            <div className="text-xs opacity-90 flex items-center gap-1">
+              <Users className="w-3.5 h-3.5" />
+              {eventInfo.event.extendedProps.currentParticipants}/
+              {eventInfo.event.extendedProps.participantLimit}
             </div>
           </div>
         )}
