@@ -65,8 +65,8 @@ const SpeciesChart = ({ teamId }: SpeciesChartProps) => {
   return (
     <Card className="col-span-4">
       <CardHeader>
-        <CardTitle>Species Distribution</CardTitle>
-        <CardDescription>Number of successful hunts per species</CardDescription>
+        <CardTitle>Artfördelning</CardTitle>
+        <CardDescription>Antal fällda djur per art</CardDescription>
       </CardHeader>
       <CardContent className="pb-4">
         <div className="h-[300px]">

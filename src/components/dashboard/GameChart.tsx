@@ -66,8 +66,8 @@ const GameChart = ({ teamId }: GameChartProps) => {
   return (
     <Card className="col-span-4">
       <CardHeader>
-        <CardTitle>Downed Game Overview</CardTitle>
-        <CardDescription>Number of successful hunts per month</CardDescription>
+        <CardTitle>Fällt Vilt Översikt</CardTitle>
+        <CardDescription>Antal fällt vilt per månad</CardDescription>
       </CardHeader>
       <CardContent className="pb-4">
         <div className="h-[300px]">
