@@ -63,7 +63,9 @@ const Login = () => {
                 button_label: "Logga in",
                 loading_button_label: "Loggar in...",
                 social_provider_text: "Logga in med {{provider}}",
-                link_text: "Har du redan ett konto? Logga in"
+                link_text: "Har du redan ett konto? Logga in",
+                email_input_placeholder: "Din e-postadress",
+                password_input_placeholder: "Ditt lösenord"
               },
               sign_up: {
                 email_label: "E-postadress",
@@ -71,19 +73,23 @@ const Login = () => {
                 button_label: "Registrera",
                 loading_button_label: "Registrerar...",
                 social_provider_text: "Registrera med {{provider}}",
-                link_text: "Har du inget konto? Registrera dig"
+                link_text: "Har du inget konto? Registrera dig",
+                email_input_placeholder: "Din e-postadress",
+                password_input_placeholder: "Välj ett lösenord"
               },
               forgotten_password: {
                 email_label: "E-postadress",
                 password_label: "Lösenord",
                 button_label: "Skicka återställningslänk",
                 loading_button_label: "Skickar...",
-                link_text: "Glömt lösenord?"
+                link_text: "Glömt lösenord?",
+                email_input_placeholder: "Din e-postadress"
               },
               update_password: {
                 password_label: "Nytt lösenord",
                 button_label: "Uppdatera lösenord",
                 loading_button_label: "Uppdaterar lösenord...",
+                password_input_placeholder: "Ditt nya lösenord"
               }
             }
           }}
