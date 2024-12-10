@@ -103,7 +103,7 @@ const Index = () => {
       change: null 
     },
     { 
-      label: "Säsongens Byten", 
+      label: "Säsongens Vilt", 
       value: stats.totalGame.toString(), 
       icon: Trophy, 
       change: null 
