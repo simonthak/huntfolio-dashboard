@@ -53,7 +53,7 @@ const TeamActions = ({ teamId, userRole, inviteCode }: TeamActionsProps) => {
         className="flex items-center gap-2"
       >
         <UserMinus className="w-4 h-4" />
-        Leave Team
+        Lämna lag
       </Button>
 
       {userRole === 'admin' && (
