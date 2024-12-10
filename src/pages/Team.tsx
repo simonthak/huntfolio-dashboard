@@ -86,7 +86,7 @@ const Team = () => {
 
   return (
     <div className="container mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">Team Management</h1>
+      <h1 className="text-2xl font-bold">Mitt jaktlag</h1>
       
       {teamData?.teams && (
         <>
