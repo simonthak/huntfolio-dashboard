@@ -77,7 +77,7 @@ const ParticipantList = ({ participants }: ParticipantListProps) => {
       <div className="p-4 space-y-6">
         {shooters.length > 0 && (
           <Section 
-            title="Hunters" 
+            title="Skyttar" 
             icon={Users} 
             participants={shooters} 
           />
