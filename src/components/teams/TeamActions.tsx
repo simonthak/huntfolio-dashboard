@@ -61,7 +61,7 @@ const TeamActions = ({ teamId, userRole, inviteCode }: TeamActionsProps) => {
           <DialogTrigger asChild>
             <Button className="bg-[#13B67F] hover:bg-[#0ea16f] flex items-center gap-2">
               <Users className="w-4 h-4" />
-              Invite Members
+              Bjud in
             </Button>
           </DialogTrigger>
           <DialogContent>
