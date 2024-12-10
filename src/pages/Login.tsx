@@ -37,10 +37,10 @@ const Login = () => {
         <div className="flex flex-col items-center mb-8">
           <img 
             src="https://nlxlpxddixvieiwsxdbu.supabase.co/storage/v1/object/public/logos/symbol.svg?t=2024-12-01T17%3A04%3A25.353Z" 
-            alt="Antlers Logo" 
+            alt="Antlers Logotyp" 
             className="w-16 h-16 mb-4"
           />
-          <h1 className="text-2xl font-bold text-center">Welcome to Antlers</h1>
+          <h1 className="text-2xl font-bold text-center">Välkommen till Antlers</h1>
         </div>
         <Auth
           supabaseClient={supabase}
@@ -52,6 +52,38 @@ const Login = () => {
                   brand: '#13B67F',
                   brandAccent: '#0ea16f',
                 }
+              }
+            }
+          }}
+          localization={{
+            variables: {
+              sign_in: {
+                email_label: "E-postadress",
+                password_label: "Lösenord",
+                button_label: "Logga in",
+                loading_button_label: "Loggar in...",
+                social_provider_text: "Logga in med {{provider}}",
+                link_text: "Har du redan ett konto? Logga in"
+              },
+              sign_up: {
+                email_label: "E-postadress",
+                password_label: "Lösenord",
+                button_label: "Registrera",
+                loading_button_label: "Registrerar...",
+                social_provider_text: "Registrera med {{provider}}",
+                link_text: "Har du inget konto? Registrera dig"
+              },
+              forgotten_password: {
+                email_label: "E-postadress",
+                password_label: "Lösenord",
+                button_label: "Skicka återställningslänk",
+                loading_button_label: "Skickar...",
+                link_text: "Glömt lösenord?"
+              },
+              update_password: {
+                password_label: "Nytt lösenord",
+                button_label: "Uppdatera lösenord",
+                loading_button_label: "Uppdaterar lösenord...",
               }
             }
           }}
