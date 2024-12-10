@@ -39,12 +39,12 @@ const TeamForm = ({ onSubmit, isCreating }: TeamFormProps) => {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Team Name*</FormLabel>
+              <FormLabel>Lagets namn*</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Enter team name" />
+                <Input {...field} placeholder="Ange lagets namn" />
               </FormControl>
               <FormDescription>
-                Choose a unique name for your team
+                Välj ett unikt namn för ditt lag
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -55,12 +55,12 @@ const TeamForm = ({ onSubmit, isCreating }: TeamFormProps) => {
           name="location"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Location</FormLabel>
+              <FormLabel>Plats</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Enter team location" />
+                <Input {...field} placeholder="Ange lagets plats" />
               </FormControl>
               <FormDescription>
-                Where is your team primarily based?
+                Var är laget huvudsakligen baserat?
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -71,12 +71,12 @@ const TeamForm = ({ onSubmit, isCreating }: TeamFormProps) => {
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel>Beskrivning</FormLabel>
               <FormControl>
-                <Textarea {...field} placeholder="Describe your team" />
+                <Textarea {...field} placeholder="Beskriv ditt lag" />
               </FormControl>
               <FormDescription>
-                Add some details about your team's purpose and activities
+                Lägg till information om lagets syfte och aktiviteter
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -87,17 +87,17 @@ const TeamForm = ({ onSubmit, isCreating }: TeamFormProps) => {
           name="areal"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Areal (hectares)</FormLabel>
+              <FormLabel>Areal (hektar)</FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
                   type="number" 
                   step="0.01" 
-                  placeholder="Enter area in hectares" 
+                  placeholder="Ange area i hektar" 
                 />
               </FormControl>
               <FormDescription>
-                The size of your hunting area in hectares
+                Storleken på ert jaktområde i hektar
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -111,10 +111,10 @@ const TeamForm = ({ onSubmit, isCreating }: TeamFormProps) => {
           {isCreating ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Creating...
+              Skapar...
             </>
           ) : (
-            "Create Team"
+            "Skapa lag"
           )}
         </Button>
       </form>
