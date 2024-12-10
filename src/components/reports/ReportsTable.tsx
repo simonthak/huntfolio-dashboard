@@ -33,7 +33,7 @@ const ReportsTable = ({
           <TableRow>
             <TableHead>Datum</TableHead>
             <TableHead>Jakttyp</TableHead>
-            <TableHead>Byten</TableHead>
+            <TableHead>Vilt</TableHead>
             <TableHead>Deltagare</TableHead>
             <TableHead>Rapporterad av</TableHead>
             <TableHead className="text-right">Åtgärder</TableHead>
