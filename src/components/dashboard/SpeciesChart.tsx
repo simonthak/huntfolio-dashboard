@@ -11,7 +11,6 @@ import {
   ResponsiveContainer,
   XAxis,
   YAxis,
-  Tooltip,
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -89,7 +88,6 @@ const SpeciesChart = ({ teamId }: SpeciesChartProps) => {
                 axisLine={false}
                 tickFormatter={(value) => `${value}`}
               />
-              <Tooltip />
               <Bar dataKey="count" fill="#13B67F" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>

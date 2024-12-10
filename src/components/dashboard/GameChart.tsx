@@ -9,7 +9,6 @@ import {
   Area,
   AreaChart,
   ResponsiveContainer,
-  Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
@@ -96,7 +95,6 @@ const GameChart = ({ teamId }: GameChartProps) => {
                 axisLine={false}
                 tickFormatter={(value) => `${value}`}
               />
-              <Tooltip />
               <Area
                 type="monotone"
                 dataKey="count"
