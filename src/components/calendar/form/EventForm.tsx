@@ -99,7 +99,7 @@ const EventForm = ({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="startTime">Starttid (valfritt)</Label>
+        <Label htmlFor="startTime">Starttid för jakten (valfritt)</Label>
         <Input
           type="time"
           id="startTime"
