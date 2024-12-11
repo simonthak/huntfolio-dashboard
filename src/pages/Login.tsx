@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
+import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -11,9 +12,21 @@ const Login = () => {
   useEffect(() => {
     // Check if user is already logged in
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/");
+      try {
+        console.log("Checking existing session...");
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session check error:", sessionError);
+          return;
+        }
+
+        if (session) {
+          console.log("Active session found, redirecting to home");
+          navigate("/");
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
       }
     };
 
@@ -21,9 +34,20 @@ const Login = () => {
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (session) {
+      async (event, session) => {
+        console.log("Auth state changed:", event);
+        
+        if (event === 'SIGNED_IN') {
+          console.log("User signed in successfully");
+          toast.success("Inloggningen lyckades!");
           navigate("/");
+        } else if (event === 'SIGNED_OUT') {
+          console.log("User signed out");
+        } else if (event === 'USER_DELETED') {
+          console.log("User account deleted");
+          toast.error("Kontot har tagits bort");
+        } else if (event === 'USER_UPDATED') {
+          console.log("User account updated");
         }
       }
     );
@@ -95,6 +119,16 @@ const Login = () => {
           }}
           providers={[]}
           redirectTo={`${window.location.origin}/`}
+          onError={(error) => {
+            console.error("Auth error:", error);
+            if (error.message.includes("Invalid login credentials")) {
+              toast.error("Felaktiga inloggningsuppgifter");
+            } else if (error.message.includes("Email not confirmed")) {
+              toast.error("E-postadressen har inte bekräftats än");
+            } else {
+              toast.error("Ett fel uppstod vid inloggningen");
+            }
+          }}
         />
       </Card>
     </div>
