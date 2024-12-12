@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Calendar, Users } from "lucide-react";
+import { Calendar, Users, Dog } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -28,7 +28,10 @@ const UpcomingHunts = ({ teamId }: UpcomingHuntsProps) => {
         .from("events")
         .select(`
           *,
-          event_participants(user_id),
+          event_participants(
+            user_id,
+            participant_type
+          ),
           hunt_type:hunt_types(name)
         `)
         .eq('team_id', teamId)
@@ -64,26 +67,39 @@ const UpcomingHunts = ({ teamId }: UpcomingHuntsProps) => {
               Inga kommande jakter planerade
             </p>
           ) : (
-            events.map((hunt) => (
-              <div
-                key={hunt.id}
-                className="flex items-center justify-between p-4 bg-secondary/5 rounded-lg"
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="w-4 h-4" />
-                    <span>{format(new Date(hunt.date), "d MMM yyyy")}</span>
+            events.map((hunt) => {
+              const shooters = hunt.event_participants.filter(p => p.participant_type === 'shooter').length;
+              const dogHandlers = hunt.event_participants.filter(p => p.participant_type === 'dog_handler').length;
+
+              return (
+                <div
+                  key={hunt.id}
+                  className="flex items-center justify-between p-4 bg-secondary/5 rounded-lg"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="w-4 h-4" />
+                      <span>{format(new Date(hunt.date), "d MMM yyyy")}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="text-primary font-medium">{hunt.hunt_type.name}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-primary font-medium">{hunt.hunt_type.name}</span>
+                  <div className="flex flex-col items-end gap-1">
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                      <Users className="w-4 h-4" />
+                      <span>{shooters}/{hunt.participant_limit}</span>
+                    </div>
+                    {hunt.dog_handlers_limit > 0 && (
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Dog className="w-4 h-4" />
+                        <span>{dogHandlers}/{hunt.dog_handlers_limit}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <Users className="w-4 h-4" />
-                  <span>{hunt.event_participants.length}/{hunt.participant_limit}</span>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </CardContent>
