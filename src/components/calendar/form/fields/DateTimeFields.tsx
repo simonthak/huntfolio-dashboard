@@ -93,7 +93,7 @@ const DateTimeFields = ({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="startTime">Starttid för jakten (valfritt)</Label>
+        <Label htmlFor="startTime">Samlingstid för jakten (valfritt)</Label>
         <Select value={startTime} onValueChange={onStartTimeChange}>
           <SelectTrigger id="startTime">
             <SelectValue placeholder="Välj starttid" />
