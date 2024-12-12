@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import EventTypeSelector from "./EventTypeSelector";
 import { toast } from "sonner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface EventFormProps {
   selectedDate?: Date;
@@ -33,6 +34,17 @@ const EventForm = ({
   const [dogHandlersLimit, setDogHandlersLimit] = useState("");
   const [endDate, setEndDate] = useState("");
   const [startTime, setStartTime] = useState("");
+
+  // Generate time options in 15-minute intervals
+  const timeOptions = [];
+  for (let hour = 0; hour < 24; hour++) {
+    for (let minute = 0; minute < 60; minute += 15) {
+      const formattedHour = hour.toString().padStart(2, '0');
+      const formattedMinute = minute.toString().padStart(2, '0');
+      const timeValue = `${formattedHour}:${formattedMinute}`;
+      timeOptions.push(timeValue);
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,12 +112,18 @@ const EventForm = ({
 
       <div className="space-y-2">
         <Label htmlFor="startTime">Starttid för jakten (valfritt)</Label>
-        <Input
-          type="time"
-          id="startTime"
-          value={startTime}
-          onChange={(e) => setStartTime(e.target.value)}
-        />
+        <Select value={startTime} onValueChange={setStartTime}>
+          <SelectTrigger id="startTime">
+            <SelectValue placeholder="Välj starttid" />
+          </SelectTrigger>
+          <SelectContent>
+            {timeOptions.map((time) => (
+              <SelectItem key={time} value={time}>
+                {time}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <EventTypeSelector value={huntTypeId} onChange={setHuntTypeId} />
