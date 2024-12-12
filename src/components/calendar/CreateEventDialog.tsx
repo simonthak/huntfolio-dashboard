@@ -27,7 +27,10 @@ const CreateEventDialog = ({
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog 
+      open={open} 
+      onOpenChange={undefined}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Skapa en ny händelse</DialogTitle>
