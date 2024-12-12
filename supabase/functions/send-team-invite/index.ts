@@ -26,6 +26,11 @@ const handler = async (req: Request): Promise<Response> => {
     const { to, teamName, inviteCode }: InviteRequest = await req.json();
     console.log("Sending invite email to:", to, "for team:", teamName);
 
+    if (!RESEND_API_KEY) {
+      console.error("RESEND_API_KEY is not set");
+      throw new Error("RESEND_API_KEY is not set");
+    }
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
