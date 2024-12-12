@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import EventTypeSelector from "./EventTypeSelector";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CalendarIcon } from "lucide-react";
 
 interface EventFormProps {
   selectedDate?: Date;
@@ -90,12 +91,15 @@ const EventForm = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label>Startdatum</Label>
+      <div className="p-4 bg-[#13B67F]/10 rounded-lg border-2 border-[#13B67F] space-y-2">
+        <Label className="text-lg font-semibold text-[#13B67F] flex items-center gap-2">
+          <CalendarIcon className="w-5 h-5" />
+          Startdatum
+        </Label>
         <Input
           value={selectedDate ? format(selectedDate, "MMMM d, yyyy") : ""}
           disabled
-          className="bg-muted"
+          className="bg-white/50 text-lg font-medium border-[#13B67F]/20"
         />
       </div>
 
