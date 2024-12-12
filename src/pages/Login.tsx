@@ -43,9 +43,6 @@ const Login = () => {
           navigate("/");
         } else if (event === 'SIGNED_OUT') {
           console.log("User signed out");
-        } else if (event === 'USER_DELETED') {
-          console.log("User account deleted");
-          toast.error("Kontot har tagits bort");
         } else if (event === 'USER_UPDATED') {
           console.log("User account updated");
         }
@@ -54,6 +51,17 @@ const Login = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const handleError = (error: Error) => {
+    console.error("Auth error:", error);
+    if (error.message.includes("Invalid login credentials")) {
+      toast.error("Felaktiga inloggningsuppgifter");
+    } else if (error.message.includes("Email not confirmed")) {
+      toast.error("E-postadressen har inte bekräftats än");
+    } else {
+      toast.error("Ett fel uppstod vid inloggningen");
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -119,16 +127,6 @@ const Login = () => {
           }}
           providers={[]}
           redirectTo={`${window.location.origin}/`}
-          onError={(error) => {
-            console.error("Auth error:", error);
-            if (error.message.includes("Invalid login credentials")) {
-              toast.error("Felaktiga inloggningsuppgifter");
-            } else if (error.message.includes("Email not confirmed")) {
-              toast.error("E-postadressen har inte bekräftats än");
-            } else {
-              toast.error("Ett fel uppstod vid inloggningen");
-            }
-          }}
         />
       </Card>
     </div>
