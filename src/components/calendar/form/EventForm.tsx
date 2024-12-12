@@ -8,6 +8,9 @@ import EventTypeSelector from "./EventTypeSelector";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface EventFormProps {
   selectedDate?: Date;
@@ -78,7 +81,6 @@ const EventForm = ({
       return;
     }
 
-    console.log("Skickar formulär med jakttyp-id:", huntTypeId);
     await onSubmit({
       hunt_type_id: huntTypeId,
       description,
@@ -96,11 +98,31 @@ const EventForm = ({
           <CalendarIcon className="w-5 h-5" />
           Startdatum
         </Label>
-        <Input
-          value={selectedDate ? format(selectedDate, "MMMM d, yyyy") : ""}
-          disabled
-          className="bg-white/50 text-lg font-medium border-[#13B67F]/20"
-        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full justify-start text-left font-medium bg-white/50 border-[#13B67F]/20 hover:bg-white/80",
+                !selectedDate && "text-muted-foreground"
+              )}
+            >
+              {selectedDate ? (
+                format(selectedDate, "PPP")
+              ) : (
+                "Välj ett datum"
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              disabled={(date) => date < new Date()}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div className="space-y-2">
