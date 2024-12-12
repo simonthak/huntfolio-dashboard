@@ -95,7 +95,8 @@ const Team = () => {
           <TeamActions 
             teamId={teamData.team_id} 
             userRole={teamData.role} 
-            inviteCode={teamData.teams.invite_code} 
+            inviteCode={teamData.teams.invite_code}
+            teamName={teamData.teams.name}
           />
         </>
       )}
