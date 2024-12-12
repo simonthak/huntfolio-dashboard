@@ -1,7 +1,6 @@
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -64,15 +63,33 @@ const DateTimeFields = ({
         </Popover>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="endDate">Slutdatum (valfritt)</Label>
-        <Input
-          type="date"
-          id="endDate"
-          value={endDate}
-          onChange={(e) => onEndDateChange(e.target.value)}
-          min={selectedDate ? format(selectedDate, "yyyy-MM-dd") : undefined}
-        />
+      <div className="p-4 bg-gray-50 rounded-lg border space-y-2">
+        <Label className="text-lg font-semibold flex items-center gap-2">
+          <CalendarIcon className="w-5 h-5" />
+          Slutdatum (valfritt)
+        </Label>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full justify-start text-left font-normal",
+                !endDate && "text-muted-foreground"
+              )}
+            >
+              {endDate ? format(new Date(endDate), "PPP") : "Välj slutdatum"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={endDate ? new Date(endDate) : undefined}
+              onSelect={(date) => onEndDateChange(date ? format(date, "yyyy-MM-dd") : "")}
+              disabled={(date) => selectedDate ? date < selectedDate : date < new Date()}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div className="space-y-2">
