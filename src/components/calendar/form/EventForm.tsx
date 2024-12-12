@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import EventTypeSelector from "./EventTypeSelector";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, Clock } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 
 interface EventFormProps {
   selectedDate?: Date;
@@ -114,22 +114,15 @@ const EventForm = ({
         />
       </div>
 
-      <div className="p-4 bg-[#13B67F]/10 rounded-lg border-2 border-[#13B67F] space-y-2">
-        <Label htmlFor="startTime" className="text-lg font-semibold text-[#13B67F] flex items-center gap-2">
-          <Clock className="w-5 h-5" />
-          Starttid för jakten (valfritt)
-        </Label>
+      <div className="space-y-2">
+        <Label htmlFor="startTime">Starttid för jakten (valfritt)</Label>
         <Select value={startTime} onValueChange={setStartTime}>
-          <SelectTrigger id="startTime" className="bg-white/50 text-lg font-medium border-[#13B67F]/20">
+          <SelectTrigger id="startTime">
             <SelectValue placeholder="Välj starttid" />
           </SelectTrigger>
           <SelectContent>
             {timeOptions.map((time) => (
-              <SelectItem 
-                key={time} 
-                value={time}
-                className="text-base hover:bg-[#13B67F]/10 focus:bg-[#13B67F]/10 focus:text-[#13B67F]"
-              >
+              <SelectItem key={time} value={time}>
                 {time}
               </SelectItem>
             ))}
