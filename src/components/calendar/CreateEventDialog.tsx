@@ -30,7 +30,7 @@ const CreateEventDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create New Hunt Event</DialogTitle>
+          <DialogTitle>Skapa en ny händelse</DialogTitle>
         </DialogHeader>
         <EventForm
           selectedDate={selectedDate}
