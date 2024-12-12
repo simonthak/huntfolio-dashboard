@@ -1,16 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { format } from "date-fns";
-import EventTypeSelector from "./EventTypeSelector";
 import { toast } from "sonner";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import EventTypeSelector from "./EventTypeSelector";
+import DateTimeFields from "./fields/DateTimeFields";
+import DescriptionField from "./fields/DescriptionField";
+import ParticipantFields from "./fields/ParticipantFields";
 
 interface EventFormProps {
   selectedDate?: Date;
@@ -38,17 +32,6 @@ const EventForm = ({
   const [dogHandlersLimit, setDogHandlersLimit] = useState("");
   const [endDate, setEndDate] = useState("");
   const [startTime, setStartTime] = useState("");
-
-  // Generate time options in 15-minute intervals
-  const timeOptions = [];
-  for (let hour = 0; hour < 24; hour++) {
-    for (let minute = 0; minute < 60; minute += 15) {
-      const formattedHour = hour.toString().padStart(2, '0');
-      const formattedMinute = minute.toString().padStart(2, '0');
-      const timeValue = `${formattedHour}:${formattedMinute}`;
-      timeOptions.push(timeValue);
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,104 +76,27 @@ const EventForm = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="p-4 bg-[#13B67F]/10 rounded-lg border-2 border-[#13B67F] space-y-2">
-        <Label className="text-lg font-semibold text-[#13B67F] flex items-center gap-2">
-          <CalendarIcon className="w-5 h-5" />
-          Startdatum
-        </Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-medium bg-white/50 border-[#13B67F]/20 hover:bg-white/80",
-                !selectedDate && "text-muted-foreground"
-              )}
-            >
-              {selectedDate ? (
-                format(selectedDate, "PPP")
-              ) : (
-                "Välj ett datum"
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              disabled={(date) => date < new Date()}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="endDate">Slutdatum (valfritt)</Label>
-        <Input
-          type="date"
-          id="endDate"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          min={selectedDate ? format(selectedDate, "yyyy-MM-dd") : undefined}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="startTime">Starttid för jakten (valfritt)</Label>
-        <Select value={startTime} onValueChange={setStartTime}>
-          <SelectTrigger id="startTime">
-            <SelectValue placeholder="Välj starttid" />
-          </SelectTrigger>
-          <SelectContent>
-            {timeOptions.map((time) => (
-              <SelectItem key={time} value={time}>
-                {time}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <DateTimeFields
+        selectedDate={selectedDate}
+        endDate={endDate}
+        startTime={startTime}
+        onEndDateChange={setEndDate}
+        onStartTimeChange={setStartTime}
+      />
 
       <EventTypeSelector value={huntTypeId} onChange={setHuntTypeId} />
 
-      <div className="space-y-2">
-        <Label htmlFor="description">Beskrivning</Label>
-        <Textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Lägg till detaljer om jakten..."
-          rows={3}
-        />
-      </div>
+      <DescriptionField
+        description={description}
+        onDescriptionChange={setDescription}
+      />
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="participantLimit">Antal skyttar</Label>
-          <Input
-            id="participantLimit"
-            type="number"
-            min="1"
-            value={participantLimit}
-            onChange={(e) => setParticipantLimit(e.target.value)}
-            required
-            placeholder="Max antal deltagare"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="dogHandlersLimit">Antal hundförare</Label>
-          <Input
-            id="dogHandlersLimit"
-            type="number"
-            min="0"
-            value={dogHandlersLimit}
-            onChange={(e) => setDogHandlersLimit(e.target.value)}
-            placeholder="Max antal hundförare"
-          />
-        </div>
-      </div>
+      <ParticipantFields
+        participantLimit={participantLimit}
+        dogHandlersLimit={dogHandlersLimit}
+        onParticipantLimitChange={setParticipantLimit}
+        onDogHandlersLimitChange={setDogHandlersLimit}
+      />
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>
