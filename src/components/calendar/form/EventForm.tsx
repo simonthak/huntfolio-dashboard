@@ -5,7 +5,6 @@ import EventTypeSelector from "./EventTypeSelector";
 import DateTimeFields from "./fields/DateTimeFields";
 import DescriptionField from "./fields/DescriptionField";
 import ParticipantFields from "./fields/ParticipantFields";
-import { createLocalDate } from "@/utils/dateUtils";
 
 interface EventFormProps {
   initialDate?: Date;
@@ -37,8 +36,10 @@ const EventForm = ({
 
   useEffect(() => {
     if (initialDate) {
-      const newDate = createLocalDate(initialDate);
-      console.log("EventForm - Setting initial date:", newDate);
+      console.log("EventForm - Initial date received:", initialDate);
+      // Ensure we're working with a new Date object
+      const newDate = new Date(initialDate.getTime());
+      console.log("EventForm - Setting date to:", newDate);
       setSelectedDate(newDate);
     }
   }, [initialDate]);

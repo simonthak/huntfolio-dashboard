@@ -3,7 +3,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { Event } from "./types";
 import { toast } from "sonner";
-import { validateFutureDate, createLocalDate } from "@/utils/dateUtils";
+import { validateFutureDate } from "@/utils/dateUtils";
 import CalendarEventContent from "./CalendarEventContent";
 
 interface CalendarGridProps {
@@ -20,14 +20,16 @@ const CalendarGrid = ({
   onEventSelect 
 }: CalendarGridProps) => {
   const handleDateSelect = (selectInfo: { start: Date }) => {
-    const selectedDate = createLocalDate(selectInfo.start);
+    // Create a new Date object with the local timezone
+    const selectedDate = new Date(selectInfo.start);
+    console.log("CalendarGrid - Raw selected date:", selectInfo.start);
+    console.log("CalendarGrid - Converted selected date:", selectedDate);
     
     if (!validateFutureDate(selectedDate)) {
       toast.error("You can only create events for today or future dates");
       return;
     }
     
-    console.log("CalendarGrid - Selected date:", selectedDate);
     onDateSelect(selectedDate);
   };
 

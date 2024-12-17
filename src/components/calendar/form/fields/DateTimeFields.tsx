@@ -6,7 +6,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { createLocalDate } from "@/utils/dateUtils";
 
 interface DateTimeFieldsProps {
   selectedDate?: Date;
@@ -32,10 +31,14 @@ const DateTimeFields = ({
   });
 
   const handleStartDateSelect = (date: Date | undefined) => {
-    if (onStartDateChange) {
-      const newDate = date ? createLocalDate(date) : undefined;
-      console.log("DateTimeFields - New date selected:", newDate);
-      onStartDateChange(newDate);
+    console.log("DateTimeFields - Selected date before processing:", date);
+    if (onStartDateChange && date) {
+      // Ensure we're working with a new Date object in the local timezone
+      const localDate = new Date(date.getTime());
+      console.log("DateTimeFields - Processed date:", localDate);
+      onStartDateChange(localDate);
+    } else {
+      onStartDateChange?.(undefined);
     }
   };
 
