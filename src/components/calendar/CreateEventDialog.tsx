@@ -19,8 +19,6 @@ const CreateEventDialog = ({
   const [searchParams] = useSearchParams();
   const currentTeamId = searchParams.get('team');
   
-  console.log("CreateEventDialog - passing selectedDate to EventForm:", selectedDate); // Debug log
-  
   const { createEvent, isSubmitting } = useCreateEvent(
     selectedDate,
     currentTeamId,

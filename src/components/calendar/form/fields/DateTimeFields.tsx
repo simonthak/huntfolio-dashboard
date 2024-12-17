@@ -24,8 +24,6 @@ const DateTimeFields = ({
   onStartTimeChange,
   onStartDateChange
 }: DateTimeFieldsProps) => {
-  console.log("DateTimeFields - Current selectedDate:", selectedDate);
-
   // Generate time options in 15-minute intervals
   const timeOptions = [];
   for (let hour = 0; hour < 24; hour++) {
@@ -38,9 +36,10 @@ const DateTimeFields = ({
   }
 
   const handleStartDateSelect = (date: Date | undefined) => {
-    console.log("DateTimeFields - New date selected:", date);
     if (onStartDateChange) {
-      onStartDateChange(date);
+      // Ensure we're working with a new Date object
+      const newDate = date ? new Date(date) : undefined;
+      onStartDateChange(newDate);
     }
   };
 
