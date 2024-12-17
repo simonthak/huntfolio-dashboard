@@ -13,6 +13,7 @@ interface DateTimeFieldsProps {
   startTime: string;
   onEndDateChange: (value: string) => void;
   onStartTimeChange: (value: string) => void;
+  onStartDateChange?: (date: Date) => void;
 }
 
 const DateTimeFields = ({
@@ -20,7 +21,8 @@ const DateTimeFields = ({
   endDate,
   startTime,
   onEndDateChange,
-  onStartTimeChange
+  onStartTimeChange,
+  onStartDateChange
 }: DateTimeFieldsProps) => {
   // Generate time options in 15-minute intervals
   const timeOptions = [];
@@ -56,6 +58,7 @@ const DateTimeFields = ({
             <Calendar
               mode="single"
               selected={selectedDate}
+              onSelect={onStartDateChange}
               disabled={(date) => date < new Date()}
               initialFocus
             />
