@@ -19,9 +19,8 @@ const CalendarGrid = ({
   onDateSelect, 
   onEventSelect 
 }: CalendarGridProps) => {
-  const handleDateSelect = (selectInfo: { date: Date }) => {
-    console.log("Date selected:", selectInfo.date); // Debug log
-    const date = selectInfo.date;
+  const handleDateSelect = (selectInfo: { start: Date }) => {
+    const date = selectInfo.start;
     const today = startOfDay(new Date());
     
     if (isBefore(date, today)) {
@@ -65,7 +64,8 @@ const CalendarGrid = ({
         plugins={[dayGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
         firstDay={1}
-        dateClick={handleDateSelect}
+        selectable={true}
+        select={handleDateSelect}
         events={calendarEvents}
         eventClick={(info) => {
           const event = events?.find(e => e.id === info.event.id);
