@@ -34,6 +34,8 @@ const EventForm = ({
   const [endDate, setEndDate] = useState("");
   const [startTime, setStartTime] = useState("");
 
+  console.log("EventForm - selectedDate state:", selectedDate); // Debug log
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     

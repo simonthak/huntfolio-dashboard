@@ -13,16 +13,16 @@ interface CreateEventDialogProps {
 const CreateEventDialog = ({ 
   open, 
   onOpenChange, 
-  selectedDate, 
+  selectedDate: initialSelectedDate, 
   onEventCreated 
 }: CreateEventDialogProps) => {
   const [searchParams] = useSearchParams();
   const currentTeamId = searchParams.get('team');
   
-  console.log("CreateEventDialog - selectedDate:", selectedDate); // Debug log
+  console.log("CreateEventDialog - initialSelectedDate:", initialSelectedDate); // Debug log
   
   const { createEvent, isSubmitting } = useCreateEvent(
-    selectedDate,
+    initialSelectedDate,
     currentTeamId,
     onEventCreated,
     () => onOpenChange(false)
@@ -45,7 +45,7 @@ const CreateEventDialog = ({
           <DialogTitle>Skapa en ny händelse</DialogTitle>
         </DialogHeader>
         <EventForm
-          selectedDate={selectedDate}
+          selectedDate={initialSelectedDate}
           onSubmit={createEvent}
           onCancel={() => onOpenChange(false)}
           isSubmitting={isSubmitting}
