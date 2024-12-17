@@ -100,7 +100,7 @@ const EditReportDialog = ({
         </DialogHeader>
         <ReportForm
           initialData={{
-            hunt_type_id: report.hunt_type_id,
+            hunt_type_id: report.hunt_type?.id,
             date: new Date(report.date),
             participant_count: report.participant_count,
             description: report.description,
