@@ -92,6 +92,13 @@ const EditReportDialog = ({
     }
   };
 
+  // Log the report data to help with debugging
+  console.log("Report data for editing:", {
+    report_id: report.id,
+    hunt_type: report.hunt_type,
+    animals: report.report_animals
+  });
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
