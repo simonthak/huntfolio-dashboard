@@ -89,6 +89,7 @@ const AnimalEntry = ({
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
           placeholder="Quantity"
+          className="no-spinner"
         />
       </div>
 

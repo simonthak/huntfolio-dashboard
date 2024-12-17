@@ -18,6 +18,7 @@ const ParticipantField = ({ value, onChange }: ParticipantFieldProps) => {
         onChange={(e) => onChange(e.target.value)}
         required
         placeholder="Enter number of participants"
+        className="no-spinner"
       />
     </div>
   );
