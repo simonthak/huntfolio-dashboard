@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
   XAxis,
   YAxis,
+  Tooltip,
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -94,6 +95,16 @@ const GameChart = ({ teamId }: GameChartProps) => {
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(value) => `${value}`}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "white",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "6px",
+                  padding: "8px",
+                }}
+                formatter={(value: number) => [`${value} st`, "Antal"]}
+                labelFormatter={(label) => `${label}`}
               />
               <Area
                 type="monotone"
