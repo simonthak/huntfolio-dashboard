@@ -21,7 +21,13 @@ const EditReportDialog = ({
   console.log("Report data for editing:", {
     report_id: report.id,
     hunt_type: report.hunt_type,
-    animals: report.report_animals
+    animals: report.report_animals.map((animal: any) => ({
+      animal_type_id: animal.animal_type_id,
+      animal_subtype_id: animal.animal_subtype_id,
+      quantity: animal.quantity,
+      animal_type_name: animal.animal_type?.name,
+      animal_subtype_name: animal.animal_subtype?.name
+    }))
   });
 
   const handleSubmit = async (data: {
