@@ -6,6 +6,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { createLocalDate } from "@/utils/dateUtils";
 
 interface DateTimeFieldsProps {
   selectedDate?: Date;
@@ -24,21 +25,15 @@ const DateTimeFields = ({
   onStartTimeChange,
   onStartDateChange
 }: DateTimeFieldsProps) => {
-  // Generate time options in 15-minute intervals
-  const timeOptions = [];
-  for (let hour = 0; hour < 24; hour++) {
-    for (let minute = 0; minute < 60; minute += 15) {
-      const formattedHour = hour.toString().padStart(2, '0');
-      const formattedMinute = minute.toString().padStart(2, '0');
-      const timeValue = `${formattedHour}:${formattedMinute}`;
-      timeOptions.push(timeValue);
-    }
-  }
+  const timeOptions = Array.from({ length: 96 }, (_, i) => {
+    const hour = Math.floor(i / 4);
+    const minute = (i % 4) * 15;
+    return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+  });
 
   const handleStartDateSelect = (date: Date | undefined) => {
     if (onStartDateChange) {
-      // Ensure we're working with a proper Date object in the local timezone
-      const newDate = date ? new Date(date.getTime()) : undefined;
+      const newDate = date ? createLocalDate(date) : undefined;
       console.log("DateTimeFields - New date selected:", newDate);
       onStartDateChange(newDate);
     }

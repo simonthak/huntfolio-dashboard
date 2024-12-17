@@ -5,6 +5,7 @@ import EventTypeSelector from "./EventTypeSelector";
 import DateTimeFields from "./fields/DateTimeFields";
 import DescriptionField from "./fields/DescriptionField";
 import ParticipantFields from "./fields/ParticipantFields";
+import { createLocalDate } from "@/utils/dateUtils";
 
 interface EventFormProps {
   initialDate?: Date;
@@ -34,11 +35,9 @@ const EventForm = ({
   const [endDate, setEndDate] = useState("");
   const [startTime, setStartTime] = useState("");
 
-  // Update selectedDate when initialDate changes
   useEffect(() => {
     if (initialDate) {
-      // Ensure we're working with a proper Date object
-      const newDate = new Date(initialDate.getTime());
+      const newDate = createLocalDate(initialDate);
       console.log("EventForm - Setting initial date:", newDate);
       setSelectedDate(newDate);
     }
@@ -69,7 +68,6 @@ const EventForm = ({
       return;
     }
 
-    // Validate end date is after start date if provided
     if (endDate && new Date(endDate) < selectedDate) {
       toast.error("Slutdatum måste vara efter startdatum");
       return;

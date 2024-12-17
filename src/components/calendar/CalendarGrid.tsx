@@ -1,10 +1,10 @@
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { Users, Dog } from "lucide-react";
 import { Event } from "./types";
-import { isBefore, startOfDay } from "date-fns";
 import { toast } from "sonner";
+import { validateFutureDate, createLocalDate } from "@/utils/dateUtils";
+import CalendarEventContent from "./CalendarEventContent";
 
 interface CalendarGridProps {
   events: Event[];
@@ -20,11 +20,9 @@ const CalendarGrid = ({
   onEventSelect 
 }: CalendarGridProps) => {
   const handleDateSelect = (selectInfo: { start: Date }) => {
-    // Ensure we're working with a proper Date object in the local timezone
-    const selectedDate = new Date(selectInfo.start.getTime());
-    const today = startOfDay(new Date());
+    const selectedDate = createLocalDate(selectInfo.start);
     
-    if (isBefore(selectedDate, today)) {
+    if (!validateFutureDate(selectedDate)) {
       toast.error("You can only create events for today or future dates");
       return;
     }
@@ -81,23 +79,14 @@ const CalendarGrid = ({
         height="auto"
         dayCellClassNames="cursor-pointer hover:bg-gray-50"
         eventContent={(eventInfo) => (
-          <div className={`p-2 rounded-md text-sm border border-green-500 ${eventInfo.event.extendedProps.isParticipating ? 'bg-[#13B67F] text-white' : 'bg-white text-[#13B67F]'}`}>
-            <div className="font-medium truncate">{eventInfo.event.title}</div>
-            <div className="flex flex-col gap-0.5">
-              <div className={`text-xs opacity-90 flex items-center gap-1 ${eventInfo.event.extendedProps.isParticipating ? 'text-white' : 'text-[#13B67F]'}`}>
-                <Users className="w-3.5 h-3.5" />
-                {eventInfo.event.extendedProps.currentShooters}/
-                {eventInfo.event.extendedProps.participantLimit}
-              </div>
-              {eventInfo.event.extendedProps.dogHandlersLimit > 0 && (
-                <div className={`text-xs opacity-90 flex items-center gap-1 ${eventInfo.event.extendedProps.isParticipating ? 'text-white' : 'text-[#13B67F]'}`}>
-                  <Dog className="w-3.5 h-3.5" />
-                  {eventInfo.event.extendedProps.currentDogHandlers}/
-                  {eventInfo.event.extendedProps.dogHandlersLimit}
-                </div>
-              )}
-            </div>
-          </div>
+          <CalendarEventContent
+            title={eventInfo.event.title}
+            isParticipating={eventInfo.event.extendedProps.isParticipating}
+            currentShooters={eventInfo.event.extendedProps.currentShooters}
+            participantLimit={eventInfo.event.extendedProps.participantLimit}
+            currentDogHandlers={eventInfo.event.extendedProps.currentDogHandlers}
+            dogHandlersLimit={eventInfo.event.extendedProps.dogHandlersLimit}
+          />
         )}
         dayMaxEvents={3}
         moreLinkContent={(args) => (
