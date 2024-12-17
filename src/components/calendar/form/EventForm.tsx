@@ -21,11 +21,12 @@ interface EventFormProps {
 }
 
 const EventForm = ({ 
-  selectedDate, 
+  selectedDate: initialSelectedDate, 
   onSubmit, 
   onCancel, 
   isSubmitting 
 }: EventFormProps) => {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialSelectedDate);
   const [huntTypeId, setHuntTypeId] = useState<number>(0);
   const [description, setDescription] = useState("");
   const [participantLimit, setParticipantLimit] = useState("");
@@ -82,6 +83,7 @@ const EventForm = ({
         startTime={startTime}
         onEndDateChange={setEndDate}
         onStartTimeChange={setStartTime}
+        onStartDateChange={setSelectedDate}
       />
 
       <EventTypeSelector value={huntTypeId} onChange={setHuntTypeId} />
