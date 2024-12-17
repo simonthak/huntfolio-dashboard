@@ -37,8 +37,10 @@ const EventForm = ({
   // Update selectedDate when initialDate changes
   useEffect(() => {
     if (initialDate) {
-      console.log("EventForm - Updating selectedDate from initialDate:", initialDate);
-      setSelectedDate(initialDate);
+      // Ensure we're working with a proper Date object
+      const newDate = new Date(initialDate.getTime());
+      console.log("EventForm - Setting initial date:", newDate);
+      setSelectedDate(newDate);
     }
   }, [initialDate]);
 

@@ -20,15 +20,17 @@ const CalendarGrid = ({
   onEventSelect 
 }: CalendarGridProps) => {
   const handleDateSelect = (selectInfo: { start: Date }) => {
-    const date = new Date(selectInfo.start);
+    // Ensure we're working with a proper Date object in the local timezone
+    const selectedDate = new Date(selectInfo.start.getTime());
     const today = startOfDay(new Date());
     
-    if (isBefore(date, today)) {
+    if (isBefore(selectedDate, today)) {
       toast.error("You can only create events for today or future dates");
       return;
     }
     
-    onDateSelect(date);
+    console.log("CalendarGrid - Selected date:", selectedDate);
+    onDateSelect(selectedDate);
   };
 
   const calendarEvents = events.map(event => {

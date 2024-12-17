@@ -37,8 +37,9 @@ const DateTimeFields = ({
 
   const handleStartDateSelect = (date: Date | undefined) => {
     if (onStartDateChange) {
-      // Ensure we're working with a new Date object
-      const newDate = date ? new Date(date) : undefined;
+      // Ensure we're working with a proper Date object in the local timezone
+      const newDate = date ? new Date(date.getTime()) : undefined;
+      console.log("DateTimeFields - New date selected:", newDate);
       onStartDateChange(newDate);
     }
   };
