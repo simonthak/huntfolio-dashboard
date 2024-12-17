@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import EventTypeSelector from "./EventTypeSelector";
@@ -34,7 +34,14 @@ const EventForm = ({
   const [endDate, setEndDate] = useState("");
   const [startTime, setStartTime] = useState("");
 
-  console.log("EventForm - selectedDate state:", selectedDate); // Debug log
+  // Update selectedDate when initialDate changes
+  useEffect(() => {
+    if (initialDate) {
+      setSelectedDate(initialDate);
+    }
+  }, [initialDate]);
+
+  console.log("EventForm - selectedDate:", selectedDate); // Debug log
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -13,7 +13,7 @@ interface DateTimeFieldsProps {
   startTime: string;
   onEndDateChange: (value: string) => void;
   onStartTimeChange: (value: string) => void;
-  onStartDateChange?: (date: Date) => void;
+  onStartDateChange?: (date: Date | undefined) => void;
 }
 
 const DateTimeFields = ({
@@ -24,6 +24,8 @@ const DateTimeFields = ({
   onStartTimeChange,
   onStartDateChange
 }: DateTimeFieldsProps) => {
+  console.log("DateTimeFields - selectedDate:", selectedDate); // Debug log
+
   // Generate time options in 15-minute intervals
   const timeOptions = [];
   for (let hour = 0; hour < 24; hour++) {
