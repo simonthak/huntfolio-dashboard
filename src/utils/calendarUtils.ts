@@ -1,4 +1,4 @@
-import { startOfDay, isSameDay } from "date-fns";
+import { startOfDay, isSameDay, isBefore } from "date-fns";
 import { Event } from "@/components/calendar/types";
 
 export const findEventOnDate = (events: Event[], date: Date): Event | undefined => {
