@@ -27,7 +27,6 @@ const CreateEventDialog = ({
   );
 
   const handleOpenChange = (newOpen: boolean) => {
-    // Only allow closing through the X button, not by clicking outside
     if (!newOpen && event?.type === 'click' && (event.target as HTMLElement).closest('[data-state="open"]')) {
       onOpenChange(false);
     }
