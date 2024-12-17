@@ -5,6 +5,7 @@ import { Event } from "./types";
 import { toast } from "sonner";
 import { validateFutureDate } from "@/utils/dateUtils";
 import CalendarEventContent from "./CalendarEventContent";
+import { startOfDay, isSameDay } from "date-fns";
 
 interface CalendarGridProps {
   events: Event[];
@@ -20,11 +21,21 @@ const CalendarGrid = ({
   onEventSelect 
 }: CalendarGridProps) => {
   const handleDateSelect = (selectInfo: { start: Date }) => {
-    // Create a new Date object with the local timezone
-    const selectedDate = new Date(selectInfo.start);
-    console.log("CalendarGrid - Raw selected date:", selectInfo.start);
-    console.log("CalendarGrid - Converted selected date:", selectedDate);
+    // Create a new Date object and normalize to start of day
+    const selectedDate = startOfDay(new Date(selectInfo.start));
+    console.log("CalendarGrid - Selected date:", selectedDate);
     
+    // Check if there's an event on this exact date
+    const existingEvent = events.find(event => 
+      isSameDay(new Date(event.date), selectedDate)
+    );
+
+    if (existingEvent) {
+      console.log("CalendarGrid - Found existing event:", existingEvent);
+      onEventSelect(existingEvent);
+      return;
+    }
+
     if (!validateFutureDate(selectedDate)) {
       toast.error("You can only create events for today or future dates");
       return;
