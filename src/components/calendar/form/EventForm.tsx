@@ -7,7 +7,7 @@ import DescriptionField from "./fields/DescriptionField";
 import ParticipantFields from "./fields/ParticipantFields";
 
 interface EventFormProps {
-  selectedDate?: Date;
+  initialDate?: Date;
   onSubmit: (data: {
     hunt_type_id: number;
     description: string;
@@ -21,12 +21,12 @@ interface EventFormProps {
 }
 
 const EventForm = ({ 
-  selectedDate: initialSelectedDate, 
+  initialDate, 
   onSubmit, 
   onCancel, 
   isSubmitting 
 }: EventFormProps) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialSelectedDate);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialDate);
   const [huntTypeId, setHuntTypeId] = useState<number>(0);
   const [description, setDescription] = useState("");
   const [participantLimit, setParticipantLimit] = useState("");
