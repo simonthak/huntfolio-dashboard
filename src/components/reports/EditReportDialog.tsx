@@ -22,8 +22,8 @@ const EditReportDialog = ({
     report_id: report.id,
     hunt_type: report.hunt_type,
     animals: report.report_animals.map((animal: any) => ({
-      animal_type_id: animal.animal_type_id,
-      animal_subtype_id: animal.animal_subtype_id,
+      animal_type_id: animal.animal_type?.id,
+      animal_subtype_id: animal.animal_subtype?.id,
       quantity: animal.quantity,
       animal_type_name: animal.animal_type?.name,
       animal_subtype_name: animal.animal_subtype?.name
@@ -57,8 +57,8 @@ const EditReportDialog = ({
             participant_count: report.participant_count,
             description: report.description,
             animals: report.report_animals.map((animal: any) => ({
-              animal_type_id: animal.animal_type_id,
-              animal_subtype_id: animal.animal_subtype_id,
+              animal_type_id: animal.animal_type?.id,
+              animal_subtype_id: animal.animal_subtype?.id,
               quantity: animal.quantity,
             })),
           }}
