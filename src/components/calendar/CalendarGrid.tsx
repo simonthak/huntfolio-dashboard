@@ -2,10 +2,8 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { Event } from "./types";
-import { toast } from "sonner";
-import { validateFutureDate } from "@/utils/dateUtils";
 import CalendarEventContent from "./CalendarEventContent";
-import { startOfDay, isSameDay } from "date-fns";
+import DateSelectionHandler from "./DateSelectionHandler";
 
 interface CalendarGridProps {
   events: Event[];
@@ -20,29 +18,11 @@ const CalendarGrid = ({
   onDateSelect, 
   onEventSelect 
 }: CalendarGridProps) => {
-  const handleDateSelect = (selectInfo: { start: Date }) => {
-    // Create a new Date object and normalize to start of day
-    const selectedDate = startOfDay(new Date(selectInfo.start));
-    console.log("CalendarGrid - Selected date:", selectedDate);
-    
-    // Check if there's an event on this exact date
-    const existingEvent = events.find(event => 
-      isSameDay(new Date(event.date), selectedDate)
-    );
-
-    if (existingEvent) {
-      console.log("CalendarGrid - Found existing event:", existingEvent);
-      onEventSelect(existingEvent);
-      return;
-    }
-
-    if (!validateFutureDate(selectedDate)) {
-      toast.error("You can only create events for today or future dates");
-      return;
-    }
-    
-    onDateSelect(selectedDate);
-  };
+  const { handleDateSelect } = DateSelectionHandler({ 
+    events, 
+    onDateSelect, 
+    onEventSelect 
+  });
 
   const calendarEvents = events.map(event => {
     const isParticipating = event.event_participants.some(p => p.user_id === currentUserId);
