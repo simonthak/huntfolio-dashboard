@@ -24,7 +24,7 @@ const DateTimeFields = ({
   onStartTimeChange,
   onStartDateChange
 }: DateTimeFieldsProps) => {
-  console.log("DateTimeFields - selectedDate:", selectedDate); // Debug log
+  console.log("DateTimeFields - Current selectedDate:", selectedDate);
 
   // Generate time options in 15-minute intervals
   const timeOptions = [];
@@ -36,6 +36,13 @@ const DateTimeFields = ({
       timeOptions.push(timeValue);
     }
   }
+
+  const handleStartDateSelect = (date: Date | undefined) => {
+    console.log("DateTimeFields - New date selected:", date);
+    if (onStartDateChange) {
+      onStartDateChange(date);
+    }
+  };
 
   return (
     <>
@@ -60,7 +67,7 @@ const DateTimeFields = ({
             <Calendar
               mode="single"
               selected={selectedDate}
-              onSelect={onStartDateChange}
+              onSelect={handleStartDateSelect}
               disabled={(date) => date < new Date()}
               initialFocus
             />

@@ -37,11 +37,10 @@ const EventForm = ({
   // Update selectedDate when initialDate changes
   useEffect(() => {
     if (initialDate) {
+      console.log("EventForm - Updating selectedDate from initialDate:", initialDate);
       setSelectedDate(initialDate);
     }
   }, [initialDate]);
-
-  console.log("EventForm - selectedDate:", selectedDate); // Debug log
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
