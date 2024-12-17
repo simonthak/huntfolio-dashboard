@@ -19,6 +19,8 @@ const CreateEventDialog = ({
   const [searchParams] = useSearchParams();
   const currentTeamId = searchParams.get('team');
   
+  console.log("CreateEventDialog - selectedDate:", selectedDate); // Debug log
+  
   const { createEvent, isSubmitting } = useCreateEvent(
     selectedDate,
     currentTeamId,
@@ -28,8 +30,9 @@ const CreateEventDialog = ({
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen && event?.type === 'click' && (event.target as HTMLElement).closest('[data-state="open"]')) {
-      onOpenChange(false);
+      return;
     }
+    onOpenChange(newOpen);
   };
 
   return (

@@ -20,6 +20,7 @@ const CalendarGrid = ({
   onEventSelect 
 }: CalendarGridProps) => {
   const handleDateSelect = (selectInfo: { start: Date }) => {
+    console.log("CalendarGrid - Date selected:", selectInfo.start); // Debug log
     const date = selectInfo.start;
     const today = startOfDay(new Date());
     
