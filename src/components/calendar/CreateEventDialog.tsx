@@ -37,7 +37,6 @@ const CreateEventDialog = ({
     >
       <DialogContent 
         className="sm:max-w-[500px]" 
-        aria-describedby="event-form-description"
         onPointerDownOutside={(e) => {
           e.preventDefault();
         }}
@@ -47,7 +46,7 @@ const CreateEventDialog = ({
       >
         <DialogHeader>
           <DialogTitle>Skapa en ny händelse</DialogTitle>
-          <DialogDescription id="event-form-description">
+          <DialogDescription>
             Fyll i informationen nedan för att skapa en ny händelse i kalendern.
           </DialogDescription>
         </DialogHeader>
