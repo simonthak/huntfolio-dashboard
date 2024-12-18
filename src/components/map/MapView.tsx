@@ -17,7 +17,6 @@ const MapView = () => {
   const [drawMode, setDrawMode] = useState<'area' | 'pass' | null>(null);
   const [drawnFeature, setDrawnFeature] = useState<Feature | null>(null);
 
-  // Fetch Mapbox token from Supabase Edge Function
   const { data: mapboxToken, isError, error } = useQuery({
     queryKey: ['mapbox-token'],
     queryFn: async () => {
@@ -63,10 +62,10 @@ const MapView = () => {
     if (mode === 'area') {
       console.log('Enabling polygon draw mode');
       draw.current.changeMode('draw_polygon');
+      map.current.getCanvas().style.cursor = 'crosshair';
       console.log('Draw mode changed to draw_polygon');
     } else {
       console.log('Enabling point placement mode');
-      // Disable draw mode and enable marker placement
       draw.current.changeMode('simple_select');
       map.current.getCanvas().style.cursor = 'crosshair';
       
@@ -81,9 +80,7 @@ const MapView = () => {
           properties: {}
         };
         
-        // Create a serializable copy of the feature
-        const serializedFeature = JSON.parse(JSON.stringify(feature));
-        setDrawnFeature(serializedFeature);
+        setDrawnFeature(JSON.parse(JSON.stringify(feature)));
         setShowCreateDialog(true);
         
         // Clean up
@@ -93,7 +90,6 @@ const MapView = () => {
         }
       };
       
-      // Use once to ensure the handler is removed after first use
       map.current.once('click', onClick);
     }
   };

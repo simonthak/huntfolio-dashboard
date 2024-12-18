@@ -44,7 +44,7 @@ export const useMapInitialization = ({
           polygon: true,
           trash: true
         },
-        defaultMode: 'simple_select', // Start in selection mode
+        defaultMode: 'simple_select',
         styles: [
           {
             'id': 'gl-draw-polygon-fill-inactive',
