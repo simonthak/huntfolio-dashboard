@@ -3,6 +3,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { initializeMapbox, createMapInstance } from '@/utils/mapUtils';
 
 interface MapContainerProps {
@@ -11,15 +12,15 @@ interface MapContainerProps {
 }
 
 const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
-  const mapContainer = useRef<HTMLDivElement>(null);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const draw = useRef<any>(null);
 
   useEffect(() => {
     const initializeMap = async () => {
-      if (!mapContainer.current || !currentTeamId) {
+      if (!mapContainerRef.current || !currentTeamId) {
         console.log('Initialization conditions not met:', {
-          hasContainer: !!mapContainer.current,
+          hasContainer: !!mapContainerRef.current,
           hasTeamId: !!currentTeamId
         });
         return;
@@ -33,13 +34,13 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
       try {
         const token = await initializeMapbox();
 
-        if (!mapContainer.current) {
+        if (!mapContainerRef.current) {
           console.error('Map container not found after token fetch');
           return;
         }
 
         console.log('Creating map instance...');
-        const { map: mapInstance, draw: drawInstance } = createMapInstance(mapContainer.current, token);
+        const { map: mapInstance, draw: drawInstance } = createMapInstance(mapContainerRef.current, token);
 
         map.current = mapInstance;
         draw.current = drawInstance;
@@ -88,7 +89,7 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
 
   return (
     <div className="relative w-full h-[calc(100vh-12rem)] rounded-lg overflow-hidden border">
-      <div ref={mapContainer} className="absolute inset-0" />
+      <div ref={mapContainerRef} className="absolute inset-0" />
       {!map.current && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/50">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
