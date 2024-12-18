@@ -51,10 +51,15 @@ const MapView = () => {
     if (!draw.current || !map.current) return;
 
     setDrawMode(mode);
+    
+    // Remove any existing drawn features
+    draw.current.deleteAll();
+
     if (mode === 'area') {
+      // Enable polygon drawing mode
       draw.current.changeMode('draw_polygon');
     } else {
-      // Switch to marker placement mode
+      // Disable draw mode and enable marker placement
       draw.current.changeMode('simple_select');
       map.current.getCanvas().style.cursor = 'crosshair';
       
@@ -68,14 +73,17 @@ const MapView = () => {
           properties: {}
         };
         
-        setDrawnFeature(feature);
+        // Create a serializable copy of the feature
+        const serializedFeature = JSON.parse(JSON.stringify(feature));
+        setDrawnFeature(serializedFeature);
         setShowCreateDialog(true);
         
-        // Clean up click handler
+        // Clean up
         map.current?.off('click', onClick);
         map.current!.getCanvas().style.cursor = '';
       };
       
+      // Use once to ensure the handler is removed after first use
       map.current.once('click', onClick);
     }
   };

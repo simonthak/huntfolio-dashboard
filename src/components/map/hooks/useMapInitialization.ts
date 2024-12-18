@@ -82,7 +82,7 @@ export const useMapInitialization = ({
       draw.current = drawInstance;
 
       // Add controls
-      mapInstance.addControl(drawInstance, 'top-left');
+      mapInstance.addControl(drawInstance);
       mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
       // Set up event listeners
@@ -96,6 +96,10 @@ export const useMapInitialization = ({
         // Clone the feature to ensure it's serializable
         const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
         onFeatureCreate(serializedFeature);
+        // Reset the draw mode after creation
+        if (draw.current) {
+          draw.current.changeMode('simple_select');
+        }
       };
 
       mapInstance.on('load', loadHandler);
