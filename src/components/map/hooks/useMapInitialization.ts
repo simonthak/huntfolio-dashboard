@@ -37,8 +37,8 @@ export const useMapInitialization = ({
           mapboxgl.accessToken = mapboxToken;
           
           // Default center coordinates for Sweden with explicit typing
-          const defaultCenter: [number, number] = [15.4367, 62.1983]; // Center of Sweden
-          const defaultZoom = 4.5; // Zoom level to show most of Sweden
+          const defaultCenter: [number, number] = [15.4367, 62.1983];
+          const defaultZoom = 4.5;
           
           map.current = new mapboxgl.Map({
             container: mapContainer.current!,
@@ -57,6 +57,11 @@ export const useMapInitialization = ({
             const drawInstance = initializeDraw();
             draw.current = drawInstance;
             
+            if (!drawInstance) {
+              console.error('Failed to initialize draw control');
+              return;
+            }
+
             // Add controls
             map.current.addControl(drawInstance);
             map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
@@ -86,13 +91,15 @@ export const useMapInitialization = ({
             }
 
             // Setup draw event listener
-            drawInstance.on('draw.create', (e: { features: Feature[] }) => {
-              if (e.features?.[0]) {
-                const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
-                onFeatureCreate(serializedFeature);
-                drawInstance.deleteAll();
-              }
-            });
+            if (drawInstance) {
+              drawInstance.on('draw.create', (e: { features: Feature[] }) => {
+                if (e.features?.[0]) {
+                  const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
+                  onFeatureCreate(serializedFeature);
+                  drawInstance.deleteAll();
+                }
+              });
+            }
 
             // Setup cursor event listeners
             map.current.on('mousedown', () => {
