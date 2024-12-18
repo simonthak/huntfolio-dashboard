@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Feature } from 'geojson';
+import { Feature, Point } from 'geojson';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
@@ -15,17 +15,20 @@ export const usePassOperations = ({ teamId }: UsePassOperationsProps) => {
   const createPass = async (name: string, description: string, feature: Feature) => {
     if (!teamId) {
       toast.error('Inget team valt');
-      return;
+      return false;
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast.error('Du måste vara inloggad');
-      return;
+      return false;
     }
 
     setIsSubmitting(true);
     try {
+      // Ensure we're working with a Point feature
+      const point = feature.geometry as Point;
+      
       // Create a small drive area around the pass
       const { data: driveArea, error: driveAreaError } = await supabase
         .from('drive_areas')
@@ -38,14 +41,14 @@ export const usePassOperations = ({ teamId }: UsePassOperationsProps) => {
             geometry: {
               type: "Polygon",
               coordinates: [[
-                [feature.geometry.coordinates[0] - 0.0001, feature.geometry.coordinates[1] - 0.0001],
-                [feature.geometry.coordinates[0] + 0.0001, feature.geometry.coordinates[1] - 0.0001],
-                [feature.geometry.coordinates[0] + 0.0001, feature.geometry.coordinates[1] + 0.0001],
-                [feature.geometry.coordinates[0] - 0.0001, feature.geometry.coordinates[1] + 0.0001],
-                [feature.geometry.coordinates[0] - 0.0001, feature.geometry.coordinates[1] - 0.0001]
+                [point.coordinates[0] - 0.0001, point.coordinates[1] - 0.0001],
+                [point.coordinates[0] + 0.0001, point.coordinates[1] - 0.0001],
+                [point.coordinates[0] + 0.0001, point.coordinates[1] + 0.0001],
+                [point.coordinates[0] - 0.0001, point.coordinates[1] + 0.0001],
+                [point.coordinates[0] - 0.0001, point.coordinates[1] - 0.0001]
               ]]
             }
-          },
+          } as any,
           created_by: user.id
         })
         .select()
@@ -59,7 +62,7 @@ export const usePassOperations = ({ teamId }: UsePassOperationsProps) => {
         .insert({
           team_id: teamId,
           name,
-          location: feature.geometry,
+          location: feature.geometry as any,
           description,
           drive_area_id: driveArea.id,
           created_by: user.id

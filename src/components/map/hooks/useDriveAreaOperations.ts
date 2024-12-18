@@ -15,13 +15,13 @@ export const useDriveAreaOperations = ({ teamId }: UseDriveAreaOperationsProps) 
   const createDriveArea = async (name: string, feature: Feature) => {
     if (!teamId) {
       toast.error('Inget team valt');
-      return;
+      return false;
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast.error('Du måste vara inloggad');
-      return;
+      return false;
     }
 
     setIsSubmitting(true);
@@ -31,7 +31,7 @@ export const useDriveAreaOperations = ({ teamId }: UseDriveAreaOperationsProps) 
         .insert({
           team_id: teamId,
           name,
-          boundary: feature,
+          boundary: feature as any, // Type assertion needed due to Supabase types
           created_by: user.id
         });
 
