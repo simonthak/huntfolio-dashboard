@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from '@supabase/auth-helpers-react';
 
 const Map = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -25,6 +26,7 @@ const Map = () => {
   const [newTowerLocation, setNewTowerLocation] = useState<[number, number] | null>(null);
   const [newTowerName, setNewTowerName] = useState('');
   const [newTowerDescription, setNewTowerDescription] = useState('');
+  const user = useAuth();
 
   useEffect(() => {
     const initializeMap = async () => {
@@ -125,6 +127,11 @@ const Map = () => {
   };
 
   const handleSaveArea = async () => {
+    if (!user) {
+      toast.error('Du måste vara inloggad');
+      return;
+    }
+
     try {
       const features = draw.current.getAll();
       if (features.features.length === 0) {
@@ -135,7 +142,8 @@ const Map = () => {
       const { error } = await supabase.from('hunting_grounds').insert({
         team_id: currentTeamId,
         name: 'Jaktmark',
-        boundary: features.features[0]
+        boundary: features.features[0],
+        created_by: user.id
       });
 
       if (error) throw error;
@@ -161,7 +169,7 @@ const Map = () => {
   };
 
   const handleSaveTower = async () => {
-    if (!newTowerLocation || !newTowerName) return;
+    if (!newTowerLocation || !newTowerName || !user) return;
 
     try {
       const { error } = await supabase.from('hunting_towers').insert({
@@ -171,7 +179,8 @@ const Map = () => {
         location: {
           type: 'Point',
           coordinates: newTowerLocation
-        }
+        },
+        created_by: user.id
       });
 
       if (error) throw error;
