@@ -55,12 +55,13 @@ export const useMapInitialization = ({
             
             // Initialize draw control
             const drawInstance = initializeDraw();
-            draw.current = drawInstance;
             
             if (!drawInstance) {
               console.error('Failed to initialize draw control');
               return;
             }
+
+            draw.current = drawInstance;
 
             // Add controls
             map.current.addControl(drawInstance);
@@ -91,14 +92,22 @@ export const useMapInitialization = ({
             }
 
             // Setup draw event listener
-            if (drawInstance) {
-              drawInstance.on('draw.create', (e: { features: Feature[] }) => {
-                if (e.features?.[0]) {
-                  const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
-                  onFeatureCreate(serializedFeature);
-                  drawInstance.deleteAll();
-                }
-              });
+            if (drawInstance && drawInstance.on) {
+              try {
+                drawInstance.on('draw.create', (e: { features: Feature[] }) => {
+                  console.log('Draw create event triggered:', e);
+                  if (e.features?.[0]) {
+                    const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
+                    onFeatureCreate(serializedFeature);
+                    drawInstance.deleteAll();
+                  }
+                });
+                console.log('Draw event listener set up successfully');
+              } catch (error) {
+                console.error('Error setting up draw event listener:', error);
+              }
+            } else {
+              console.error('Draw instance or .on method not available:', drawInstance);
             }
 
             // Setup cursor event listeners
