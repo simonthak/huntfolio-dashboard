@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DriveArea, HuntingPass, SupabaseDriveArea, SupabaseHuntingPass } from '../types';
+import { Feature, Geometry } from 'geojson';
 
 export const useMapData = (currentTeamId: string | null) => {
   // Fetch existing areas
