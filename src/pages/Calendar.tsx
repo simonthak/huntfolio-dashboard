@@ -9,6 +9,7 @@ import CalendarGrid from "@/components/calendar/CalendarGrid";
 import ViewEventDialog from "@/components/calendar/ViewEventDialog";
 import NoTeamSelected from "@/components/calendar/NoTeamSelected";
 import { Event } from "@/components/calendar/types";
+import { findEventOnDate } from "@/utils/calendarUtils";
 
 const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -62,7 +63,6 @@ const Calendar = () => {
         throw error;
       }
 
-      // Transform the data to ensure participant_type is correctly typed
       const typedData = data?.map(event => ({
         ...event,
         event_participants: event.event_participants.map(participant => ({
@@ -81,6 +81,22 @@ const Calendar = () => {
     },
     enabled: !!currentTeamId
   });
+
+  const handleDateSelect = (date: Date) => {
+    console.log("Calendar - Date selected:", date);
+    setSelectedDate(date);
+    
+    const existingEvent = findEventOnDate(events, date);
+    console.log("Calendar - Existing event check:", existingEvent);
+    
+    if (existingEvent) {
+      console.log("Calendar - Opening existing event:", existingEvent.id);
+      setSelectedEvent(existingEvent);
+    } else {
+      console.log("Calendar - Opening create event dialog");
+      setIsCreateEventOpen(true);
+    }
+  };
 
   const handleEventUpdate = async () => {
     console.log("Refreshing events after update...");
@@ -105,17 +121,7 @@ const Calendar = () => {
           <CalendarGrid
             events={events}
             currentUserId={currentUserId}
-            onDateSelect={(date) => {
-              setSelectedDate(date);
-              const formattedDate = date.toISOString().split('T')[0];
-              const existingEvent = events?.find(event => event.date === formattedDate);
-              
-              if (existingEvent) {
-                setSelectedEvent(existingEvent);
-              } else {
-                setIsCreateEventOpen(true);
-              }
-            }}
+            onDateSelect={handleDateSelect}
             onEventSelect={setSelectedEvent}
           />
         </div>
