@@ -8,7 +8,7 @@ import CreateAreaDialog from './CreateAreaDialog';
 import { useMapInitialization } from './hooks/useMapInitialization';
 import { useMapLayers } from './hooks/useMapLayers';
 import { useMapData } from './hooks/useMapData';
-import 'mapbox-gl/dist/mapbox-gl.css';  // Add this import
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 const MapView = () => {
   const [searchParams] = useSearchParams();
@@ -18,11 +18,16 @@ const MapView = () => {
   const [drawnFeature, setDrawnFeature] = useState<Feature | null>(null);
 
   // Fetch Mapbox token from Supabase Edge Function
-  const { data: mapboxToken } = useQuery({
+  const { data: mapboxToken, isError, error } = useQuery({
     queryKey: ['mapbox-token'],
     queryFn: async () => {
+      console.log('Fetching Mapbox token...');
       const { data, error } = await supabase.functions.invoke('get-mapbox-token');
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching Mapbox token:', error);
+        throw error;
+      }
+      console.log('Mapbox token fetched successfully');
       return data.token;
     },
   });
@@ -74,6 +79,18 @@ const MapView = () => {
       map.current.once('click', onClick);
     }
   };
+
+  if (isError) {
+    console.error('Error loading map:', error);
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-4rem)] w-full bg-gray-50">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold text-gray-900">Could not load map</h3>
+          <p className="mt-1 text-sm text-gray-500">Please try again later</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative h-[calc(100vh-4rem)] w-full">
