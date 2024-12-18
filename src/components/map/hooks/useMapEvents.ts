@@ -60,14 +60,14 @@ export const useMapEvents = ({ map, draw, onFeatureCreate }: UseMapEventsProps) 
 
       console.log('Setting up cursor events');
       
-      const handleMouseDown = (e: mapboxgl.MapMouseEvent) => {
+      const handleMouseDown = () => {
         if (map.current) {
           const canvas = map.current.getCanvas();
           canvas.style.cursor = 'grabbing';
         }
       };
 
-      const handleMouseUp = (e: mapboxgl.MapMouseEvent) => {
+      const handleMouseUp = () => {
         if (map.current) {
           const canvas = map.current.getCanvas();
           canvas.style.cursor = 'grab';
@@ -86,8 +86,8 @@ export const useMapEvents = ({ map, draw, onFeatureCreate }: UseMapEventsProps) 
     return () => {
       if (map.current) {
         map.current.off('draw.create');
-        map.current.off('mousedown');
-        map.current.off('mouseup');
+        map.current.off('mousedown', 'mousedown');
+        map.current.off('mouseup', 'mouseup');
       }
     };
   }, [map, draw, onFeatureCreate]);
