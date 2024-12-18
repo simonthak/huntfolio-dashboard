@@ -45,6 +45,7 @@ export const useMapOperations = (currentTeamId: string | null, userId: string | 
     try {
       const { error } = await supabase.from('hunting_passes').insert({
         team_id: currentTeamId,
+        drive_area_id: huntingAreaId, // This is required by the schema
         hunting_area_id: huntingAreaId,
         name: newTowerName,
         description: newTowerDescription,

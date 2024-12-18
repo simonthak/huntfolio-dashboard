@@ -27,7 +27,7 @@ const Map = () => {
     newTowerDescription,
     setNewTowerDescription,
     handleSaveArea,
-    handleSaveTower
+    handleSavePass
   } = useMapOperations(currentTeamId, userId);
 
   const {
@@ -85,7 +85,7 @@ const Map = () => {
         onTowerNameChange={setNewTowerName}
         towerDescription={newTowerDescription}
         onTowerDescriptionChange={setNewTowerDescription}
-        onSave={() => mapRef.current && handleSaveTower(mapRef.current)}
+        onSave={() => mapRef.current && handleSavePass(mapRef.current, "some-hunting-area-id")}
       />
     </div>
   );

@@ -47,12 +47,12 @@ function isGeoJSONGeometry(json: unknown): json is GeoJSONGeometry {
 
 function isGeoJSONFeature(json: Json): json is GeoJSONFeature {
   if (!isValidJson(json)) return false;
-  const obj = json as Record<string, unknown>;
+  const feature = json as Record<string, unknown>;
   
   return (
-    typeof obj.type === 'string' &&
-    obj.geometry !== undefined &&
-    isGeoJSONGeometry(obj.geometry)
+    typeof feature.type === 'string' &&
+    feature.geometry !== undefined &&
+    isGeoJSONGeometry(feature.geometry as unknown)
   );
 }
 
@@ -144,34 +144,6 @@ export const useMapInitialization = (currentTeamId: string | null) => {
               .addTo(map);
           } else {
             console.warn('Invalid location data for pass:', pass);
-          }
-        });
-      }
-
-      // Load hunting towers
-      const { data: towers, error: towersError } = await supabase
-        .from('hunting_towers')
-        .select('*')
-        .eq('team_id', currentTeamId);
-
-      if (towersError) {
-        console.error('Error loading hunting towers:', towersError);
-        return;
-      }
-
-      if (towers && towers.length > 0) {
-        console.log('Adding towers to map:', towers);
-        towers.forEach(tower => {
-          if (isTowerLocation(tower.location)) {
-            new mapboxgl.Marker()
-              .setLngLat(tower.location.coordinates)
-              .setPopup(new mapboxgl.Popup().setHTML(`
-                <h3 class="font-bold">${tower.name}</h3>
-                ${tower.description ? `<p>${tower.description}</p>` : ''}
-              `))
-              .addTo(map);
-          } else {
-            console.warn('Invalid location data for tower:', tower);
           }
         });
       }
