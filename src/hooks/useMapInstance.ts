@@ -4,19 +4,17 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// Create a safe event emitter that only passes serializable data
-const emitSafeMapEvent = (map: mapboxgl.Map) => {
-  // Only extract basic numeric/string values
-  const safeState = {
-    lat: map.getCenter().lat,
-    lng: map.getCenter().lng,
-    zoom: +map.getZoom().toFixed(2), // Convert to number with 2 decimal places
-    timestamp: Date.now()
-  };
+// First, let's create a proper type for our map state
+interface MapState {
+  lat: number;
+  lng: number;
+  zoom: number;
+  timestamp: number;
+}
 
-  // Stringify and parse to ensure it's fully serializable
-  return JSON.parse(JSON.stringify(safeState));
-};
+// Create a custom event type instead of using postMessage
+const MAP_STATE_CHANGE = 'mapStateChange';
+const createMapStateEvent = (state: MapState) => new CustomEvent(MAP_STATE_CHANGE, { detail: state });
 
 export const useMapInstance = (
   mapContainerRef: React.RefObject<HTMLDivElement>,
@@ -69,18 +67,32 @@ export const useMapInstance = (
           zoom: 4.5
         });
 
-        // Apply safe event handling to all map movement events
-        ['wheel', 'drag', 'move'].forEach(eventType => {
-          map.on(eventType, () => {
-            try {
-              const safeData = emitSafeMapEvent(map);
-              requestAnimationFrame(() => {
-                window.postMessage(safeData, '*');
-              });
-            } catch (err) {
-              console.warn('Map event serialization failed:', err);
-            }
+        // Debounce function to limit event frequency
+        let timeoutId: number;
+        const debounceMapEvent = (callback: () => void) => {
+          cancelAnimationFrame(timeoutId);
+          timeoutId = requestAnimationFrame(callback);
+        };
+
+        // Create safe map state
+        const getMapState = (): MapState => ({
+          lat: +map.getCenter().lat.toFixed(6),
+          lng: +map.getCenter().lng.toFixed(6),
+          zoom: +map.getZoom().toFixed(2),
+          timestamp: Date.now()
+        });
+
+        // Handle map events with custom events instead of postMessage
+        const handleMapEvent = () => {
+          debounceMapEvent(() => {
+            const state = getMapState();
+            document.dispatchEvent(createMapStateEvent(state));
           });
+        };
+
+        // Attach event listeners
+        ['wheel', 'drag', 'move'].forEach(eventType => {
+          map.on(eventType, handleMapEvent);
         });
 
         const draw = new MapboxDraw({
@@ -111,6 +123,10 @@ export const useMapInstance = (
     };
 
     initializeMap();
+
+    return () => {
+      cleanupMap();
+    };
   }, [currentTeamId, onMapLoad, cleanupMap]);
 
   return {
