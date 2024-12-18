@@ -123,10 +123,10 @@ const MapView = () => {
   }
 
   return (
-    <div className="relative h-[calc(100vh-4rem)] w-full">
+    <div className="relative h-[calc(100vh-12rem)] w-full">
       <DrawingInstructions show={showDrawInstructions} />
       <MapToolbar onToolClick={handleToolClick} />
-      <div ref={mapContainer} className="absolute inset-0" />
+      <div ref={mapContainer} className="absolute inset-0 bg-gray-100" />
       
       <CreateAreaDialog
         open={showCreateDialog}
