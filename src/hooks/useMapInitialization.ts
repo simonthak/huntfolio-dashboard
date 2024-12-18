@@ -5,12 +5,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Json } from '@/integrations/supabase/types';
 
+interface GeoJSONGeometry {
+  type: string;
+  coordinates: number[][][];
+}
+
 interface GeoJSONFeature {
   type: string;
-  geometry: {
-    type: string;
-    coordinates: number[][][];
-  };
+  geometry: GeoJSONGeometry;
   properties?: Record<string, any>;
 }
 
@@ -23,33 +25,44 @@ function isValidJson(json: Json): json is Record<string, any> {
   return typeof json === 'object' && json !== null && !Array.isArray(json);
 }
 
-function isGeoJSONFeature(json: Json): json is GeoJSONFeature {
-  if (!isValidJson(json)) return false;
+function isGeoJSONGeometry(json: unknown): json is GeoJSONGeometry {
+  if (!isValidJson(json as Json)) return false;
+  const geom = json as GeoJSONGeometry;
   
   return (
-    typeof json.type === 'string' &&
-    isValidJson(json.geometry) &&
-    typeof json.geometry.type === 'string' &&
-    Array.isArray(json.geometry.coordinates) &&
-    json.geometry.coordinates.every((coord: any) => 
-      Array.isArray(coord) && coord.every((innerCoord: any) => 
-        Array.isArray(innerCoord) && innerCoord.length === 2 &&
-        typeof innerCoord[0] === 'number' && 
-        typeof innerCoord[1] === 'number'
+    typeof geom.type === 'string' &&
+    Array.isArray(geom.coordinates) &&
+    geom.coordinates.every(ring => 
+      Array.isArray(ring) && ring.every(coord => 
+        Array.isArray(coord) && coord.length === 2 &&
+        typeof coord[0] === 'number' && 
+        typeof coord[1] === 'number'
       )
     )
   );
 }
 
-function isTowerLocation(json: Json): json is TowerLocation {
+function isGeoJSONFeature(json: Json): json is GeoJSONFeature {
   if (!isValidJson(json)) return false;
+  const obj = json as Record<string, unknown>;
   
   return (
-    typeof json.type === 'string' &&
-    Array.isArray(json.coordinates) &&
-    json.coordinates.length === 2 &&
-    typeof json.coordinates[0] === 'number' &&
-    typeof json.coordinates[1] === 'number'
+    typeof obj.type === 'string' &&
+    obj.geometry !== undefined &&
+    isGeoJSONGeometry(obj.geometry)
+  );
+}
+
+function isTowerLocation(json: Json): json is TowerLocation {
+  if (!isValidJson(json)) return false;
+  const obj = json as Record<string, unknown>;
+  
+  return (
+    typeof obj.type === 'string' &&
+    Array.isArray(obj.coordinates) &&
+    obj.coordinates.length === 2 &&
+    typeof obj.coordinates[0] === 'number' &&
+    typeof obj.coordinates[1] === 'number'
   );
 }
 
