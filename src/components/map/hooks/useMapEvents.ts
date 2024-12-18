@@ -31,10 +31,8 @@ export const useMapEvents = ({ map, draw, onFeatureCreate }: UseMapEventsProps) 
 
       console.log('Setting up draw events');
       
-      // Ensure draw.current is properly typed as MapboxDraw
-      const drawInstance = draw.current as MapboxDraw & { on: Function };
-      
-      drawInstance.on('draw.create', (e: { features: Feature[] }) => {
+      // Listen to draw.create through the map instance
+      map.current.on('draw.create', (e: { features: Feature[] }) => {
         console.log('Draw create event triggered:', e);
         if (e.features?.[0]) {
           const feature = e.features[0];
@@ -61,14 +59,14 @@ export const useMapEvents = ({ map, draw, onFeatureCreate }: UseMapEventsProps) 
 
       console.log('Setting up cursor events');
       
-      const handleMouseDown = () => {
+      const handleMouseDown = (e: mapboxgl.MapMouseEvent) => {
         if (map.current) {
           const canvas = map.current.getCanvas();
           canvas.style.cursor = 'grabbing';
         }
       };
 
-      const handleMouseUp = () => {
+      const handleMouseUp = (e: mapboxgl.MapMouseEvent) => {
         if (map.current) {
           const canvas = map.current.getCanvas();
           canvas.style.cursor = 'grab';
@@ -85,8 +83,9 @@ export const useMapEvents = ({ map, draw, onFeatureCreate }: UseMapEventsProps) 
 
     return () => {
       if (map.current) {
-        map.current.off('mousedown');
-        map.current.off('mouseup');
+        map.current.off('mousedown', handleMouseDown);
+        map.current.off('mouseup', handleMouseUp);
+        map.current.off('draw.create');
       }
     };
   }, [map, draw, onFeatureCreate]);
