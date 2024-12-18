@@ -123,10 +123,14 @@ const MapView = () => {
   return (
     <div className="relative h-[calc(100vh-4rem)] w-full">
       {showDrawInstructions && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 w-96">
-          <Alert className="flex items-center gap-2">
-            <AlertCircle className="h-4 w-4" />
-            Dubbelklicka eller klicka på första punkten för att slutföra drevet
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 w-[400px]">
+          <Alert className="bg-white/90 backdrop-blur-sm border-primary shadow-lg">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">
+                Dubbelklicka eller klicka på första punkten för att slutföra drevet
+              </span>
+            </div>
           </Alert>
         </div>
       )}
