@@ -23,7 +23,6 @@ export const useMapControls = ({ map, mapLoaded }: UseMapControlsProps) => {
 
     draw.current = drawInstance;
     map.current.addControl(drawInstance);
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
     map.current.getCanvas().style.cursor = 'grab';
 
     return () => {
