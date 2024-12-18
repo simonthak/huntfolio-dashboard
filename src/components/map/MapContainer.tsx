@@ -31,6 +31,11 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
         
         const { map, draw } = createMapInstance(mapContainerRef.current, token);
         
+        if (!isMounted) {
+          map.remove();
+          return;
+        }
+        
         mapInstanceRef.current = map;
         drawInstanceRef.current = draw;
 
@@ -44,21 +49,27 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
       } catch (error) {
         console.error('Error initializing map:', error);
         toast.error('Ett fel uppstod när kartan skulle laddas');
+        isLoadingRef.current = false;
       }
     };
 
     initializeMap();
 
     return () => {
+      console.log('Cleaning up map component...');
       isMounted = false;
+      
       if (mapInstanceRef.current) {
-        console.log('Cleaning up map instance...');
+        console.log('Removing map instance...');
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
+      
       if (drawInstanceRef.current) {
+        console.log('Cleaning up draw instance...');
         drawInstanceRef.current = null;
       }
+      
       isLoadingRef.current = true;
     };
   }, [currentTeamId, onMapLoad]);
