@@ -14,7 +14,6 @@ import Team from "./pages/Team";
 import Settings from "./pages/Settings";
 import Documents from "./pages/Documents";
 import Contacts from "./pages/Contacts";
-import Map from "./pages/Map";
 
 const queryClient = new QueryClient();
 
@@ -35,7 +34,6 @@ const App = () => {
             <Route path="/documents" element={<Layout><Documents /></Layout>} />
             <Route path="/contacts" element={<Layout><Contacts /></Layout>} />
             <Route path="/team" element={<Layout><Team /></Layout>} />
-            <Route path="/map" element={<Layout><Map /></Layout>} />
             <Route path="/settings" element={<Layout><Settings /></Layout>} />
           </Routes>
         </BrowserRouter>
