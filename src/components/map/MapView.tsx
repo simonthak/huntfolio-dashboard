@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Feature } from 'geojson';
 import mapboxgl from 'mapbox-gl';
 import { Alert } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import MapToolbar from './MapToolbar';
 import CreateAreaDialog from './CreateAreaDialog';
 import { useMapInitialization } from './hooks/useMapInitialization';
@@ -122,8 +123,9 @@ const MapView = () => {
   return (
     <div className="relative h-[calc(100vh-4rem)] w-full">
       {showDrawInstructions && (
-        <div className="absolute top-20 left-4 z-20 w-96">
-          <Alert>
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 w-96">
+          <Alert className="flex items-center gap-2">
+            <AlertCircle className="h-4 w-4" />
             Dubbelklicka eller klicka på första punkten för att slutföra drevet
           </Alert>
         </div>
