@@ -68,30 +68,78 @@ export const useMapInitialization = ({
       // Store the map instance in the ref
       map.current = mapInstance;
 
-      // Initialize draw control
+      // Initialize draw control with specific options
       const drawInstance = new MapboxDraw({
         displayControlsDefault: false,
         controls: {
           polygon: true,
           trash: true
         },
-        defaultMode: 'simple_select'
+        defaultMode: 'simple_select',
+        styles: [
+          // Existing styles for the draw control
+          {
+            'id': 'gl-draw-polygon-fill-inactive',
+            'type': 'fill',
+            'filter': ['all', ['==', 'active', 'false'], ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
+            'paint': {
+              'fill-color': '#13B67F',
+              'fill-outline-color': '#13B67F',
+              'fill-opacity': 0.1
+            }
+          },
+          {
+            'id': 'gl-draw-polygon-fill-active',
+            'type': 'fill',
+            'filter': ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
+            'paint': {
+              'fill-color': '#13B67F',
+              'fill-outline-color': '#13B67F',
+              'fill-opacity': 0.2
+            }
+          },
+          {
+            'id': 'gl-draw-polygon-stroke-inactive',
+            'type': 'line',
+            'filter': ['all', ['==', 'active', 'false'], ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
+            'layout': {
+              'line-cap': 'round',
+              'line-join': 'round'
+            },
+            'paint': {
+              'line-color': '#13B67F',
+              'line-width': 2
+            }
+          },
+          {
+            'id': 'gl-draw-polygon-stroke-active',
+            'type': 'line',
+            'filter': ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
+            'layout': {
+              'line-cap': 'round',
+              'line-join': 'round'
+            },
+            'paint': {
+              'line-color': '#13B67F',
+              'line-width': 2
+            }
+          }
+        ]
       });
 
       // Store the draw instance in the ref
       draw.current = drawInstance;
 
-      // Add controls
-      mapInstance.addControl(drawInstance);
-      mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-      // Set up event listeners
-      const loadHandler = () => {
-        console.log('Map loaded successfully');
+      // Add controls after map is loaded
+      mapInstance.on('load', () => {
+        mapInstance.addControl(drawInstance);
+        mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
         setMapLoaded(true);
-      };
+        console.log('Map loaded successfully');
+      });
 
-      const drawCreateHandler = (e: { features: Feature[] }) => {
+      // Set up draw.create event handler
+      mapInstance.on('draw.create', (e: { features: Feature[] }) => {
         console.log('Feature created:', e.features[0]);
         // Clone the feature to ensure it's serializable
         const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
@@ -100,16 +148,11 @@ export const useMapInitialization = ({
         if (draw.current) {
           draw.current.changeMode('simple_select');
         }
-      };
-
-      mapInstance.on('load', loadHandler);
-      mapInstance.on('draw.create', drawCreateHandler);
+      });
 
       // Return cleanup function
       return () => {
         console.log('Cleaning up map');
-        mapInstance.off('load', loadHandler);
-        mapInstance.off('draw.create', drawCreateHandler);
         cleanupMap();
       };
     } catch (error) {
