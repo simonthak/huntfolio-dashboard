@@ -29,21 +29,33 @@ const MapContainer = ({ onMapLoad, currentTeamId }: MapContainerProps) => {
           return;
         }
 
+        if (!token) {
+          console.error('No Mapbox token received');
+          toast.error('Kunde inte ladda kartan - ingen token mottagen');
+          return;
+        }
+
         mapboxgl.accessToken = token;
         
         const mapInstance = new mapboxgl.Map({
           container: mapContainer.current,
           style: 'mapbox://styles/mapbox/satellite-streets-v12',
-          center: [15.4319, 59.2753],
+          center: [15.4319, 59.2753], // Center of Sweden
           zoom: 5
         });
 
         map.current = mapInstance;
 
         mapInstance.on('load', () => {
-          if (draw.current && map.current) {
+          console.log('Map loaded successfully');
+          if (map.current) {
             onMapLoad(map.current, draw.current);
           }
+        });
+
+        mapInstance.on('error', (e) => {
+          console.error('Map error:', e);
+          toast.error('Ett fel uppstod med kartan');
         });
 
       } catch (error) {
