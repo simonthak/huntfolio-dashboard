@@ -53,37 +53,17 @@ const MapContainer = ({ onMapLoad, currentTeamId }: MapContainerProps) => {
         }
       });
 
-      // Store instances in refs
       map.current = mapInstance;
       draw.current = drawInstance;
 
-      // Add controls after instances are stored
       mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
       mapInstance.addControl(new mapboxgl.FullscreenControl());
       mapInstance.addControl(drawInstance);
 
-      // Wait for map to load before calling onMapLoad
       mapInstance.on('load', () => {
         console.log('Map loaded successfully');
-        // Create a serializable version of the map instance
-        const safeMap = {
-          ...mapInstance,
-          _requestManager: undefined,
-          _controls: undefined,
-          _canvas: undefined,
-          _container: undefined
-        };
-
-        // Create a serializable version of the draw instance
-        const safeDraw = {
-          ...drawInstance,
-          _ctx: undefined,
-          _map: undefined
-        };
-
         if (map.current && draw.current) {
-          // Pass the actual instances, not the serializable versions
-          onMapLoad(map.current, draw.current);
+          onMapLoad(mapInstance, drawInstance);
         }
       });
 
