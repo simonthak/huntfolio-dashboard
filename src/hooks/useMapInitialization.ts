@@ -76,34 +76,79 @@ export const useMapInitialization = (currentTeamId: string | null) => {
     try {
       console.log('Loading existing data for team:', currentTeamId);
       
-      const { data: grounds, error: groundsError } = await supabase
-        .from('hunting_grounds')
+      // Load hunting areas
+      const { data: areas, error: areasError } = await supabase
+        .from('hunting_area')
         .select('*')
         .eq('team_id', currentTeamId);
 
-      if (groundsError) {
-        console.error('Error loading hunting grounds:', groundsError);
+      if (areasError) {
+        console.error('Error loading hunting areas:', areasError);
         return;
       }
 
-      if (grounds && grounds.length > 0) {
-        console.log('Adding hunting grounds to map:', grounds);
-        grounds.forEach(ground => {
-          if (isGeoJSONFeature(ground.boundary)) {
-            draw.add(ground.boundary);
+      if (areas && areas.length > 0) {
+        console.log('Adding hunting areas to map:', areas);
+        areas.forEach(area => {
+          if (isGeoJSONFeature(area.boundary)) {
+            draw.add(area.boundary);
           } else {
-            console.warn('Invalid boundary data for ground:', ground);
+            console.warn('Invalid boundary data for area:', area);
           }
         });
+
+        // Fit map to hunting areas
+        const coordinates = areas
+          .map(area => area.boundary?.geometry?.coordinates?.[0] || [])
+          .flat();
+        
+        if (coordinates.length > 0) {
+          const bounds = coordinates.reduce((bounds, coord) => {
+            return bounds.extend(coord as [number, number]);
+          }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
+
+          map.fitBounds(bounds, {
+            padding: 50,
+            maxZoom: 15
+          });
+        }
       } else {
-        console.log('No hunting grounds found for team:', currentTeamId);
-        // Set default view to Sweden when no hunting grounds exist
+        console.log('No hunting areas found for team:', currentTeamId);
         map.flyTo({
           center: [15.4515, 62.2750], // Center of Sweden
           zoom: 4.5
         });
       }
 
+      // Load hunting passes
+      const { data: passes, error: passesError } = await supabase
+        .from('hunting_passes')
+        .select('*')
+        .eq('team_id', currentTeamId);
+
+      if (passesError) {
+        console.error('Error loading hunting passes:', passesError);
+        return;
+      }
+
+      if (passes && passes.length > 0) {
+        console.log('Adding passes to map:', passes);
+        passes.forEach(pass => {
+          if (isTowerLocation(pass.location)) {
+            new mapboxgl.Marker()
+              .setLngLat(pass.location.coordinates)
+              .setPopup(new mapboxgl.Popup().setHTML(`
+                <h3 class="font-bold">${pass.name}</h3>
+                ${pass.description ? `<p>${pass.description}</p>` : ''}
+              `))
+              .addTo(map);
+          } else {
+            console.warn('Invalid location data for pass:', pass);
+          }
+        });
+      }
+
+      // Load hunting towers
       const { data: towers, error: towersError } = await supabase
         .from('hunting_towers')
         .select('*')
@@ -129,8 +174,6 @@ export const useMapInitialization = (currentTeamId: string | null) => {
             console.warn('Invalid location data for tower:', tower);
           }
         });
-      } else {
-        console.log('No hunting towers found for team:', currentTeamId);
       }
     } catch (error) {
       console.error('Error loading map data:', error);

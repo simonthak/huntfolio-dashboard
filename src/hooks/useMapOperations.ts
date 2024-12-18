@@ -23,28 +23,29 @@ export const useMapOperations = (currentTeamId: string | null, userId: string | 
         return;
       }
 
-      const { error } = await supabase.from('hunting_grounds').insert({
+      const { error } = await supabase.from('hunting_area').insert({
         team_id: currentTeamId,
-        name: 'Jaktmark',
+        name: 'Jaktområde',
         boundary: features.features[0],
         created_by: userId
       });
 
       if (error) throw error;
-      toast.success('Jaktmark sparad');
+      toast.success('Jaktområde sparat');
       setIsDrawing(false);
     } catch (error) {
-      console.error('Error saving hunting ground:', error);
-      toast.error('Kunde inte spara jaktmark');
+      console.error('Error saving hunting area:', error);
+      toast.error('Kunde inte spara jaktområde');
     }
   };
 
-  const handleSaveTower = async (mapInstance: mapboxgl.Map) => {
+  const handleSavePass = async (mapInstance: mapboxgl.Map, huntingAreaId: string) => {
     if (!newTowerLocation || !newTowerName || !userId || !mapInstance) return;
 
     try {
-      const { error } = await supabase.from('hunting_towers').insert({
+      const { error } = await supabase.from('hunting_passes').insert({
         team_id: currentTeamId,
+        hunting_area_id: huntingAreaId,
         name: newTowerName,
         description: newTowerDescription,
         location: {
@@ -68,10 +69,10 @@ export const useMapOperations = (currentTeamId: string | null, userId: string | 
       setNewTowerName('');
       setNewTowerDescription('');
       setNewTowerLocation(null);
-      toast.success('Jakttorn sparat');
+      toast.success('Pass sparat');
     } catch (error) {
-      console.error('Error saving hunting tower:', error);
-      toast.error('Kunde inte spara jakttorn');
+      console.error('Error saving hunting pass:', error);
+      toast.error('Kunde inte spara pass');
     }
   };
 
@@ -87,6 +88,6 @@ export const useMapOperations = (currentTeamId: string | null, userId: string | 
     newTowerDescription,
     setNewTowerDescription,
     handleSaveArea,
-    handleSaveTower
+    handleSavePass
   };
 };

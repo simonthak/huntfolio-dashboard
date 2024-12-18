@@ -288,7 +288,7 @@ export type Database = {
         }
         Relationships: []
       }
-      hunting_grounds: {
+      hunting_area: {
         Row: {
           boundary: Json
           created_at: string
@@ -336,6 +336,7 @@ export type Database = {
           created_by: string
           description: string | null
           drive_area_id: string
+          hunting_area_id: string | null
           id: string
           location: Json
           name: string
@@ -346,6 +347,7 @@ export type Database = {
           created_by: string
           description?: string | null
           drive_area_id: string
+          hunting_area_id?: string | null
           id?: string
           location: Json
           name: string
@@ -356,6 +358,7 @@ export type Database = {
           created_by?: string
           description?: string | null
           drive_area_id?: string
+          hunting_area_id?: string | null
           id?: string
           location?: Json
           name?: string
@@ -374,6 +377,13 @@ export type Database = {
             columns: ["drive_area_id"]
             isOneToOne: false
             referencedRelation: "drive_areas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hunting_passes_hunting_area_id_fkey"
+            columns: ["hunting_area_id"]
+            isOneToOne: false
+            referencedRelation: "hunting_area"
             referencedColumns: ["id"]
           },
           {
