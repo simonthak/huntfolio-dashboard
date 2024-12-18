@@ -128,6 +128,7 @@ export const useMapInitialization = ({
       return () => {
         console.log('Cleaning up map');
         if (map.current) {
+          // Remove all controls first
           if (draw.current) {
             try {
               map.current.removeControl(draw.current);
@@ -136,8 +137,19 @@ export const useMapInitialization = ({
               console.error('Error removing draw control:', error);
             }
           }
-          map.current.remove();
-          map.current = null;
+
+          // Remove all event listeners
+          map.current.off('draw.create');
+          map.current.off('load');
+
+          // Finally remove the map
+          try {
+            map.current.remove();
+            map.current = null;
+            setMapLoaded(false);
+          } catch (error) {
+            console.error('Error removing map:', error);
+          }
         }
       };
     } catch (error) {
