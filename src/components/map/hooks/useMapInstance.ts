@@ -19,6 +19,16 @@ export const useMapInstance = ({ mapboxToken, container }: UseMapInstanceProps) 
     console.log('Starting map initialization...');
     initializationAttempted.current = true;
 
+    const cleanupMap = () => {
+      console.log('Running map cleanup...');
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+      setMapLoaded(false);
+      initializationAttempted.current = false;
+    };
+
     try {
       if (!map.current) {
         console.log('Initializing map with token:', mapboxToken);
@@ -41,20 +51,10 @@ export const useMapInstance = ({ mapboxToken, container }: UseMapInstanceProps) 
       }
     } catch (error) {
       console.error('Error during map initialization:', error);
-      cleanup();
+      cleanupMap();
     }
 
-    const cleanup = () => {
-      console.log('Running map cleanup...');
-      if (map.current) {
-        map.current.remove();
-        map.current = null;
-      }
-      setMapLoaded(false);
-      initializationAttempted.current = false;
-    };
-
-    return cleanup;
+    return cleanupMap;
   }, [mapboxToken, container]);
 
   return { map, mapLoaded };

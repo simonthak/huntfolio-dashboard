@@ -40,11 +40,17 @@ export const useMapEvents = ({ map, draw, onFeatureCreate }: UseMapEventsProps) 
 
     const setupCursorEvents = () => {
       map.current?.on('mousedown', () => {
-        map.current?.getCanvas().style.cursor = 'grabbing';
+        if (map.current) {
+          const canvas = map.current.getCanvas();
+          canvas.style.cursor = 'grabbing';
+        }
       });
 
       map.current?.on('mouseup', () => {
-        map.current?.getCanvas().style.cursor = 'grab';
+        if (map.current) {
+          const canvas = map.current.getCanvas();
+          canvas.style.cursor = 'grab';
+        }
       });
     };
 
