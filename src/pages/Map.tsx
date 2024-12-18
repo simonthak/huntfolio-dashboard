@@ -28,9 +28,7 @@ const Map = () => {
   } = useMapOperations(currentTeamId, userId);
 
   const {
-    mapInstance,
-    drawInstance,
-    handleMapLoad
+    handleMapLoad,
   } = useMapInitialization(currentTeamId);
 
   const {
@@ -39,8 +37,6 @@ const Map = () => {
     handleDrawArea,
     handleAddMarker
   } = useMapInteractions(
-    mapInstance,
-    drawInstance,
     setNewTowerLocation,
     setShowTowerDialog
   );
@@ -60,7 +56,7 @@ const Map = () => {
         <MapControls
           isDrawing={isDrawing}
           onDrawArea={handleDrawArea}
-          onSaveArea={() => handleSaveArea(drawInstance)}
+          onSaveArea={() => handleSaveArea(isDrawing, setIsDrawing)}
           onAddTower={handleAddMarker}
           onAddStand={handleAddMarker}
         />
@@ -78,7 +74,7 @@ const Map = () => {
         onTowerNameChange={setNewTowerName}
         towerDescription={newTowerDescription}
         onTowerDescriptionChange={setNewTowerDescription}
-        onSave={() => mapInstance && handleSaveTower(mapInstance)}
+        onSave={handleSaveTower}
       />
     </div>
   );
