@@ -16,89 +16,86 @@ export const useMapInitialization = ({
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const { draw, initializeDraw } = useDrawControls();
-  const initialized = useRef(false);
+  const initializationAttempted = useRef(false);
 
   useEffect(() => {
-    if (!mapContainer.current || !mapboxToken || initialized.current) {
-      console.log('Map initialization skipped:', 
-        !mapContainer.current ? 'No container' : 
-        !mapboxToken ? 'No token' : 
-        'Already initialized'
-      );
+    // Prevent multiple initialization attempts
+    if (initializationAttempted.current || !mapContainer.current || !mapboxToken) {
       return;
     }
 
-    console.log('Initializing map with token:', mapboxToken.slice(0, 8) + '...');
-    
-    // Set initialization flag
-    initialized.current = true;
+    console.log('Starting map initialization...');
+    initializationAttempted.current = true;
 
     try {
+      // Set token and create map
       mapboxgl.accessToken = mapboxToken;
-
-      const newMap = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/outdoors-v12',
-        center: [18.0686, 59.3293],
-        zoom: 9
-      });
-
-      map.current = newMap;
-
-      const setupMap = () => {
-        if (!newMap || newMap._removed) return;
-        
-        console.log('Map loaded, adding controls');
-        
-        const drawInstance = initializeDraw();
-        newMap.addControl(drawInstance);
-        newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
-        
-        if (newMap.getCanvas()) {
-          newMap.getCanvas().style.cursor = 'grab';
-        }
-
-        newMap.on('draw.create', (e: { features: Feature[] }) => {
-          console.log('Draw feature created:', e.features[0]);
-          if (e.features?.[0]) {
-            const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
-            onFeatureCreate(serializedFeature);
-            drawInstance.deleteAll();
-          }
+      
+      if (!map.current) {
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current,
+          style: 'mapbox://styles/mapbox/outdoors-v12',
+          center: [18.0686, 59.3293],
+          zoom: 9
         });
 
-        newMap.on('mousedown', () => {
-          if (newMap.getCanvas()) {
-            newMap.getCanvas().style.cursor = 'grabbing';
+        // Setup map only once when it's loaded
+        map.current.once('load', () => {
+          if (!map.current) return;
+          
+          console.log('Map loaded, initializing controls...');
+          
+          // Initialize draw control
+          draw.current = initializeDraw();
+          
+          // Add controls
+          map.current.addControl(draw.current);
+          map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+          
+          // Set default cursor
+          const canvas = map.current.getCanvas();
+          if (canvas) {
+            canvas.style.cursor = 'grab';
           }
+
+          // Setup draw event listener
+          map.current.on('draw.create', (e: { features: Feature[] }) => {
+            if (e.features?.[0]) {
+              // Clone the feature to ensure it's serializable
+              const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
+              onFeatureCreate(serializedFeature);
+              draw.current?.deleteAll();
+            }
+          });
+
+          // Setup cursor event listeners
+          map.current.on('mousedown', () => {
+            if (map.current?.getCanvas()) {
+              map.current.getCanvas().style.cursor = 'grabbing';
+            }
+          });
+
+          map.current.on('mouseup', () => {
+            if (map.current?.getCanvas()) {
+              map.current.getCanvas().style.cursor = 'grab';
+            }
+          });
+
+          setMapLoaded(true);
+          console.log('Map initialization complete');
         });
-
-        newMap.on('mouseup', () => {
-          if (newMap.getCanvas()) {
-            newMap.getCanvas().style.cursor = 'grab';
-          }
-        });
-
-        setMapLoaded(true);
-        console.log('Map loaded successfully');
-      };
-
-      newMap.once('load', setupMap);
-
-    } catch (error) {
-      console.error('Error initializing map:', error);
-      if (map.current && !map.current._removed) {
-        map.current.remove();
       }
-      map.current = null;
-      draw.current = null;
-      initialized.current = false;
-      setMapLoaded(false);
+    } catch (error) {
+      console.error('Error during map initialization:', error);
+      cleanup();
     }
 
-    return () => {
-      console.log('Cleaning up map and WebGL context');
-      if (map.current && !map.current._removed) {
+    // Cleanup function
+    const cleanup = () => {
+      console.log('Running map cleanup...');
+      
+      if (map.current) {
+        // Remove controls first
         if (draw.current) {
           try {
             map.current.removeControl(draw.current);
@@ -106,14 +103,23 @@ export const useMapInitialization = ({
             console.warn('Error removing draw control:', error);
           }
         }
-        map.current.remove();
+
+        // Remove map instance
+        if (!map.current._removed) {
+          map.current.remove();
+        }
       }
+
+      // Reset all refs and state
       map.current = null;
       draw.current = null;
-      initialized.current = false;
       setMapLoaded(false);
+      initializationAttempted.current = false;
     };
-  }, [mapboxToken, onFeatureCreate]);
+
+    // Return cleanup function
+    return cleanup;
+  }, [mapboxToken]); // Only re-run if token changes
 
   return { mapContainer, map, draw, mapLoaded };
 };
