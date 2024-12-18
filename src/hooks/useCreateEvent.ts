@@ -36,6 +36,7 @@ export const useCreateEvent = (
     setIsSubmitting(true);
     // Format date in YYYY-MM-DD format in local timezone
     const formattedDate = format(selectedDate, "yyyy-MM-dd");
+    console.log("useCreateEvent - Using date:", formattedDate);
 
     try {
       console.log("Getting authenticated user...");
