@@ -1,4 +1,4 @@
-import { useRef, memo, useCallback } from 'react';
+import { useRef, memo, useCallback, forwardRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
@@ -10,7 +10,7 @@ interface MapContainerProps {
   currentTeamId: string | null;
 }
 
-const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
+const MapContainer = memo(forwardRef<HTMLDivElement, MapContainerProps>(({ onMapLoad, currentTeamId }, ref) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   
   const handleMapLoad = useCallback((map: mapboxgl.Map, draw: any) => {
@@ -41,7 +41,7 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
       )}
     </div>
   );
-});
+}));
 
 MapContainer.displayName = 'MapContainer';
 
