@@ -96,6 +96,28 @@ export const useMapInitialization = ({
               'line-color': '#13B67F',
               'line-width': 2
             }
+          },
+          {
+            'id': 'gl-draw-polygon-and-line-vertex-stroke-inactive',
+            'type': 'circle',
+            'filter': ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point'], ['!=', 'mode', 'static']],
+            'paint': {
+              'circle-radius': 5,
+              'circle-color': '#fff',
+              'circle-stroke-width': 2,
+              'circle-stroke-color': '#13B67F'
+            }
+          },
+          {
+            'id': 'gl-draw-polygon-and-line-vertex-active',
+            'type': 'circle',
+            'filter': ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point'], ['!=', 'mode', 'static']],
+            'paint': {
+              'circle-radius': 6,
+              'circle-color': '#fff',
+              'circle-stroke-width': 2,
+              'circle-stroke-color': '#13B67F'
+            }
           }
         ]
       });
