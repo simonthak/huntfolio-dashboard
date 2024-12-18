@@ -58,7 +58,6 @@ export const useMapInstance = (
           return;
         }
 
-        // Clean up existing instances before creating new ones
         cleanupMap();
 
         mapboxgl.accessToken = token;
@@ -66,7 +65,7 @@ export const useMapInstance = (
         const map = new mapboxgl.Map({
           container: mapContainerRef.current,
           style: 'mapbox://styles/mapbox/satellite-streets-v12',
-          center: [16.5, 62.5], // Center on Sweden
+          center: [16.5, 62.5],
           zoom: 4.5
         });
 
@@ -84,18 +83,20 @@ export const useMapInstance = (
         mapInstanceRef.current = map;
         drawInstanceRef.current = draw;
 
-        map.once('load', () => {
-          console.log('Map loaded, calling onMapLoad callback');
+        const handleLoad = () => {
           if (isMountedRef.current) {
+            console.log('Map loaded successfully');
             setIsLoading(false);
-            // Create local references to avoid closure issues
-            const currentMap = mapInstanceRef.current;
-            const currentDraw = drawInstanceRef.current;
-            if (currentMap && currentDraw) {
-              onMapLoad(currentMap, currentDraw);
+            try {
+              onMapLoad(map, draw);
+            } catch (error) {
+              console.error('Error in onMapLoad callback:', error);
+              toast.error('Ett fel uppstod när kartan skulle laddas');
             }
           }
-        });
+        };
+
+        map.once('load', handleLoad);
 
       } catch (error) {
         console.error('Error initializing map:', error);

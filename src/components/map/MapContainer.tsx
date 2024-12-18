@@ -1,4 +1,4 @@
-import { useRef, memo } from 'react';
+import { useRef, memo, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
@@ -12,7 +12,16 @@ interface MapContainerProps {
 
 const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const { isLoading } = useMapInstance(mapContainerRef, currentTeamId, onMapLoad);
+  
+  const handleMapLoad = useCallback((map: mapboxgl.Map, draw: any) => {
+    try {
+      onMapLoad(map, draw);
+    } catch (error) {
+      console.error('Error in map load callback:', error);
+    }
+  }, [onMapLoad]);
+
+  const { isLoading } = useMapInstance(mapContainerRef, currentTeamId, handleMapLoad);
 
   if (!currentTeamId) {
     return (
