@@ -27,7 +27,7 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
       <div ref={mapContainerRef} className="absolute inset-0" />
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/50">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="h-8 w-8 animate-spin text-[#13B67F]" />
         </div>
       )}
     </div>
