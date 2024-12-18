@@ -24,7 +24,10 @@ export const useMapInitialization = (currentTeamId: string | null) => {
       if (grounds && grounds.length > 0) {
         console.log('Adding hunting grounds to map:', grounds);
         grounds.forEach(ground => {
-          if (ground.boundary) {
+          if (ground.boundary && ground.boundary.geometry && 
+              ground.boundary.geometry.coordinates && 
+              ground.boundary.geometry.coordinates[0] && 
+              ground.boundary.geometry.coordinates[0].length > 0) {
             draw.add(ground.boundary);
           }
         });
@@ -43,14 +46,17 @@ export const useMapInitialization = (currentTeamId: string | null) => {
       if (towers) {
         console.log('Adding towers to map:', towers);
         towers.forEach(tower => {
-          const location = tower.location as { coordinates: [number, number] };
-          new mapboxgl.Marker()
-            .setLngLat(location.coordinates)
-            .setPopup(new mapboxgl.Popup().setHTML(`
-              <h3 class="font-bold">${tower.name}</h3>
-              ${tower.description ? `<p>${tower.description}</p>` : ''}
-            `))
-            .addTo(map);
+          if (tower.location?.coordinates && 
+              Array.isArray(tower.location.coordinates) && 
+              tower.location.coordinates.length === 2) {
+            new mapboxgl.Marker()
+              .setLngLat(tower.location.coordinates)
+              .setPopup(new mapboxgl.Popup().setHTML(`
+                <h3 class="font-bold">${tower.name}</h3>
+                ${tower.description ? `<p>${tower.description}</p>` : ''}
+              `))
+              .addTo(map);
+          }
         });
       }
     } catch (error) {

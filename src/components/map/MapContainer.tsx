@@ -19,18 +19,23 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
   useEffect(() => {
     if (!mapContainerRef.current || !currentTeamId) return;
 
+    let isMounted = true;
+
     const initializeMap = async () => {
       try {
         console.log('Initializing map...');
         const token = await initializeMapbox();
-        const { map, draw } = createMapInstance(mapContainerRef.current!, token);
+        
+        if (!isMounted || !mapContainerRef.current) return;
+        
+        const { map, draw } = createMapInstance(mapContainerRef.current, token);
         
         mapInstanceRef.current = map;
         drawInstanceRef.current = draw;
 
         map.once('load', () => {
           console.log('Map loaded, calling onMapLoad callback');
-          if (mapInstanceRef.current && drawInstanceRef.current) {
+          if (isMounted && mapInstanceRef.current && drawInstanceRef.current) {
             onMapLoad(mapInstanceRef.current, drawInstanceRef.current);
           }
         });
@@ -43,6 +48,7 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
     initializeMap();
 
     return () => {
+      isMounted = false;
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;

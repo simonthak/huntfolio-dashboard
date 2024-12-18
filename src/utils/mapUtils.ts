@@ -20,8 +20,8 @@ export const createMapInstance = (container: HTMLElement, token: string) => {
   const map = new mapboxgl.Map({
     container,
     style: 'mapbox://styles/mapbox/satellite-streets-v12',
-    center: [15.4319, 59.2753],
-    zoom: 5
+    center: [16.5, 62.5], // Center on Sweden
+    zoom: 4.5
   });
 
   const draw = new MapboxDraw({
