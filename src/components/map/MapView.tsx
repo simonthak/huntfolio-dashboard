@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Feature } from 'geojson';
+import mapboxgl from 'mapbox-gl';
 import MapToolbar from './MapToolbar';
 import CreateAreaDialog from './CreateAreaDialog';
 import { useMapInitialization } from './hooks/useMapInitialization';
