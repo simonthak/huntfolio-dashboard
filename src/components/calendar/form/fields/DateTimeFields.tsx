@@ -13,7 +13,7 @@ interface DateTimeFieldsProps {
   startTime: string;
   onEndDateChange: (value: string) => void;
   onStartTimeChange: (value: string) => void;
-  onStartDateChange?: (date: Date | undefined) => void;
+  onStartDateChange: (date: Date | undefined) => void;
 }
 
 const DateTimeFields = ({
@@ -29,18 +29,6 @@ const DateTimeFields = ({
     const minute = (i % 4) * 15;
     return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
   });
-
-  const handleStartDateSelect = (date: Date | undefined) => {
-    console.log("DateTimeFields - Selected date before processing:", date);
-    if (onStartDateChange && date) {
-      // Ensure we're working with a new Date object in the local timezone
-      const localDate = new Date(date.getTime());
-      console.log("DateTimeFields - Processed date:", localDate);
-      onStartDateChange(localDate);
-    } else {
-      onStartDateChange?.(undefined);
-    }
-  };
 
   return (
     <>
@@ -65,7 +53,7 @@ const DateTimeFields = ({
             <Calendar
               mode="single"
               selected={selectedDate}
-              onSelect={handleStartDateSelect}
+              onSelect={onStartDateChange}
               disabled={(date) => date < new Date()}
               initialFocus
             />
