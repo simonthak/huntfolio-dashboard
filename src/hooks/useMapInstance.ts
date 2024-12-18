@@ -14,6 +14,8 @@ export const useMapInstance = (
   useEffect(() => {
     if (!mapContainerRef.current || !currentTeamId) return;
 
+    let mapInstance: mapboxgl.Map | null = null;
+    
     const initializeMap = async () => {
       try {
         console.log('Initializing map...');
@@ -25,6 +27,7 @@ export const useMapInstance = (
         }
         
         const { map, draw } = createMapInstance(mapContainerRef.current, token);
+        mapInstance = map;
 
         map.once('load', () => {
           console.log('Map loaded, calling onMapLoad callback');
@@ -34,31 +37,29 @@ export const useMapInstance = (
           }
         });
 
-        return () => {
-          if (map) {
-            console.log('Removing map instance...');
-            try {
-              map.remove();
-            } catch (error) {
-              console.error('Error removing map:', error);
-            }
-          }
-        };
       } catch (error) {
         console.error('Error initializing map:', error);
         if (isMountedRef.current) {
-          toast.error('Ett fel uppstod när kartan skulle laddas');
+          toast.error('Kunde inte ladda kartan');
           isLoadingRef.current = false;
         }
       }
     };
 
-    const cleanup = initializeMap();
+    initializeMap();
 
     return () => {
       console.log('Starting cleanup...');
       isMountedRef.current = false;
-      if (cleanup) cleanup();
+      
+      if (mapInstance) {
+        console.log('Removing map instance...');
+        try {
+          mapInstance.remove();
+        } catch (error) {
+          console.error('Error removing map:', error);
+        }
+      }
     };
   }, [currentTeamId, onMapLoad]);
 

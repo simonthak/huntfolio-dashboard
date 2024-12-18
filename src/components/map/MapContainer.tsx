@@ -14,6 +14,7 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const { isLoading } = useMapInstance(mapContainerRef, currentTeamId, onMapLoad);
 
+  // Render loading state or no team message
   if (!currentTeamId) {
     return (
       <div className="flex items-center justify-center h-full">
