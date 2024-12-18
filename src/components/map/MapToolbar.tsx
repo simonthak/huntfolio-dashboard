@@ -7,6 +7,11 @@ interface MapToolbarProps {
 }
 
 const MapToolbar = ({ onToolClick }: MapToolbarProps) => {
+  const handleToolClick = (mode: 'area' | 'pass') => {
+    console.log('MapToolbar: Tool clicked:', mode);
+    onToolClick(mode);
+  };
+
   return (
     <div className="absolute top-4 left-4 z-10 bg-white rounded-lg shadow-lg p-2 space-x-2">
       <Tooltip>
@@ -14,7 +19,7 @@ const MapToolbar = ({ onToolClick }: MapToolbarProps) => {
           <Button 
             variant="outline" 
             size="icon"
-            onClick={() => onToolClick('area')}
+            onClick={() => handleToolClick('area')}
           >
             <Pencil className="h-4 w-4" />
           </Button>
@@ -27,7 +32,7 @@ const MapToolbar = ({ onToolClick }: MapToolbarProps) => {
           <Button 
             variant="outline" 
             size="icon"
-            onClick={() => onToolClick('pass')}
+            onClick={() => handleToolClick('pass')}
           >
             <MapPin className="h-4 w-4" />
           </Button>

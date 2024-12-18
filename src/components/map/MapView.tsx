@@ -48,17 +48,22 @@ const MapView = () => {
   useMapLayers({ map, mapLoaded, areas, passes });
 
   const handleToolClick = (mode: 'area' | 'pass') => {
-    console.log('Tool clicked:', mode);
-    if (!draw.current || !map.current) return;
+    console.log('MapView: Tool clicked:', mode);
+    if (!draw.current || !map.current) {
+      console.error('Draw or map not initialized');
+      return;
+    }
 
     setDrawMode(mode);
     
     // Remove any existing drawn features
     draw.current.deleteAll();
+    console.log('Deleted existing features');
 
     if (mode === 'area') {
       console.log('Enabling polygon draw mode');
       draw.current.changeMode('draw_polygon');
+      console.log('Draw mode changed to draw_polygon');
     } else {
       console.log('Enabling point placement mode');
       // Disable draw mode and enable marker placement

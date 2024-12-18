@@ -39,14 +39,13 @@ export const useMapInitialization = ({
 
       map.current = mapInstance;
 
-      // Initialize draw control with specific options
+      // Initialize draw control
       const drawInstance = new MapboxDraw({
         displayControlsDefault: false,
         controls: {
           polygon: true,
           trash: true
         },
-        defaultMode: 'draw_polygon',
         styles: [
           {
             'id': 'gl-draw-polygon-fill-inactive',
