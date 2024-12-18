@@ -106,49 +106,48 @@ export const useMapInitialization = ({
       // Store the draw instance in the ref
       draw.current = drawInstance;
 
-      // Wait for map to load before adding controls
-      mapInstance.on('load', () => {
-        console.log('Map loaded, adding controls');
-        mapInstance.addControl(drawInstance);
-        mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
-        setMapLoaded(true);
-        console.log('Map loaded successfully');
-      });
-
-      // Set up draw.create event handler
-      mapInstance.on('draw.create', (e: { features: Feature[] }) => {
+      // Handle draw.create event
+      const handleDrawCreate = (e: { features: Feature[] }) => {
         console.log('Draw feature created:', e.features[0]);
         if (e.features && e.features[0]) {
           const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
           onFeatureCreate(serializedFeature);
         }
+      };
+
+      // Wait for map to load before adding controls
+      mapInstance.on('load', () => {
+        console.log('Map loaded, adding controls');
+        mapInstance.addControl(drawInstance);
+        mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        
+        // Add draw.create event listener after controls are added
+        mapInstance.on('draw.create', handleDrawCreate);
+        
+        setMapLoaded(true);
+        console.log('Map loaded successfully');
       });
 
       // Return cleanup function
       return () => {
         console.log('Cleaning up map');
         if (map.current) {
-          // Remove all controls first
-          if (draw.current) {
-            try {
+          try {
+            // Remove the draw.create event listener
+            map.current.off('draw.create', handleDrawCreate);
+            
+            // Remove all controls first
+            if (draw.current) {
               map.current.removeControl(draw.current);
               draw.current = null;
-            } catch (error) {
-              console.error('Error removing draw control:', error);
             }
-          }
 
-          // Remove all event listeners
-          map.current.off('draw.create');
-          map.current.off('load');
-
-          // Finally remove the map
-          try {
+            // Finally remove the map
             map.current.remove();
             map.current = null;
             setMapLoaded(false);
           } catch (error) {
-            console.error('Error removing map:', error);
+            console.error('Error cleaning up map:', error);
           }
         }
       };
