@@ -21,13 +21,6 @@ const CreateEventDialog = ({
   
   const { createEvent, isSubmitting } = useCreateEvent(onEventCreated, () => onOpenChange(false));
 
-  const handleOpenChange = (newOpen: boolean) => {
-    if (!newOpen && event?.type === 'click' && (event.target as HTMLElement).closest('[data-state="open"]')) {
-      return;
-    }
-    onOpenChange(newOpen);
-  };
-
   const handleSubmit = async (formData: any) => {
     console.log("CreateEventDialog - Form submission with date:", selectedDate);
     await createEvent({
@@ -37,8 +30,21 @@ const CreateEventDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[500px]" aria-describedby="event-form-description">
+    <Dialog 
+      open={open} 
+      onOpenChange={onOpenChange}
+      modal={true}
+    >
+      <DialogContent 
+        className="sm:max-w-[500px]" 
+        aria-describedby="event-form-description"
+        onPointerDownOutside={(e) => {
+          e.preventDefault();
+        }}
+        onEscapeKeyDown={(e) => {
+          e.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Skapa en ny händelse</DialogTitle>
           <DialogDescription id="event-form-description">
