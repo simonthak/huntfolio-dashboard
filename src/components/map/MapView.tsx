@@ -6,10 +6,10 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import MapToolbar from './MapToolbar';
-import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
 import CreateAreaDialog from './CreateAreaDialog';
 import { Feature, Geometry } from 'geojson';
+import { DriveArea, HuntingPass } from './types';
 
 interface DrawCreateEvent {
   features: Feature[];
@@ -47,7 +47,7 @@ const MapView = () => {
         .eq('team_id', currentTeamId);
       
       if (error) throw error;
-      return data;
+      return data as DriveArea[];
     },
     enabled: !!currentTeamId,
   });
@@ -63,7 +63,7 @@ const MapView = () => {
         .eq('team_id', currentTeamId);
       
       if (error) throw error;
-      return data;
+      return data as HuntingPass[];
     },
     enabled: !!currentTeamId,
   });
@@ -142,7 +142,7 @@ const MapView = () => {
       const source = `area-${area.id}`;
       map.current?.addSource(source, {
         type: 'geojson',
-        data: area.boundary as GeoJSON.GeoJSON
+        data: area.boundary as Feature
       });
 
       map.current?.addLayer({
