@@ -86,8 +86,8 @@ export const useMapEvents = ({ map, draw, onFeatureCreate }: UseMapEventsProps) 
     return () => {
       if (map.current) {
         map.current.off('draw.create');
-        map.current.off('mousedown', 'mousedown');
-        map.current.off('mouseup', 'mouseup');
+        map.current.off('mousedown', handleMouseDown);
+        map.current.off('mouseup', handleMouseUp);
       }
     };
   }, [map, draw, onFeatureCreate]);
