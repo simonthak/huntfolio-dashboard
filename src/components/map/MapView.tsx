@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Feature } from 'geojson';
 import mapboxgl from 'mapbox-gl';
+import { Alert } from "@/components/ui/alert";
 import MapToolbar from './MapToolbar';
 import CreateAreaDialog from './CreateAreaDialog';
 import { useMapInitialization } from './hooks/useMapInitialization';
@@ -17,6 +18,7 @@ const MapView = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [drawMode, setDrawMode] = useState<'area' | 'pass' | null>(null);
   const [drawnFeature, setDrawnFeature] = useState<Feature | null>(null);
+  const [showDrawInstructions, setShowDrawInstructions] = useState(false);
 
   const { data: mapboxToken, isError, error } = useQuery({
     queryKey: ['mapbox-token'],
@@ -36,6 +38,7 @@ const MapView = () => {
     console.log('Feature created:', feature);
     setDrawnFeature(feature);
     setShowCreateDialog(true);
+    setShowDrawInstructions(false);
   };
 
   const { mapContainer, map, draw, mapLoaded } = useMapInitialization({
@@ -64,19 +67,11 @@ const MapView = () => {
       console.log('Enabling polygon draw mode');
       draw.current.changeMode('draw_polygon');
       map.current.getCanvas().style.cursor = 'crosshair';
+      setShowDrawInstructions(true);
       
-      // Add popup for draw instructions
-      const popup = new mapboxgl.Popup({
-        closeButton: false,
-        className: 'bg-background text-foreground px-4 py-2 rounded-lg shadow-lg',
-      })
-        .setLngLat(map.current.getCenter())
-        .setHTML('<p class="text-sm">Dubbelklicka eller klicka på första punkten för att slutföra drevet</p>')
-        .addTo(map.current);
-
-      // Remove popup when drawing is complete
+      // Remove instructions when drawing is complete
       const onDrawCreate = () => {
-        popup.remove();
+        setShowDrawInstructions(false);
       };
       
       map.current.once('draw.create', onDrawCreate);
@@ -126,6 +121,13 @@ const MapView = () => {
 
   return (
     <div className="relative h-[calc(100vh-4rem)] w-full">
+      {showDrawInstructions && (
+        <div className="absolute top-20 left-4 z-20 w-96">
+          <Alert>
+            Dubbelklicka eller klicka på första punkten för att slutföra drevet
+          </Alert>
+        </div>
+      )}
       <MapToolbar onToolClick={handleToolClick} />
       <div ref={mapContainer} className="absolute inset-0" />
       
