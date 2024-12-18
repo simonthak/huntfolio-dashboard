@@ -16,16 +16,19 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const draw = useRef<any>(null);
-  const initialized = useRef(false);
 
   const initializeMap = useCallback(async () => {
-    // Check if we have both the container ref and team ID
-    if (!mapContainer.current || !currentTeamId || initialized.current) {
+    if (!mapContainer.current || !currentTeamId) {
       console.log('Initialization conditions not met:', {
         hasContainer: !!mapContainer.current,
-        hasTeamId: !!currentTeamId,
-        isInitialized: initialized.current
+        hasTeamId: !!currentTeamId
       });
+      return;
+    }
+
+    // Prevent multiple initializations
+    if (map.current) {
+      console.log('Map already initialized');
       return;
     }
 
@@ -46,8 +49,8 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
       }
 
       mapboxgl.accessToken = token;
-      
-      // Ensure container still exists when creating map
+
+      // Double check container exists
       if (!mapContainer.current) {
         console.error('Map container not found after token fetch');
         return;
@@ -78,9 +81,8 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
 
       mapInstance.on('load', () => {
         console.log('Map loaded successfully');
-        initialized.current = true;
         if (map.current && draw.current) {
-          onMapLoad(mapInstance, drawInstance);
+          onMapLoad(map.current, draw.current);
         }
       });
 
@@ -105,7 +107,7 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
         map.current.remove();
         map.current = null;
       }
-      initialized.current = false;
+      draw.current = null;
     };
   }, [initializeMap]);
 
