@@ -63,6 +63,23 @@ const MapView = () => {
       console.log('Enabling polygon draw mode');
       draw.current.changeMode('draw_polygon');
       map.current.getCanvas().style.cursor = 'crosshair';
+      
+      // Add popup for draw instructions
+      const popup = new mapboxgl.Popup({
+        closeButton: false,
+        className: 'bg-background text-foreground px-4 py-2 rounded-lg shadow-lg',
+      })
+        .setLngLat(map.current.getCenter())
+        .setHTML('<p class="text-sm">Dubbelklicka eller klicka på första punkten för att slutföra drevet</p>')
+        .addTo(map.current);
+
+      // Remove popup when drawing is complete
+      const onDrawCreate = () => {
+        popup.remove();
+      };
+      
+      map.current.once('draw.create', onDrawCreate);
+      
       console.log('Draw mode changed to draw_polygon');
     } else {
       console.log('Enabling point placement mode');
