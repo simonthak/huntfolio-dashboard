@@ -3,11 +3,9 @@ import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Feature } from 'geojson';
-import mapboxgl from 'mapbox-gl';
-import { Alert } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 import MapToolbar from './MapToolbar';
 import CreateAreaDialog from './CreateAreaDialog';
+import DrawingInstructions from './DrawingInstructions';
 import { useMapInitialization } from './hooks/useMapInitialization';
 import { useMapLayers } from './hooks/useMapLayers';
 import { useMapData } from './hooks/useMapData';
@@ -122,18 +120,7 @@ const MapView = () => {
 
   return (
     <div className="relative h-[calc(100vh-4rem)] w-full">
-      {showDrawInstructions && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 w-[400px]">
-          <Alert className="bg-white/90 backdrop-blur-sm border-primary shadow-lg">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium">
-                Dubbelklicka eller klicka på första punkten för att slutföra drevet
-              </span>
-            </div>
-          </Alert>
-        </div>
-      )}
+      <DrawingInstructions show={showDrawInstructions} />
       <MapToolbar onToolClick={handleToolClick} />
       <div ref={mapContainer} className="absolute inset-0" />
       

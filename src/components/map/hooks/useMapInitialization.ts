@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
-import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { Feature } from 'geojson';
+import { useDrawControls } from './useDrawControls';
 
 interface UseMapInitializationProps {
   mapboxToken: string;
@@ -14,9 +14,9 @@ export const useMapInitialization = ({
 }: UseMapInitializationProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const draw = useRef<MapboxDraw | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const initialized = useRef(false);
+  const { draw, initializeDraw } = useDrawControls();
 
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken || initialized.current) {
@@ -37,117 +37,8 @@ export const useMapInitialization = ({
         zoom: 9
       });
 
-      // Initialize draw control with custom configuration
-      const drawInstance = new MapboxDraw({
-        displayControlsDefault: false,
-        controls: {
-          polygon: true,
-          trash: true
-        },
-        defaultMode: 'draw_polygon',
-        styles: [
-          // Vertex point style
-          {
-            'id': 'gl-draw-polygon-and-line-vertex-active',
-            'type': 'circle',
-            'filter': ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point']],
-            'paint': {
-              'circle-radius': 6,
-              'circle-color': '#fff',
-              'circle-stroke-width': 2,
-              'circle-stroke-color': '#13B67F'
-            }
-          },
-          // Vertex point style (inactive)
-          {
-            'id': 'gl-draw-polygon-and-line-vertex-stroke-inactive',
-            'type': 'circle',
-            'filter': ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point']],
-            'paint': {
-              'circle-radius': 5,
-              'circle-color': '#fff',
-              'circle-stroke-width': 2,
-              'circle-stroke-color': '#13B67F'
-            }
-          },
-          // Mid point style
-          {
-            'id': 'gl-draw-polygon-midpoint',
-            'type': 'circle',
-            'filter': ['all', ['==', 'meta', 'midpoint'], ['==', '$type', 'Point']],
-            'paint': {
-              'circle-radius': 3,
-              'circle-color': '#13B67F'
-            }
-          },
-          // Line style
-          {
-            'id': 'gl-draw-line',
-            'type': 'line',
-            'filter': ['all', ['==', '$type', 'LineString'], ['!=', 'mode', 'static']],
-            'layout': {
-              'line-cap': 'round',
-              'line-join': 'round'
-            },
-            'paint': {
-              'line-color': '#13B67F',
-              'line-width': 2
-            }
-          },
-          // Polygon fill (inactive)
-          {
-            'id': 'gl-draw-polygon-fill-inactive',
-            'type': 'fill',
-            'filter': ['all', ['==', 'active', 'false'], ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
-            'paint': {
-              'fill-color': '#13B67F',
-              'fill-outline-color': '#13B67F',
-              'fill-opacity': 0.1
-            }
-          },
-          // Polygon outline (inactive)
-          {
-            'id': 'gl-draw-polygon-stroke-inactive',
-            'type': 'line',
-            'filter': ['all', ['==', 'active', 'false'], ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
-            'layout': {
-              'line-cap': 'round',
-              'line-join': 'round'
-            },
-            'paint': {
-              'line-color': '#13B67F',
-              'line-width': 2
-            }
-          },
-          // Polygon fill (active)
-          {
-            'id': 'gl-draw-polygon-fill-active',
-            'type': 'fill',
-            'filter': ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
-            'paint': {
-              'fill-color': '#13B67F',
-              'fill-outline-color': '#13B67F',
-              'fill-opacity': 0.2
-            }
-          },
-          // Polygon outline (active)
-          {
-            'id': 'gl-draw-polygon-stroke-active',
-            'type': 'line',
-            'filter': ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
-            'layout': {
-              'line-cap': 'round',
-              'line-join': 'round'
-            },
-            'paint': {
-              'line-color': '#13B67F',
-              'line-width': 2
-            }
-          }
-        ]
-      });
-
-      draw.current = drawInstance;
+      const drawInstance = initializeDraw();
+      
       map.current = mapInstance;
 
       mapInstance.on('load', () => {
