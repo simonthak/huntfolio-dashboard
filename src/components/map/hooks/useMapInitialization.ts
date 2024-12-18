@@ -23,33 +23,10 @@ export const useMapInitialization = ({
       return;
     }
 
-    // Clean up function to handle proper disposal
-    const cleanupMap = () => {
-      if (map.current) {
-        console.log('Cleaning up map instance');
-        
-        // First remove the draw control if it exists
-        if (draw.current) {
-          try {
-            map.current.removeControl(draw.current);
-            draw.current = null;
-          } catch (error) {
-            console.error('Error removing draw control:', error);
-          }
-        }
-
-        // Then remove the map
-        try {
-          map.current.remove();
-          map.current = null;
-        } catch (error) {
-          console.error('Error removing map:', error);
-        }
-      }
-    };
-
-    // Clean up any existing instance before creating a new one
-    cleanupMap();
+    if (map.current) {
+      console.log('Map already initialized');
+      return;
+    }
 
     console.log('Initializing map with token:', mapboxToken.slice(0, 8) + '...');
     
@@ -144,18 +121,24 @@ export const useMapInitialization = ({
         if (e.features && e.features[0]) {
           const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
           onFeatureCreate(serializedFeature);
-          
-          // Reset the draw mode after creation
-          if (draw.current) {
-            draw.current.changeMode('simple_select');
-          }
         }
       });
 
       // Return cleanup function
       return () => {
         console.log('Cleaning up map');
-        cleanupMap();
+        if (map.current) {
+          if (draw.current) {
+            try {
+              map.current.removeControl(draw.current);
+              draw.current = null;
+            } catch (error) {
+              console.error('Error removing draw control:', error);
+            }
+          }
+          map.current.remove();
+          map.current = null;
+        }
       };
     } catch (error) {
       console.error('Error initializing map:', error);
