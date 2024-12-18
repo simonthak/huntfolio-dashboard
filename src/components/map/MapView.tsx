@@ -48,10 +48,10 @@ const MapView = () => {
       
       if (error) throw error;
       
-      // Convert Supabase JSON to DriveArea type
+      // Convert Supabase JSON to DriveArea type with proper type assertion
       return (data as SupabaseDriveArea[]).map(area => ({
         ...area,
-        boundary: area.boundary as Feature
+        boundary: area.boundary as unknown as Feature
       })) as DriveArea[];
     },
     enabled: !!currentTeamId,
@@ -69,10 +69,10 @@ const MapView = () => {
       
       if (error) throw error;
       
-      // Convert Supabase JSON to HuntingPass type
+      // Convert Supabase JSON to HuntingPass type with proper type assertion
       return (data as SupabaseHuntingPass[]).map(pass => ({
         ...pass,
-        location: pass.location as Geometry
+        location: pass.location as unknown as Geometry
       })) as HuntingPass[];
     },
     enabled: !!currentTeamId,
@@ -124,7 +124,7 @@ const MapView = () => {
     };
   }, [mapboxToken]);
 
-  // Display existing areas and passes when they're loaded
+  // Display existing areas
   useEffect(() => {
     if (!map.current || !mapLoaded || !areas) return;
 
@@ -177,6 +177,7 @@ const MapView = () => {
     });
   }, [areas, mapLoaded]);
 
+  // Display existing passes
   useEffect(() => {
     if (!map.current || !mapLoaded || !passes) return;
 
