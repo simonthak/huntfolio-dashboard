@@ -1,25 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import MapboxDraw from '@mapbox/mapbox-gl-draw';
-import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Feature } from 'geojson';
 import MapToolbar from './MapToolbar';
-import { useSearchParams } from 'react-router-dom';
 import CreateAreaDialog from './CreateAreaDialog';
-import { Feature, Geometry } from 'geojson';
-import { DriveArea, HuntingPass, SupabaseDriveArea, SupabaseHuntingPass } from './types';
-
-interface DrawCreateEvent {
-  features: Feature[];
-}
+import { useMapInitialization } from './hooks/useMapInitialization';
+import { useMapLayers } from './hooks/useMapLayers';
+import { useMapData } from './hooks/useMapData';
 
 const MapView = () => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const draw = useRef<MapboxDraw | null>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
   const [searchParams] = useSearchParams();
   const currentTeamId = searchParams.get('team');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -36,159 +26,19 @@ const MapView = () => {
     },
   });
 
-  // Fetch existing areas
-  const { data: areas } = useQuery({
-    queryKey: ['drive-areas', currentTeamId],
-    queryFn: async () => {
-      if (!currentTeamId) return [];
-      const { data, error } = await supabase
-        .from('drive_areas')
-        .select('*')
-        .eq('team_id', currentTeamId);
-      
-      if (error) throw error;
-      
-      // Convert Supabase JSON to DriveArea type with proper type assertion
-      return (data as SupabaseDriveArea[]).map(area => ({
-        ...area,
-        boundary: area.boundary as unknown as Feature
-      })) as DriveArea[];
-    },
-    enabled: !!currentTeamId,
+  const handleFeatureCreate = (feature: Feature) => {
+    setDrawnFeature(feature);
+    setShowCreateDialog(true);
+  };
+
+  const { mapContainer, map, draw, mapLoaded } = useMapInitialization({
+    mapboxToken: mapboxToken || '',
+    onFeatureCreate: handleFeatureCreate,
   });
 
-  // Fetch existing passes
-  const { data: passes } = useQuery({
-    queryKey: ['hunting-passes', currentTeamId],
-    queryFn: async () => {
-      if (!currentTeamId) return [];
-      const { data, error } = await supabase
-        .from('hunting_passes')
-        .select('*')
-        .eq('team_id', currentTeamId);
-      
-      if (error) throw error;
-      
-      // Convert Supabase JSON to HuntingPass type with proper type assertion
-      return (data as SupabaseHuntingPass[]).map(pass => ({
-        ...pass,
-        location: pass.location as unknown as Geometry
-      })) as HuntingPass[];
-    },
-    enabled: !!currentTeamId,
-  });
+  const { areas, passes } = useMapData(currentTeamId);
 
-  useEffect(() => {
-    if (!mapContainer.current || !mapboxToken || map.current) return;
-
-    console.log('Initializing map...');
-    mapboxgl.accessToken = mapboxToken;
-
-    const initializeMap = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/outdoors-v12',
-      center: [18.0686, 59.3293],
-      zoom: 9
-    });
-
-    map.current = initializeMap;
-
-    // Initialize draw control
-    draw.current = new MapboxDraw({
-      displayControlsDefault: false,
-      controls: {
-        polygon: true,
-        trash: true
-      },
-      defaultMode: 'simple_select'
-    });
-
-    initializeMap.addControl(draw.current, 'top-left');
-    initializeMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-    initializeMap.on('load', () => {
-      console.log('Map loaded');
-      setMapLoaded(true);
-    });
-
-    // Handle draw events
-    initializeMap.on('draw.create', (e: DrawCreateEvent) => {
-      console.log('Feature created:', e.features[0]);
-      setDrawnFeature(e.features[0]);
-      setShowCreateDialog(true);
-    });
-
-    return () => {
-      console.log('Cleaning up map');
-      initializeMap.remove();
-    };
-  }, [mapboxToken]);
-
-  // Display existing areas
-  useEffect(() => {
-    if (!map.current || !mapLoaded || !areas) return;
-
-    // Remove existing layers before adding new ones
-    areas.forEach(area => {
-      const source = `area-${area.id}`;
-      const fillLayer = `area-fill-${area.id}`;
-      const lineLayer = `area-line-${area.id}`;
-      
-      if (map.current?.getLayer(fillLayer)) {
-        map.current.removeLayer(fillLayer);
-      }
-      if (map.current?.getLayer(lineLayer)) {
-        map.current.removeLayer(lineLayer);
-      }
-      if (map.current?.getSource(source)) {
-        map.current.removeSource(source);
-      }
-    });
-
-    // Add new layers
-    areas.forEach(area => {
-      if (!area.boundary) return;
-      
-      const source = `area-${area.id}`;
-      map.current?.addSource(source, {
-        type: 'geojson',
-        data: area.boundary
-      });
-
-      map.current?.addLayer({
-        id: `area-fill-${area.id}`,
-        type: 'fill',
-        source: source,
-        paint: {
-          'fill-color': '#13B67F',
-          'fill-opacity': 0.2
-        }
-      });
-
-      map.current?.addLayer({
-        id: `area-line-${area.id}`,
-        type: 'line',
-        source: source,
-        paint: {
-          'line-color': '#13B67F',
-          'line-width': 2
-        }
-      });
-    });
-  }, [areas, mapLoaded]);
-
-  // Display existing passes
-  useEffect(() => {
-    if (!map.current || !mapLoaded || !passes) return;
-
-    passes.forEach(pass => {
-      if (!pass.location) return;
-      
-      new mapboxgl.Marker()
-        .setLngLat((pass.location as any).coordinates)
-        .addTo(map.current!);
-    });
-  }, [passes, mapLoaded]);
+  useMapLayers({ map, mapLoaded, areas, passes });
 
   const handleToolClick = (mode: 'area' | 'pass') => {
     if (!draw.current || !map.current) return;
