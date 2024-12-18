@@ -9,6 +9,11 @@ import MapToolbar from './MapToolbar';
 import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
 import CreateAreaDialog from './CreateAreaDialog';
+import { Feature, Geometry } from 'geojson';
+
+interface DrawCreateEvent {
+  features: Feature[];
+}
 
 const MapView = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -19,7 +24,7 @@ const MapView = () => {
   const currentTeamId = searchParams.get('team');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [drawMode, setDrawMode] = useState<'area' | 'pass' | null>(null);
-  const [drawnFeature, setDrawnFeature] = useState<any>(null);
+  const [drawnFeature, setDrawnFeature] = useState<Feature | null>(null);
 
   // Fetch Mapbox token from Supabase Edge Function
   const { data: mapboxToken } = useQuery({
@@ -97,7 +102,7 @@ const MapView = () => {
     });
 
     // Handle draw events
-    initializeMap.on('draw.create', (e) => {
+    initializeMap.on('draw.create', (e: DrawCreateEvent) => {
       console.log('Feature created:', e.features[0]);
       setDrawnFeature(e.features[0]);
       setShowCreateDialog(true);
@@ -113,36 +118,52 @@ const MapView = () => {
   useEffect(() => {
     if (!map.current || !mapLoaded || !areas) return;
 
+    // Remove existing layers before adding new ones
+    areas.forEach(area => {
+      const source = `area-${area.id}`;
+      const fillLayer = `area-fill-${area.id}`;
+      const lineLayer = `area-line-${area.id}`;
+      
+      if (map.current?.getLayer(fillLayer)) {
+        map.current.removeLayer(fillLayer);
+      }
+      if (map.current?.getLayer(lineLayer)) {
+        map.current.removeLayer(lineLayer);
+      }
+      if (map.current?.getSource(source)) {
+        map.current.removeSource(source);
+      }
+    });
+
+    // Add new layers
     areas.forEach(area => {
       if (!area.boundary) return;
       
       const source = `area-${area.id}`;
-      if (!map.current?.getSource(source)) {
-        map.current?.addSource(source, {
-          type: 'geojson',
-          data: area.boundary
-        });
+      map.current?.addSource(source, {
+        type: 'geojson',
+        data: area.boundary as GeoJSON.GeoJSON
+      });
 
-        map.current?.addLayer({
-          id: `area-fill-${area.id}`,
-          type: 'fill',
-          source: source,
-          paint: {
-            'fill-color': '#13B67F',
-            'fill-opacity': 0.2
-          }
-        });
+      map.current?.addLayer({
+        id: `area-fill-${area.id}`,
+        type: 'fill',
+        source: source,
+        paint: {
+          'fill-color': '#13B67F',
+          'fill-opacity': 0.2
+        }
+      });
 
-        map.current?.addLayer({
-          id: `area-line-${area.id}`,
-          type: 'line',
-          source: source,
-          paint: {
-            'line-color': '#13B67F',
-            'line-width': 2
-          }
-        });
-      }
+      map.current?.addLayer({
+        id: `area-line-${area.id}`,
+        type: 'line',
+        source: source,
+        paint: {
+          'line-color': '#13B67F',
+          'line-width': 2
+        }
+      });
     });
   }, [areas, mapLoaded]);
 
@@ -154,7 +175,7 @@ const MapView = () => {
       if (!pass.location) return;
       
       new mapboxgl.Marker()
-        .setLngLat(pass.location.coordinates)
+        .setLngLat((pass.location as any).coordinates)
         .addTo(map.current!);
     });
   }, [passes, mapLoaded]);
@@ -171,16 +192,16 @@ const MapView = () => {
       map.current.getCanvas().style.cursor = 'crosshair';
       
       const onClick = (e: mapboxgl.MapMouseEvent) => {
-        const marker = new mapboxgl.Marker()
-          .setLngLat(e.lngLat)
-          .addTo(map.current!);
-        
-        setDrawnFeature({
+        const feature: Feature = {
+          type: 'Feature',
           geometry: {
             type: 'Point',
             coordinates: [e.lngLat.lng, e.lngLat.lat]
-          }
-        });
+          },
+          properties: {}
+        };
+        
+        setDrawnFeature(feature);
         setShowCreateDialog(true);
         
         // Clean up click handler

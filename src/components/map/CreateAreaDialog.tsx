@@ -32,6 +32,12 @@ const CreateAreaDialog = ({
     e.preventDefault();
     if (!teamId || !feature || !type) return;
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error('Du måste vara inloggad');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       if (type === 'area') {
@@ -41,21 +47,52 @@ const CreateAreaDialog = ({
             team_id: teamId,
             name,
             boundary: feature,
+            created_by: user.id
           });
 
         if (error) throw error;
         toast.success('Drevområde skapat');
       } else {
-        const { error } = await supabase
+        // First create a drive area for the pass
+        const { data: driveArea, error: driveAreaError } = await supabase
+          .from('drive_areas')
+          .insert({
+            team_id: teamId,
+            name: `${name} Area`,
+            boundary: {
+              type: "Feature",
+              properties: {},
+              geometry: {
+                type: "Polygon",
+                coordinates: [[
+                  [feature.geometry.coordinates[0] - 0.0001, feature.geometry.coordinates[1] - 0.0001],
+                  [feature.geometry.coordinates[0] + 0.0001, feature.geometry.coordinates[1] - 0.0001],
+                  [feature.geometry.coordinates[0] + 0.0001, feature.geometry.coordinates[1] + 0.0001],
+                  [feature.geometry.coordinates[0] - 0.0001, feature.geometry.coordinates[1] + 0.0001],
+                  [feature.geometry.coordinates[0] - 0.0001, feature.geometry.coordinates[1] - 0.0001]
+                ]]
+              }
+            },
+            created_by: user.id
+          })
+          .select()
+          .single();
+
+        if (driveAreaError) throw driveAreaError;
+
+        // Then create the pass
+        const { error: passError } = await supabase
           .from('hunting_passes')
           .insert({
             team_id: teamId,
             name,
             location: feature.geometry,
             description,
+            drive_area_id: driveArea.id,
+            created_by: user.id
           });
 
-        if (error) throw error;
+        if (passError) throw passError;
         toast.success('Pass skapat');
       }
 
