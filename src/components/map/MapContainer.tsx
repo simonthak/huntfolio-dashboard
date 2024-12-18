@@ -19,7 +19,15 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
   const initialized = useRef(false);
 
   const initializeMap = useCallback(async () => {
-    if (!mapContainer.current || !currentTeamId || map.current || initialized.current) return;
+    // Check if we have both the container ref and team ID
+    if (!mapContainer.current || !currentTeamId || initialized.current) {
+      console.log('Initialization conditions not met:', {
+        hasContainer: !!mapContainer.current,
+        hasTeamId: !!currentTeamId,
+        isInitialized: initialized.current
+      });
+      return;
+    }
 
     try {
       console.log('Fetching Mapbox token...');
@@ -39,6 +47,13 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
 
       mapboxgl.accessToken = token;
       
+      // Ensure container still exists when creating map
+      if (!mapContainer.current) {
+        console.error('Map container not found after token fetch');
+        return;
+      }
+
+      console.log('Creating map instance...');
       const mapInstance = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/satellite-streets-v12',
@@ -81,9 +96,11 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
   }, [currentTeamId, onMapLoad]);
 
   useEffect(() => {
+    console.log('MapContainer mounted, initializing map...');
     initializeMap();
 
     return () => {
+      console.log('MapContainer unmounting, cleaning up...');
       if (map.current) {
         map.current.remove();
         map.current = null;
