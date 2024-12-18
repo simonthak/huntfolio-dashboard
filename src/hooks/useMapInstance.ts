@@ -4,41 +4,18 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// Create a safe clone utility
-const createSafeClone = (obj: any) => {
-  // Filter out non-serializable data
-  const getCleanObject = (value: any): any => {
-    if (Array.isArray(value)) {
-      return value.map(item => getCleanObject(item));
-    }
-    if (value && typeof value === 'object') {
-      const cleanObj: any = {};
-      for (const key in value) {
-        if (
-          value[key] !== undefined && 
-          value[key] !== null && 
-          typeof value[key] !== 'function' &&
-          !(value[key] instanceof Element)
-        ) {
-          cleanObj[key] = getCleanObject(value[key]);
-        }
-      }
-      return cleanObj;
-    }
-    return value;
+// Create a safe event emitter that only passes serializable data
+const emitSafeMapEvent = (map: mapboxgl.Map) => {
+  // Only extract basic numeric/string values
+  const safeState = {
+    lat: map.getCenter().lat,
+    lng: map.getCenter().lng,
+    zoom: +map.getZoom().toFixed(2), // Convert to number with 2 decimal places
+    timestamp: Date.now()
   };
 
-  try {
-    // Test if object is cleanly serializable
-    return JSON.parse(JSON.stringify(getCleanObject(obj)));
-  } catch (e) {
-    console.warn('Failed to clone object, returning minimal safe data');
-    // Return minimal safe data
-    return {
-      type: 'MAP_EVENT',
-      timestamp: Date.now()
-    };
-  }
+  // Stringify and parse to ensure it's fully serializable
+  return JSON.parse(JSON.stringify(safeState));
 };
 
 export const useMapInstance = (
@@ -92,20 +69,17 @@ export const useMapInstance = (
           zoom: 4.5
         });
 
-        // Handle map events with safe cloning
-        map.on('wheel', (e: mapboxgl.MapWheelEvent) => {
-          const safeData = createSafeClone({
-            type: 'MAP_SCROLLED',
-            payload: {
-              center: map.getCenter().toArray(),
-              zoom: map.getZoom(),
-              deltaY: e.originalEvent.deltaY,
-              deltaX: e.originalEvent.deltaX
+        // Apply safe event handling to all map movement events
+        ['wheel', 'drag', 'move'].forEach(eventType => {
+          map.on(eventType, () => {
+            try {
+              const safeData = emitSafeMapEvent(map);
+              requestAnimationFrame(() => {
+                window.postMessage(safeData, '*');
+              });
+            } catch (err) {
+              console.warn('Map event serialization failed:', err);
             }
-          });
-          
-          requestAnimationFrame(() => {
-            window.postMessage(safeData, '*');
           });
         });
 
