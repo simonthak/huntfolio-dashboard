@@ -5,69 +5,58 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Json } from '@/integrations/supabase/types';
 
+interface Coordinates {
+  0: number;
+  1: number;
+  length: 2;
+}
+
 interface GeoJSONGeometry {
   type: string;
-  coordinates: number[][][];
-  [key: string]: Json;
+  coordinates: Coordinates[] | Coordinates[][] | Coordinates[][][];
 }
 
 interface GeoJSONFeature {
-  type: string;
+  type: 'Feature';
   geometry: GeoJSONGeometry;
   properties?: Record<string, any>;
-  [key: string]: Json | undefined;
 }
 
 interface TowerLocation {
   type: string;
   coordinates: [number, number];
-  [key: string]: Json;
 }
 
-function isValidJson(json: Json): json is Record<string, any> {
-  return typeof json === 'object' && json !== null && !Array.isArray(json);
-}
+const isCoordinates = (arr: any): arr is Coordinates => {
+  return Array.isArray(arr) && 
+         arr.length === 2 && 
+         typeof arr[0] === 'number' && 
+         typeof arr[1] === 'number';
+};
 
-function isGeoJSONGeometry(json: unknown): json is GeoJSONGeometry {
-  if (!isValidJson(json as Json)) return false;
-  const geom = json as GeoJSONGeometry;
-  
-  return (
-    typeof geom.type === 'string' &&
-    Array.isArray(geom.coordinates) &&
-    geom.coordinates.every(ring => 
-      Array.isArray(ring) && ring.every(coord => 
-        Array.isArray(coord) && coord.length === 2 &&
-        typeof coord[0] === 'number' && 
-        typeof coord[1] === 'number'
-      )
-    )
-  );
-}
+const isGeoJSONGeometry = (obj: any): obj is GeoJSONGeometry => {
+  return obj &&
+         typeof obj === 'object' &&
+         typeof obj.type === 'string' &&
+         Array.isArray(obj.coordinates);
+};
 
-function isGeoJSONFeature(json: Json): json is GeoJSONFeature {
-  if (!isValidJson(json)) return false;
-  const feature = json as Record<string, unknown>;
-  
-  return (
-    typeof feature.type === 'string' &&
-    feature.geometry !== undefined &&
-    isGeoJSONGeometry(feature.geometry as unknown)
-  );
-}
+const isGeoJSONFeature = (obj: any): obj is GeoJSONFeature => {
+  return obj &&
+         typeof obj === 'object' &&
+         obj.type === 'Feature' &&
+         isGeoJSONGeometry(obj.geometry);
+};
 
-function isTowerLocation(json: Json): json is TowerLocation {
-  if (!isValidJson(json)) return false;
-  const obj = json as Record<string, unknown>;
-  
-  return (
-    typeof obj.type === 'string' &&
-    Array.isArray(obj.coordinates) &&
-    obj.coordinates.length === 2 &&
-    typeof obj.coordinates[0] === 'number' &&
-    typeof obj.coordinates[1] === 'number'
-  );
-}
+const isTowerLocation = (obj: any): obj is TowerLocation => {
+  return obj &&
+         typeof obj === 'object' &&
+         typeof obj.type === 'string' &&
+         Array.isArray(obj.coordinates) &&
+         obj.coordinates.length === 2 &&
+         typeof obj.coordinates[0] === 'number' &&
+         typeof obj.coordinates[1] === 'number';
+};
 
 export const useMapInitialization = (currentTeamId: string | null) => {
   const loadExistingData = useCallback(async (map: mapboxgl.Map, draw: any) => {
@@ -90,21 +79,27 @@ export const useMapInitialization = (currentTeamId: string | null) => {
       if (areas && areas.length > 0) {
         console.log('Adding hunting areas to map:', areas);
         areas.forEach(area => {
-          if (isGeoJSONFeature(area.boundary)) {
-            draw.add(area.boundary);
+          const boundary = area.boundary as unknown;
+          if (isGeoJSONFeature(boundary)) {
+            draw.add(boundary);
           } else {
             console.warn('Invalid boundary data for area:', area);
           }
         });
 
         // Fit map to hunting areas
-        const coordinates = areas
-          .map(area => area.boundary?.geometry?.coordinates?.[0] || [])
-          .flat();
+        const coordinates: [number, number][] = [];
+        areas.forEach(area => {
+          const boundary = area.boundary as unknown;
+          if (isGeoJSONFeature(boundary) && 
+              Array.isArray(boundary.geometry.coordinates[0])) {
+            coordinates.push(...(boundary.geometry.coordinates[0] as [number, number][]));
+          }
+        });
         
         if (coordinates.length > 0) {
           const bounds = coordinates.reduce((bounds, coord) => {
-            return bounds.extend(coord as [number, number]);
+            return bounds.extend(coord);
           }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
 
           map.fitBounds(bounds, {
@@ -134,9 +129,10 @@ export const useMapInitialization = (currentTeamId: string | null) => {
       if (passes && passes.length > 0) {
         console.log('Adding passes to map:', passes);
         passes.forEach(pass => {
-          if (isTowerLocation(pass.location)) {
+          const location = pass.location as unknown;
+          if (isTowerLocation(location)) {
             new mapboxgl.Marker()
-              .setLngLat(pass.location.coordinates)
+              .setLngLat(location.coordinates)
               .setPopup(new mapboxgl.Popup().setHTML(`
                 <h3 class="font-bold">${pass.name}</h3>
                 ${pass.description ? `<p>${pass.description}</p>` : ''}
