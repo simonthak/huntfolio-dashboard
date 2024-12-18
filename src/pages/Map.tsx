@@ -67,8 +67,7 @@ const Map = () => {
           isDrawing={isDrawing}
           onDrawArea={handleDrawArea}
           onSaveArea={() => drawRef.current && handleSaveArea(drawRef.current)}
-          onAddTower={handleAddMarker}
-          onAddStand={handleAddMarker}
+          onAddPass={handleAddMarker}
         />
       </div>
 
