@@ -7,6 +7,7 @@ import MapControls from '@/components/map/MapControls';
 import TowerDialog from '@/components/map/TowerDialog';
 import { useMapOperations } from '@/hooks/useMapOperations';
 import mapboxgl from 'mapbox-gl';
+import { toast } from 'sonner';
 
 const Map = () => {
   const [searchParams] = useSearchParams();
@@ -104,27 +105,47 @@ const Map = () => {
   };
 
   const handleAddTower = () => {
-    if (!mapInstance) return;
+    if (!mapInstance) {
+      console.error('Map instance not initialized');
+      toast.error('Kartan är inte redo än');
+      return;
+    }
     
-    mapInstance.getCanvas().style.cursor = 'crosshair';
+    const canvas = mapInstance.getCanvas();
+    if (!canvas) {
+      console.error('Map canvas not found');
+      return;
+    }
+
+    canvas.style.cursor = 'crosshair';
     const onClick = (e: mapboxgl.MapMouseEvent) => {
       setNewTowerLocation([e.lngLat.lng, e.lngLat.lat]);
       setShowTowerDialog(true);
       mapInstance.off('click', onClick);
-      mapInstance.getCanvas().style.cursor = '';
+      canvas.style.cursor = '';
     };
     mapInstance.once('click', onClick);
   };
 
   const handleAddStand = () => {
-    if (!mapInstance) return;
+    if (!mapInstance) {
+      console.error('Map instance not initialized');
+      toast.error('Kartan är inte redo än');
+      return;
+    }
     
-    mapInstance.getCanvas().style.cursor = 'crosshair';
+    const canvas = mapInstance.getCanvas();
+    if (!canvas) {
+      console.error('Map canvas not found');
+      return;
+    }
+
+    canvas.style.cursor = 'crosshair';
     const onClick = (e: mapboxgl.MapMouseEvent) => {
       setNewTowerLocation([e.lngLat.lng, e.lngLat.lat]);
       setShowTowerDialog(true);
       mapInstance.off('click', onClick);
-      mapInstance.getCanvas().style.cursor = '';
+      canvas.style.cursor = '';
     };
     mapInstance.once('click', onClick);
   };
