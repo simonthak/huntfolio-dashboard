@@ -47,7 +47,10 @@ const CreateEventDialog = ({
         </DialogHeader>
         <EventForm
           initialDate={selectedDate}
-          onSubmit={createEvent}
+          onSubmit={async (data) => {
+            console.log("CreateEventDialog - Submitting form with date:", data);
+            await createEvent(data);
+          }}
           onCancel={() => onOpenChange(false)}
           isSubmitting={isSubmitting}
         />
