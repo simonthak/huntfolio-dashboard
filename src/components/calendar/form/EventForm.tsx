@@ -72,6 +72,7 @@ const EventForm = ({
       return;
     }
 
+    console.log("EventForm - Submitting with date:", selectedDate);
     await onSubmit({
       hunt_type_id: huntTypeId,
       description,

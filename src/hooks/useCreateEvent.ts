@@ -22,6 +22,8 @@ export const useCreateEvent = (
   const { sendNotification } = useNotifications();
 
   const createEvent = async (data: CreateEventData, currentTeamId: string | null) => {
+    console.log("useCreateEvent - Received data:", data);
+    
     if (!data.date) {
       toast.error("Please select a date");
       return;
@@ -33,9 +35,8 @@ export const useCreateEvent = (
     }
 
     setIsSubmitting(true);
-    // Format date in YYYY-MM-DD format in local timezone
     const formattedDate = format(data.date, "yyyy-MM-dd");
-    console.log("useCreateEvent - Using date:", formattedDate);
+    console.log("useCreateEvent - Formatted date:", formattedDate);
 
     try {
       console.log("Getting authenticated user...");

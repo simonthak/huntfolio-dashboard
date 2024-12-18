@@ -36,7 +36,7 @@ const CreateEventDialog = ({
       open={open} 
       onOpenChange={handleOpenChange}
     >
-      <DialogContent aria-describedby="event-form-description">
+      <DialogContent className="sm:max-w-[500px]" aria-describedby="event-form-description">
         <DialogHeader>
           <DialogTitle>Skapa en ny händelse</DialogTitle>
           <DialogDescription id="event-form-description">
@@ -45,9 +45,12 @@ const CreateEventDialog = ({
         </DialogHeader>
         <EventForm
           initialDate={selectedDate}
-          onSubmit={async (data) => {
-            console.log("CreateEventDialog - Submitting form with date:", data);
-            await createEvent(data, currentTeamId);
+          onSubmit={async (formData) => {
+            console.log("CreateEventDialog - Form data:", formData);
+            await createEvent({
+              ...formData,
+              date: formData.date || selectedDate as Date
+            }, currentTeamId);
           }}
           onCancel={() => onOpenChange(false)}
           isSubmitting={isSubmitting}
