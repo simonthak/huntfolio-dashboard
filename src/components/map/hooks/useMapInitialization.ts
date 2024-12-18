@@ -16,18 +16,15 @@ export const useMapInitialization = ({
   const map = useRef<mapboxgl.Map | null>(null);
   const draw = useRef<MapboxDraw | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const initialized = useRef(false);
 
   useEffect(() => {
-    if (!mapContainer.current || !mapboxToken) {
-      console.log('Map initialization skipped:', !mapContainer.current ? 'No container' : 'No token');
+    if (!mapContainer.current || !mapboxToken || initialized.current) {
+      console.log('Map initialization skipped:', !mapContainer.current ? 'No container' : !mapboxToken ? 'No token' : 'Already initialized');
       return;
     }
 
-    if (map.current) {
-      console.log('Map already initialized');
-      return;
-    }
-
+    initialized.current = true;
     console.log('Initializing map with token:', mapboxToken.slice(0, 8) + '...');
     
     try {
@@ -146,6 +143,7 @@ export const useMapInitialization = ({
             map.current.remove();
             map.current = null;
             setMapLoaded(false);
+            initialized.current = false;
           } catch (error) {
             console.error('Error cleaning up map:', error);
           }
@@ -154,6 +152,7 @@ export const useMapInitialization = ({
     } catch (error) {
       console.error('Error initializing map:', error);
       setMapLoaded(false);
+      initialized.current = false;
     }
   }, [mapboxToken, onFeatureCreate]);
 
