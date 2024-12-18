@@ -15,6 +15,7 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
   const drawInstanceRef = useRef<any>(null);
+  const isLoadingRef = useRef<boolean>(true);
 
   useEffect(() => {
     if (!mapContainerRef.current || !currentTeamId) return;
@@ -36,6 +37,7 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
         map.once('load', () => {
           console.log('Map loaded, calling onMapLoad callback');
           if (isMounted && mapInstanceRef.current && drawInstanceRef.current) {
+            isLoadingRef.current = false;
             onMapLoad(mapInstanceRef.current, drawInstanceRef.current);
           }
         });
@@ -50,10 +52,14 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
     return () => {
       isMounted = false;
       if (mapInstanceRef.current) {
+        console.log('Cleaning up map instance...');
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
-      drawInstanceRef.current = null;
+      if (drawInstanceRef.current) {
+        drawInstanceRef.current = null;
+      }
+      isLoadingRef.current = true;
     };
   }, [currentTeamId, onMapLoad]);
 
@@ -68,7 +74,7 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
   return (
     <div className="relative w-full h-[calc(100vh-12rem)] rounded-lg overflow-hidden border">
       <div ref={mapContainerRef} className="absolute inset-0" />
-      {!mapInstanceRef.current && (
+      {isLoadingRef.current && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/50">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
