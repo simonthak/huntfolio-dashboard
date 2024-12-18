@@ -4,6 +4,20 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+interface GeoJSONFeature {
+  type: string;
+  geometry: {
+    type: string;
+    coordinates: number[][][];
+  };
+  properties?: Record<string, any>;
+}
+
+interface TowerLocation {
+  type: string;
+  coordinates: [number, number];
+}
+
 export const useMapInitialization = (currentTeamId: string | null) => {
   const loadExistingData = useCallback(async (map: mapboxgl.Map, draw: any) => {
     if (!currentTeamId) return;
@@ -24,11 +38,9 @@ export const useMapInitialization = (currentTeamId: string | null) => {
       if (grounds && grounds.length > 0) {
         console.log('Adding hunting grounds to map:', grounds);
         grounds.forEach(ground => {
-          if (ground.boundary && ground.boundary.geometry && 
-              ground.boundary.geometry.coordinates && 
-              ground.boundary.geometry.coordinates[0] && 
-              ground.boundary.geometry.coordinates[0].length > 0) {
-            draw.add(ground.boundary);
+          const boundary = ground.boundary as GeoJSONFeature;
+          if (boundary?.geometry?.coordinates?.[0]?.length > 0) {
+            draw.add(boundary);
           }
         });
       }
@@ -46,11 +58,12 @@ export const useMapInitialization = (currentTeamId: string | null) => {
       if (towers) {
         console.log('Adding towers to map:', towers);
         towers.forEach(tower => {
-          if (tower.location?.coordinates && 
-              Array.isArray(tower.location.coordinates) && 
-              tower.location.coordinates.length === 2) {
+          const location = tower.location as TowerLocation;
+          if (location?.coordinates && 
+              Array.isArray(location.coordinates) && 
+              location.coordinates.length === 2) {
             new mapboxgl.Marker()
-              .setLngLat(tower.location.coordinates)
+              .setLngLat(location.coordinates)
               .setPopup(new mapboxgl.Popup().setHTML(`
                 <h3 class="font-bold">${tower.name}</h3>
                 ${tower.description ? `<p>${tower.description}</p>` : ''}
