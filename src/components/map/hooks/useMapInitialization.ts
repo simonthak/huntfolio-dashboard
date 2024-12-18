@@ -17,54 +17,39 @@ export const useMapInitialization = ({
   const [mapLoaded, setMapLoaded] = useState(false);
   const { draw, initializeDraw } = useDrawControls();
   const initialized = useRef(false);
-  const eventHandlers = useRef<{ [key: string]: any }>({});
 
   // Cleanup function to ensure proper WebGL context cleanup
   const cleanupMap = () => {
     console.log('Cleaning up map and WebGL context');
     
-    // First remove the draw control if it exists
-    if (map.current && draw.current) {
-      try {
-        map.current.removeControl(draw.current);
-      } catch (error) {
-        console.warn('Error removing draw control:', error);
-      }
-    }
+    if (!map.current || map.current._removed) return;
 
-    // Then remove event listeners if the map still exists
-    if (map.current && !map.current._removed) {
-      try {
-        Object.entries(eventHandlers.current).forEach(([key, handler]) => {
-          if (handler) {
-            const eventName = key.toLowerCase().replace(/^handle/, '');
-            map.current?.off(eventName, handler);
-          }
-        });
-      } catch (error) {
-        console.warn('Error removing event listeners:', error);
+    try {
+      // First remove the draw control
+      if (draw.current) {
+        map.current.removeControl(draw.current);
       }
+
+      // Remove all event listeners
+      map.current.off('mousedown');
+      map.current.off('mouseup');
+      map.current.off('draw.create');
+      map.current.off('draw.modechange');
 
       // Finally remove the map
-      try {
-        map.current.remove();
-      } catch (error) {
-        console.warn('Error removing map:', error);
-      }
+      map.current.remove();
+    } catch (error) {
+      console.warn('Error during cleanup:', error);
     }
     
     // Reset all refs and state
     map.current = null;
     draw.current = null;
-    eventHandlers.current = {};
     setMapLoaded(false);
     initialized.current = false;
   };
 
   useEffect(() => {
-    // Clean up any existing map instance first
-    cleanupMap();
-
     if (!mapContainer.current || !mapboxToken || initialized.current) {
       console.log('Map initialization skipped:', 
         !mapContainer.current ? 'No container' : 
@@ -75,6 +60,10 @@ export const useMapInitialization = ({
     }
 
     console.log('Initializing map with token:', mapboxToken.slice(0, 8) + '...');
+    
+    // Clean up any existing map instance first
+    cleanupMap();
+    
     initialized.current = true;
     
     try {
@@ -90,29 +79,30 @@ export const useMapInitialization = ({
       const drawInstance = initializeDraw();
       map.current = mapInstance;
 
-      // Store event handlers in ref to properly remove them later
-      eventHandlers.current.mouseDown = () => {
+      // Setup event handlers
+      const handleMouseDown = () => {
         if (mapInstance.getCanvas()) {
           mapInstance.getCanvas().style.cursor = 'grabbing';
         }
       };
 
-      eventHandlers.current.mouseUp = () => {
+      const handleMouseUp = () => {
         if (mapInstance.getCanvas()) {
           mapInstance.getCanvas().style.cursor = 'grab';
         }
       };
 
-      eventHandlers.current.drawCreate = (e: { features: Feature[] }) => {
+      const handleDrawCreate = (e: { features: Feature[] }) => {
         console.log('Draw feature created:', e.features[0]);
         if (e.features && e.features[0]) {
+          // Create a clean copy of the feature without circular references
           const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
           onFeatureCreate(serializedFeature);
           drawInstance.deleteAll();
         }
       };
 
-      eventHandlers.current.drawModeChange = (e: any) => {
+      const handleDrawModeChange = (e: any) => {
         console.log('Draw mode changed:', e.mode);
       };
 
@@ -129,10 +119,10 @@ export const useMapInitialization = ({
         }
 
         // Add event listeners
-        Object.entries(eventHandlers.current).forEach(([key, handler]) => {
-          const eventName = key.toLowerCase().replace(/^handle/, '');
-          mapInstance.on(eventName, handler);
-        });
+        mapInstance.on('mousedown', handleMouseDown);
+        mapInstance.on('mouseup', handleMouseUp);
+        mapInstance.on('draw.create', handleDrawCreate);
+        mapInstance.on('draw.modechange', handleDrawModeChange);
         
         setMapLoaded(true);
         console.log('Map loaded successfully');
