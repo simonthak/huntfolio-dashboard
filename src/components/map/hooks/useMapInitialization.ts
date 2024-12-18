@@ -16,6 +16,7 @@ export const useMapInitialization = ({
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const { draw, initializeDraw } = useDrawControls();
+  const cleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken || map.current) {
@@ -44,11 +45,15 @@ export const useMapInitialization = ({
       map.current = mapInstance;
 
       const handleMouseDown = () => {
-        mapInstance.getCanvas().style.cursor = 'grabbing';
+        if (mapInstance.getCanvas()) {
+          mapInstance.getCanvas().style.cursor = 'grabbing';
+        }
       };
 
       const handleMouseUp = () => {
-        mapInstance.getCanvas().style.cursor = 'grab';
+        if (mapInstance.getCanvas()) {
+          mapInstance.getCanvas().style.cursor = 'grab';
+        }
       };
 
       const handleDrawCreate = (e: { features: Feature[] }) => {
@@ -71,7 +76,9 @@ export const useMapInitialization = ({
         mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
         
         // Set initial cursor style to grab
-        mapInstance.getCanvas().style.cursor = 'grab';
+        if (mapInstance.getCanvas()) {
+          mapInstance.getCanvas().style.cursor = 'grab';
+        }
 
         // Add cursor style handlers for drag interactions
         mapInstance.on('mousedown', handleMouseDown);
@@ -85,29 +92,39 @@ export const useMapInitialization = ({
 
       mapInstance.once('load', setupMapControls);
 
-      return () => {
+      // Store cleanup function
+      cleanupRef.current = () => {
         console.log('Cleaning up map');
-        if (map.current) {
-          try {
-            // Remove specific event listeners with their handlers
-            map.current.off('mousedown', handleMouseDown);
-            map.current.off('mouseup', handleMouseUp);
-            map.current.off('draw.create', handleDrawCreate);
-            map.current.off('draw.modechange', handleDrawModeChange);
+        try {
+          // Only attempt to remove listeners if the map instance still exists
+          if (mapInstance && !mapInstance._removed) {
+            mapInstance.off('mousedown', handleMouseDown);
+            mapInstance.off('mouseup', handleMouseUp);
+            mapInstance.off('draw.create', handleDrawCreate);
+            mapInstance.off('draw.modechange', handleDrawModeChange);
             
             // Remove controls in reverse order
             if (draw.current) {
-              map.current.removeControl(draw.current);
+              mapInstance.removeControl(draw.current);
               draw.current = null;
             }
             
             // Finally remove the map
-            map.current.remove();
-            map.current = null;
-            setMapLoaded(false);
-          } catch (error) {
-            console.error('Error cleaning up map:', error);
+            mapInstance.remove();
           }
+        } catch (error) {
+          console.error('Error during map cleanup:', error);
+        }
+        
+        // Reset refs and state
+        map.current = null;
+        setMapLoaded(false);
+      };
+
+      return () => {
+        if (cleanupRef.current) {
+          cleanupRef.current();
+          cleanupRef.current = null;
         }
       };
     } catch (error) {
