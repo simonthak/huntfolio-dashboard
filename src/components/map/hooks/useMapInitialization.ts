@@ -43,6 +43,27 @@ export const useMapInitialization = ({
       
       map.current = mapInstance;
 
+      const handleMouseDown = () => {
+        mapInstance.getCanvas().style.cursor = 'grabbing';
+      };
+
+      const handleMouseUp = () => {
+        mapInstance.getCanvas().style.cursor = 'grab';
+      };
+
+      const handleDrawCreate = (e: { features: Feature[] }) => {
+        console.log('Draw feature created:', e.features[0]);
+        if (e.features && e.features[0]) {
+          const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
+          onFeatureCreate(serializedFeature);
+          drawInstance.deleteAll();
+        }
+      };
+
+      const handleDrawModeChange = (e: any) => {
+        console.log('Draw mode changed:', e.mode);
+      };
+
       const setupMapControls = () => {
         console.log('Map loaded, adding controls');
         
@@ -53,26 +74,10 @@ export const useMapInitialization = ({
         mapInstance.getCanvas().style.cursor = 'grab';
 
         // Add cursor style handlers for drag interactions
-        mapInstance.on('mousedown', 'mousedown.cursor', () => {
-          mapInstance.getCanvas().style.cursor = 'grabbing';
-        });
-
-        mapInstance.on('mouseup', 'mouseup.cursor', () => {
-          mapInstance.getCanvas().style.cursor = 'grab';
-        });
-        
-        mapInstance.on('draw.create', 'draw.create', (e: { features: Feature[] }) => {
-          console.log('Draw feature created:', e.features[0]);
-          if (e.features && e.features[0]) {
-            const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
-            onFeatureCreate(serializedFeature);
-            drawInstance.deleteAll();
-          }
-        });
-
-        mapInstance.on('draw.modechange', 'draw.modechange', (e: any) => {
-          console.log('Draw mode changed:', e.mode);
-        });
+        mapInstance.on('mousedown', handleMouseDown);
+        mapInstance.on('mouseup', handleMouseUp);
+        mapInstance.on('draw.create', handleDrawCreate);
+        mapInstance.on('draw.modechange', handleDrawModeChange);
         
         setMapLoaded(true);
         console.log('Map loaded successfully');
@@ -84,11 +89,11 @@ export const useMapInitialization = ({
         console.log('Cleaning up map');
         if (map.current) {
           try {
-            // Remove specific event listeners
-            map.current.off('mousedown.cursor');
-            map.current.off('mouseup.cursor');
-            map.current.off('draw.create');
-            map.current.off('draw.modechange');
+            // Remove specific event listeners with their handlers
+            map.current.off('mousedown', handleMouseDown);
+            map.current.off('mouseup', handleMouseUp);
+            map.current.off('draw.create', handleDrawCreate);
+            map.current.off('draw.modechange', handleDrawModeChange);
             
             // Remove controls in reverse order
             if (draw.current) {
