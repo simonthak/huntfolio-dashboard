@@ -37,15 +37,14 @@ export const useMapInitialization = ({
         zoom: 9
       });
 
-      map.current = mapInstance;
-
-      // Initialize draw control
+      // Initialize draw control before adding it to the map
       const drawInstance = new MapboxDraw({
         displayControlsDefault: false,
         controls: {
           polygon: true,
           trash: true
         },
+        defaultMode: 'simple_select', // Start in selection mode
         styles: [
           {
             'id': 'gl-draw-polygon-fill-inactive',
@@ -119,13 +118,16 @@ export const useMapInitialization = ({
       });
 
       draw.current = drawInstance;
+      map.current = mapInstance;
 
       mapInstance.on('load', () => {
         console.log('Map loaded, adding controls');
+        
+        // Add draw control first
         mapInstance.addControl(drawInstance);
         mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
         
-        // Add draw.create event listener after controls are added
+        // Add draw.create event listener
         mapInstance.on('draw.create', (e: { features: Feature[] }) => {
           console.log('Draw feature created:', e.features[0]);
           if (e.features && e.features[0]) {
@@ -134,6 +136,11 @@ export const useMapInitialization = ({
             // Clear the drawing after creation
             drawInstance.deleteAll();
           }
+        });
+
+        // Add draw mode change listener for debugging
+        mapInstance.on('draw.modechange', (e: any) => {
+          console.log('Draw mode changed:', e.mode);
         });
         
         setMapLoaded(true);
