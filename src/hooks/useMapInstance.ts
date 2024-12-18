@@ -10,7 +10,15 @@ export const useMapInstance = (
   onMapLoad: (map: mapboxgl.Map, draw: any) => void
 ) => {
   const [isLoading, setIsLoading] = useState(true);
+  const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
   const isMountedRef = useRef<boolean>(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!mapContainerRef.current || !currentTeamId) return;
@@ -24,8 +32,10 @@ export const useMapInstance = (
         
         if (error || !token) {
           console.error('Error getting Mapbox token:', error);
-          toast.error('Kunde inte ladda kartan');
-          setIsLoading(false);
+          if (isMountedRef.current) {
+            toast.error('Kunde inte ladda kartan');
+            setIsLoading(false);
+          }
           return;
         }
 
@@ -55,6 +65,7 @@ export const useMapInstance = (
         map.addControl(draw);
 
         mapInstance = map;
+        mapInstanceRef.current = map;
 
         map.once('load', () => {
           console.log('Map loaded, calling onMapLoad callback');
@@ -83,6 +94,7 @@ export const useMapInstance = (
         console.log('Removing map instance...');
         try {
           mapInstance.remove();
+          mapInstanceRef.current = null;
         } catch (error) {
           console.error('Error removing map:', error);
         }
