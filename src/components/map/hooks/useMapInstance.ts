@@ -46,8 +46,7 @@ export const useMapInstance = ({ mapboxToken, container }: UseMapInstanceProps) 
           boxZoom: false,
           doubleClickZoom: false,
           dragRotate: false,
-          touchZoomRotate: false,
-          navigationControl: false
+          touchZoomRotate: false
         });
 
         map.current.once('load', () => {
