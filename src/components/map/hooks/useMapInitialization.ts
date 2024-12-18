@@ -36,8 +36,8 @@ export const useMapInitialization = ({
           console.log('Initializing map with token:', mapboxToken);
           mapboxgl.accessToken = mapboxToken;
           
-          // Default center coordinates for Sweden
-          const defaultCenter = [15.4367, 62.1983]; // Center of Sweden
+          // Default center coordinates for Sweden with explicit typing
+          const defaultCenter: [number, number] = [15.4367, 62.1983]; // Center of Sweden
           const defaultZoom = 4.5; // Zoom level to show most of Sweden
           
           map.current = new mapboxgl.Map({
