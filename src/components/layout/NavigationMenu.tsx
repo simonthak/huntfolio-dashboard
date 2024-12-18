@@ -9,6 +9,7 @@ import {
   UserCircle,
   FolderOpen,
   Phone,
+  Map,
 } from "lucide-react";
 
 const menuItems = [
@@ -18,6 +19,7 @@ const menuItems = [
   { icon: FolderOpen, label: "Dokument", path: "/documents" },
   { icon: Phone, label: "Kontakter", path: "/contacts" },
   { icon: Users, label: "Jaktlag", path: "/team" },
+  { icon: Map, label: "Karta", path: "/map" },
   { icon: UserCircle, label: "Profil", path: "/profile" },
   { icon: Settings, label: "Inställningar", path: "/settings" },
 ];
