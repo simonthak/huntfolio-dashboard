@@ -17,6 +17,12 @@ export const useMapInitialization = ({
   const [mapLoaded, setMapLoaded] = useState(false);
   const { draw, initializeDraw } = useDrawControls();
   const initialized = useRef(false);
+  const eventHandlers = useRef<{
+    handleMouseDown?: (e: mapboxgl.MapMouseEvent) => void;
+    handleMouseUp?: (e: mapboxgl.MapMouseEvent) => void;
+    handleDrawCreate?: (e: { features: Feature[] }) => void;
+    handleDrawModeChange?: (e: any) => void;
+  }>({});
 
   // Cleanup function to ensure proper WebGL context cleanup
   const cleanupMap = () => {
@@ -30,11 +36,19 @@ export const useMapInitialization = ({
         map.current.removeControl(draw.current);
       }
 
-      // Remove all event listeners
-      map.current.off('mousedown');
-      map.current.off('mouseup');
-      map.current.off('draw.create');
-      map.current.off('draw.modechange');
+      // Remove all event listeners with their specific handlers
+      if (eventHandlers.current.handleMouseDown) {
+        map.current.off('mousedown', eventHandlers.current.handleMouseDown);
+      }
+      if (eventHandlers.current.handleMouseUp) {
+        map.current.off('mouseup', eventHandlers.current.handleMouseUp);
+      }
+      if (eventHandlers.current.handleDrawCreate) {
+        map.current.off('draw.create', eventHandlers.current.handleDrawCreate);
+      }
+      if (eventHandlers.current.handleDrawModeChange) {
+        map.current.off('draw.modechange', eventHandlers.current.handleDrawModeChange);
+      }
 
       // Finally remove the map
       map.current.remove();
@@ -45,6 +59,7 @@ export const useMapInitialization = ({
     // Reset all refs and state
     map.current = null;
     draw.current = null;
+    eventHandlers.current = {};
     setMapLoaded(false);
     initialized.current = false;
   };
@@ -79,20 +94,20 @@ export const useMapInitialization = ({
       const drawInstance = initializeDraw();
       map.current = mapInstance;
 
-      // Setup event handlers
-      const handleMouseDown = () => {
+      // Setup event handlers and store them in ref for cleanup
+      eventHandlers.current.handleMouseDown = (e: mapboxgl.MapMouseEvent) => {
         if (mapInstance.getCanvas()) {
           mapInstance.getCanvas().style.cursor = 'grabbing';
         }
       };
 
-      const handleMouseUp = () => {
+      eventHandlers.current.handleMouseUp = (e: mapboxgl.MapMouseEvent) => {
         if (mapInstance.getCanvas()) {
           mapInstance.getCanvas().style.cursor = 'grab';
         }
       };
 
-      const handleDrawCreate = (e: { features: Feature[] }) => {
+      eventHandlers.current.handleDrawCreate = (e: { features: Feature[] }) => {
         console.log('Draw feature created:', e.features[0]);
         if (e.features && e.features[0]) {
           // Create a clean copy of the feature without circular references
@@ -102,7 +117,7 @@ export const useMapInitialization = ({
         }
       };
 
-      const handleDrawModeChange = (e: any) => {
+      eventHandlers.current.handleDrawModeChange = (e: any) => {
         console.log('Draw mode changed:', e.mode);
       };
 
@@ -118,11 +133,11 @@ export const useMapInitialization = ({
           mapInstance.getCanvas().style.cursor = 'grab';
         }
 
-        // Add event listeners
-        mapInstance.on('mousedown', handleMouseDown);
-        mapInstance.on('mouseup', handleMouseUp);
-        mapInstance.on('draw.create', handleDrawCreate);
-        mapInstance.on('draw.modechange', handleDrawModeChange);
+        // Add event listeners with stored handlers
+        mapInstance.on('mousedown', eventHandlers.current.handleMouseDown!);
+        mapInstance.on('mouseup', eventHandlers.current.handleMouseUp!);
+        mapInstance.on('draw.create', eventHandlers.current.handleDrawCreate!);
+        mapInstance.on('draw.modechange', eventHandlers.current.handleDrawModeChange!);
         
         setMapLoaded(true);
         console.log('Map loaded successfully');
