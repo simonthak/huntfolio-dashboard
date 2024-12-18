@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,8 +14,8 @@ const Map = () => {
   const [searchParams] = useSearchParams();
   const currentTeamId = searchParams.get('team');
   const [userId, setUserId] = useState<string | null>(null);
-  const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
-  const [drawInstance, setDrawInstance] = useState<any>(null);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const drawRef = useRef<any>(null);
 
   const {
     showTowerDialog,
@@ -53,8 +53,8 @@ const Map = () => {
   }, []);
 
   const onMapLoaded = (map: mapboxgl.Map, draw: any) => {
-    setMapInstance(map);
-    setDrawInstance(draw);
+    mapRef.current = map;
+    drawRef.current = draw;
     handleMapLoad(map, draw);
   };
 
@@ -65,7 +65,7 @@ const Map = () => {
         <MapControls
           isDrawing={isDrawing}
           onDrawArea={handleDrawArea}
-          onSaveArea={() => handleSaveArea(drawInstance)}
+          onSaveArea={() => drawRef.current && handleSaveArea(drawRef.current)}
           onAddTower={handleAddMarker}
           onAddStand={handleAddMarker}
         />
@@ -83,7 +83,7 @@ const Map = () => {
         onTowerNameChange={setNewTowerName}
         towerDescription={newTowerDescription}
         onTowerDescriptionChange={setNewTowerDescription}
-        onSave={() => mapInstance && handleSaveTower(mapInstance)}
+        onSave={() => mapRef.current && handleSaveTower(mapRef.current)}
       />
     </div>
   );

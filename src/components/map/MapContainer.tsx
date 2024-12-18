@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, memo } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -12,7 +12,7 @@ interface MapContainerProps {
   currentTeamId: string | null;
 }
 
-const MapContainer = ({ onMapLoad, currentTeamId }: MapContainerProps) => {
+const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const draw = useRef<any>(null);
@@ -107,6 +107,8 @@ const MapContainer = ({ onMapLoad, currentTeamId }: MapContainerProps) => {
       )}
     </div>
   );
-};
+});
+
+MapContainer.displayName = 'MapContainer';
 
 export default MapContainer;
