@@ -24,35 +24,33 @@ export const useMapInitialization = ({
     handleDrawModeChange?: (e: any) => void;
   }>({});
 
-  // Cleanup function to ensure proper WebGL context cleanup
   const cleanupMap = () => {
     console.log('Cleaning up map and WebGL context');
     
-    if (!map.current || map.current._removed) return;
+    if (!map.current) return;
 
     try {
-      // First remove all event listeners with their specific handlers
-      if (eventHandlers.current.handleMouseDown) {
-        map.current.off('mousedown', eventHandlers.current.handleMouseDown);
-      }
-      if (eventHandlers.current.handleMouseUp) {
-        map.current.off('mouseup', eventHandlers.current.handleMouseUp);
-      }
-      if (eventHandlers.current.handleDrawCreate) {
-        map.current.off('draw.create', eventHandlers.current.handleDrawCreate);
-      }
-      if (eventHandlers.current.handleDrawModeChange) {
-        map.current.off('draw.modechange', eventHandlers.current.handleDrawModeChange);
+      // First remove all event listeners
+      const currentMap = map.current;
+      Object.entries(eventHandlers.current).forEach(([key, handler]) => {
+        if (handler) {
+          const eventName = key.replace('handle', '').toLowerCase();
+          currentMap.off(eventName, handler);
+        }
+      });
+
+      // Then remove the draw control if it exists and map is still valid
+      if (draw.current && currentMap && !currentMap._removed) {
+        try {
+          currentMap.removeControl(draw.current);
+        } catch (error) {
+          console.warn('Error removing draw control:', error);
+        }
       }
 
-      // Then remove the draw control if it exists
-      if (draw.current && !map.current._removed) {
-        map.current.removeControl(draw.current);
-      }
-
-      // Finally remove the map
-      if (!map.current._removed) {
-        map.current.remove();
+      // Finally remove the map if it hasn't been removed yet
+      if (!currentMap._removed) {
+        currentMap.remove();
       }
     } catch (error) {
       console.warn('Error during cleanup:', error);
@@ -63,7 +61,6 @@ export const useMapInitialization = ({
     draw.current = null;
     eventHandlers.current = {};
     setMapLoaded(false);
-    initialized.current = false;
   };
 
   useEffect(() => {
@@ -101,14 +98,14 @@ export const useMapInitialization = ({
       const drawInstance = initializeDraw();
       map.current = mapInstance;
 
-      // Setup event handlers and store them in ref for cleanup
-      eventHandlers.current.handleMouseDown = (e: mapboxgl.MapMouseEvent) => {
+      // Setup event handlers
+      eventHandlers.current.handleMouseDown = () => {
         if (mapInstance.getCanvas()) {
           mapInstance.getCanvas().style.cursor = 'grabbing';
         }
       };
 
-      eventHandlers.current.handleMouseUp = (e: mapboxgl.MapMouseEvent) => {
+      eventHandlers.current.handleMouseUp = () => {
         if (mapInstance.getCanvas()) {
           mapInstance.getCanvas().style.cursor = 'grab';
         }
@@ -117,7 +114,6 @@ export const useMapInitialization = ({
       eventHandlers.current.handleDrawCreate = (e: { features: Feature[] }) => {
         console.log('Draw feature created:', e.features[0]);
         if (e.features && e.features[0]) {
-          // Create a clean copy of the feature without circular references
           const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
           onFeatureCreate(serializedFeature);
           drawInstance.deleteAll();
@@ -133,12 +129,7 @@ export const useMapInitialization = ({
         
         console.log('Map loaded, adding controls');
         
-        // Wait for style to be fully loaded before adding controls
-        if (!mapInstance.isStyleLoaded()) {
-          mapInstance.once('style.load', setupMapControls);
-          return;
-        }
-        
+        // Add controls and event listeners only when style is fully loaded
         mapInstance.addControl(drawInstance);
         mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
         
@@ -146,7 +137,7 @@ export const useMapInitialization = ({
           mapInstance.getCanvas().style.cursor = 'grab';
         }
 
-        // Add event listeners with stored handlers
+        // Add event listeners
         mapInstance.on('mousedown', eventHandlers.current.handleMouseDown!);
         mapInstance.on('mouseup', eventHandlers.current.handleMouseUp!);
         mapInstance.on('draw.create', eventHandlers.current.handleDrawCreate!);
@@ -156,7 +147,14 @@ export const useMapInitialization = ({
         console.log('Map loaded successfully');
       };
 
-      mapInstance.once('load', setupMapControls);
+      // Wait for both map and style to be loaded
+      mapInstance.once('load', () => {
+        if (mapInstance.isStyleLoaded()) {
+          setupMapControls();
+        } else {
+          mapInstance.once('style.load', setupMapControls);
+        }
+      });
 
       return () => {
         cleanupMap();
