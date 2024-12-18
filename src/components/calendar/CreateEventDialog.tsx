@@ -1,5 +1,5 @@
 import { useSearchParams } from "react-router-dom";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import EventForm from "./form/EventForm";
 import { useCreateEvent } from "@/hooks/useCreateEvent";
 
@@ -38,9 +38,12 @@ const CreateEventDialog = ({
       open={open} 
       onOpenChange={handleOpenChange}
     >
-      <DialogContent>
+      <DialogContent aria-describedby="event-form-description">
         <DialogHeader>
           <DialogTitle>Skapa en ny händelse</DialogTitle>
+          <DialogDescription id="event-form-description">
+            Fyll i informationen nedan för att skapa en ny händelse i kalendern.
+          </DialogDescription>
         </DialogHeader>
         <EventForm
           initialDate={selectedDate}
