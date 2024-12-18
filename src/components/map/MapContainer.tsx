@@ -79,9 +79,14 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
       mapInstance.addControl(new mapboxgl.FullscreenControl());
       mapInstance.addControl(drawInstance);
 
+      // Use a serializable flag to track map load
+      let isMapLoaded = false;
+
       mapInstance.on('load', () => {
         console.log('Map loaded successfully');
-        if (map.current && draw.current) {
+        if (!isMapLoaded && map.current && draw.current) {
+          isMapLoaded = true;
+          // Clone only necessary data for the callback
           onMapLoad(map.current, draw.current);
         }
       });
