@@ -4,7 +4,6 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// First, let's create a proper type for our map state
 interface MapState {
   lat: number;
   lng: number;
@@ -12,7 +11,6 @@ interface MapState {
   timestamp: number;
 }
 
-// Create a custom event type instead of using postMessage
 const MAP_STATE_CHANGE = 'mapStateChange';
 const createMapStateEvent = (state: MapState) => new CustomEvent(MAP_STATE_CHANGE, { detail: state });
 
@@ -67,6 +65,19 @@ export const useMapInstance = (
           zoom: 4.5
         });
 
+        // Stop event propagation for map container
+        const stopPropagation = (e: Event) => {
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+        };
+
+        // Stop all events from bubbling up
+        if (mapContainerRef.current) {
+          ['wheel', 'mousedown', 'mouseup', 'mousemove', 'click', 'scroll'].forEach(eventType => {
+            mapContainerRef.current?.addEventListener(eventType, stopPropagation, { capture: true });
+          });
+        }
+
         // Debounce function to limit event frequency
         let timeoutId: number;
         const debounceMapEvent = (callback: () => void) => {
@@ -82,7 +93,7 @@ export const useMapInstance = (
           timestamp: Date.now()
         });
 
-        // Handle map events with custom events instead of postMessage
+        // Handle map events with custom events
         const handleMapEvent = () => {
           debounceMapEvent(() => {
             const state = getMapState();
@@ -90,9 +101,15 @@ export const useMapInstance = (
           });
         };
 
-        // Attach event listeners
+        // Handle map events locally with propagation stopped
         ['wheel', 'drag', 'move'].forEach(eventType => {
-          map.on(eventType, handleMapEvent);
+          map.on(eventType, (e) => {
+            if (e.originalEvent) {
+              e.originalEvent.stopPropagation();
+              e.originalEvent.stopImmediatePropagation();
+            }
+            handleMapEvent();
+          });
         });
 
         const draw = new MapboxDraw({
@@ -125,6 +142,11 @@ export const useMapInstance = (
     initializeMap();
 
     return () => {
+      if (mapContainerRef.current) {
+        ['wheel', 'mousedown', 'mouseup', 'mousemove', 'click', 'scroll'].forEach(eventType => {
+          mapContainerRef.current?.removeEventListener(eventType, stopPropagation, { capture: true });
+        });
+      }
       cleanupMap();
     };
   }, [currentTeamId, onMapLoad, cleanupMap]);
