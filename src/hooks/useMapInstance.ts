@@ -12,26 +12,19 @@ export const useMapInstance = (
   const [isLoading, setIsLoading] = useState(true);
   const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
   const drawInstanceRef = useRef<any>(null);
-  const isMountedRef = useRef<boolean>(true);
 
   const cleanupMap = useCallback(() => {
-    console.log('Cleaning up map resources...');
     if (mapInstanceRef.current) {
-      try {
-        mapInstanceRef.current.remove();
-      } catch (error) {
-        console.error('Error removing map:', error);
-      }
+      console.log('Cleaning up map instance');
+      mapInstanceRef.current.remove();
       mapInstanceRef.current = null;
     }
     drawInstanceRef.current = null;
   }, []);
 
   useEffect(() => {
-    isMountedRef.current = true;
     return () => {
       console.log('Component unmounting, cleaning up...');
-      isMountedRef.current = false;
       cleanupMap();
     };
   }, [cleanupMap]);
@@ -46,15 +39,8 @@ export const useMapInstance = (
         
         if (error || !token) {
           console.error('Error getting Mapbox token:', error);
-          if (isMountedRef.current) {
-            toast.error('Kunde inte ladda kartan');
-            setIsLoading(false);
-          }
-          return;
-        }
-
-        if (!isMountedRef.current || !mapContainerRef.current) {
-          console.log('Component unmounted during initialization');
+          toast.error('Kunde inte ladda kartan');
+          setIsLoading(false);
           return;
         }
 
@@ -83,35 +69,20 @@ export const useMapInstance = (
         mapInstanceRef.current = map;
         drawInstanceRef.current = draw;
 
-        const handleLoad = () => {
-          if (isMountedRef.current) {
-            console.log('Map loaded successfully');
-            setIsLoading(false);
-            try {
-              onMapLoad(map, draw);
-            } catch (error) {
-              console.error('Error in onMapLoad callback:', error);
-              toast.error('Ett fel uppstod när kartan skulle laddas');
-            }
-          }
-        };
-
-        map.once('load', handleLoad);
+        map.once('load', () => {
+          console.log('Map loaded successfully');
+          setIsLoading(false);
+          onMapLoad(map, draw);
+        });
 
       } catch (error) {
         console.error('Error initializing map:', error);
-        if (isMountedRef.current) {
-          toast.error('Kunde inte ladda kartan');
-          setIsLoading(false);
-        }
+        toast.error('Kunde inte ladda kartan');
+        setIsLoading(false);
       }
     };
 
     initializeMap();
-
-    return () => {
-      cleanupMap();
-    };
   }, [currentTeamId, onMapLoad, cleanupMap]);
 
   return {
