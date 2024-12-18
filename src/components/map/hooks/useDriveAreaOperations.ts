@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface UseDriveAreaOperationsProps {
-  teamId: string | null;
+  teamId: string;
 }
 
 export const useDriveAreaOperations = ({ teamId }: UseDriveAreaOperationsProps) => {
@@ -24,25 +24,30 @@ export const useDriveAreaOperations = ({ teamId }: UseDriveAreaOperationsProps) 
       return false;
     }
 
+    console.log('Creating drive area:', { name, teamId, feature });
     setIsSubmitting(true);
+
     try {
       const { error } = await supabase
         .from('drive_areas')
         .insert({
           team_id: teamId,
           name,
-          boundary: feature as any, // Type assertion needed due to Supabase types
+          boundary: feature,
           created_by: user.id
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating drive area:', error);
+        throw error;
+      }
       
       toast.success('Drevområde skapat');
       queryClient.invalidateQueries({ queryKey: ['drive-areas'] });
       return true;
     } catch (error) {
       console.error('Error creating drive area:', error);
-      toast.error('Ett fel uppstod');
+      toast.error('Ett fel uppstod när drevområdet skulle skapas');
       return false;
     } finally {
       setIsSubmitting(false);

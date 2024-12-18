@@ -19,10 +19,14 @@ const CreateAreaDialog = ({
   teamId 
 }: CreateAreaDialogProps) => {
   const handleSuccess = () => {
+    console.log('Area created successfully, closing dialog');
     onOpenChange(false);
   };
 
-  if (!feature || !type || !teamId) return null;
+  if (!feature || !type || !teamId) {
+    console.log('Missing required props:', { feature, type, teamId });
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

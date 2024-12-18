@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDriveAreaOperations } from "../hooks/useDriveAreaOperations";
 import { Feature } from "geojson";
+import { toast } from "sonner";
 
 interface DriveAreaFormProps {
-  teamId: string | null;
+  teamId: string;
   feature: Feature;
   onSuccess: () => void;
 }
@@ -17,10 +18,17 @@ export const DriveAreaForm = ({ teamId, feature, onSuccess }: DriveAreaFormProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!teamId) return;
+    
+    if (!name.trim()) {
+      toast.error("Du måste ange ett namn på drevområdet");
+      return;
+    }
 
+    console.log('Submitting drive area:', { name, feature });
     const success = await createDriveArea(name, feature);
+    
     if (success) {
+      console.log('Drive area created successfully');
       onSuccess();
       setName("");
     }
@@ -34,13 +42,18 @@ export const DriveAreaForm = ({ teamId, feature, onSuccess }: DriveAreaFormProps
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          placeholder="Ange namn på drevområdet"
           required
         />
       </div>
 
       <div className="flex justify-end space-x-2">
-        <Button type="submit" disabled={isSubmitting}>
-          Spara
+        <Button 
+          type="submit" 
+          disabled={isSubmitting}
+          className="bg-[#13B67F] hover:bg-[#13B67F]/90"
+        >
+          {isSubmitting ? "Sparar..." : "Spara"}
         </Button>
       </div>
     </form>
