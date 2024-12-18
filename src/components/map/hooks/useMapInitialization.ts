@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
-import { Feature, Geometry } from 'geojson';
+import { Feature, Geometry, Point, Polygon } from 'geojson';
 import { useDrawControls } from './useDrawControls';
 
 interface UseMapInitializationProps {
@@ -21,7 +21,6 @@ export const useMapInitialization = ({
   const initializationAttempted = useRef(false);
 
   useEffect(() => {
-    // Prevent multiple initialization attempts
     if (initializationAttempted.current || !mapContainer.current || !mapboxToken) {
       return;
     }
@@ -31,12 +30,10 @@ export const useMapInitialization = ({
 
     const initializeMap = () => {
       try {
-        // Set token and create map only if it doesn't exist
         if (!map.current) {
           console.log('Initializing map with token:', mapboxToken);
           mapboxgl.accessToken = mapboxToken;
           
-          // Default center coordinates for Sweden with explicit typing
           const defaultCenter: [number, number] = [15.4367, 62.1983];
           const defaultZoom = 4.5;
           
@@ -47,13 +44,11 @@ export const useMapInitialization = ({
             zoom: defaultZoom
           });
 
-          // Setup map only once when it's loaded
           map.current.once('load', () => {
             if (!map.current) return;
             
             console.log('Map loaded, initializing controls...');
             
-            // Initialize draw control
             const drawInstance = initializeDraw();
             
             if (!drawInstance) {
@@ -62,15 +57,10 @@ export const useMapInitialization = ({
             }
 
             draw.current = drawInstance;
-
-            // Add controls
             map.current.addControl(drawInstance);
             map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-            
-            // Set default cursor
             map.current.getCanvas().style.cursor = 'grab';
 
-            // If there are areas, fit the map to them
             if (areas.length > 0) {
               console.log('Fitting map to areas:', areas.length);
               const bounds = new mapboxgl.LngLatBounds();
@@ -84,29 +74,30 @@ export const useMapInitialization = ({
                 }
               });
               
-              // Add some padding around the areas
               map.current.fitBounds(bounds, {
                 padding: 50,
                 maxZoom: 15
               });
             }
 
-            // Setup draw event listener
             if (drawInstance && typeof drawInstance.on === 'function') {
               try {
                 drawInstance.on('draw.create', (e: { features: Feature[] }) => {
                   console.log('Draw create event triggered:', e);
                   if (e.features?.[0]) {
                     const feature = e.features[0];
-                    // Ensure we're creating a valid Feature object with proper typing
+                    const geometry = feature.geometry as Point | Polygon;
+                    
+                    // Create a new feature with properly typed geometry
                     const simpleFeature: Feature = {
                       type: 'Feature',
                       geometry: {
-                        type: feature.geometry.type,
-                        coordinates: feature.geometry.coordinates
-                      } as Geometry,
+                        type: geometry.type,
+                        coordinates: geometry.coordinates
+                      },
                       properties: { ...feature.properties }
                     };
+                    
                     onFeatureCreate(simpleFeature);
                     drawInstance.deleteAll();
                   }
@@ -119,7 +110,6 @@ export const useMapInitialization = ({
               console.error('Draw instance or .on method not available:', drawInstance);
             }
 
-            // Setup cursor event listeners
             map.current.on('mousedown', () => {
               if (map.current?.getCanvas()) {
                 map.current.getCanvas().style.cursor = 'grabbing';
@@ -146,7 +136,6 @@ export const useMapInitialization = ({
       console.log('Running map cleanup...');
       
       if (map.current) {
-        // Remove controls first
         if (draw.current) {
           try {
             map.current.removeControl(draw.current);
@@ -155,22 +144,18 @@ export const useMapInitialization = ({
           }
         }
 
-        // Remove map instance
         map.current.remove();
         map.current = null;
       }
 
-      // Reset all refs and state
       draw.current = null;
       setMapLoaded(false);
       initializationAttempted.current = false;
     };
 
     initializeMap();
-
-    // Return cleanup function
     return cleanup;
-  }, [mapboxToken, areas]); // Added areas to dependencies
+  }, [mapboxToken, areas]);
 
   return { mapContainer, map, draw, mapLoaded };
 };
