@@ -41,7 +41,12 @@ export const useMapInstance = ({ mapboxToken, container }: UseMapInstanceProps) 
           container: container.current,
           style: 'mapbox://styles/mapbox/outdoors-v12',
           center: defaultCenter,
-          zoom: defaultZoom
+          zoom: defaultZoom,
+          attributionControl: false,
+          boxZoom: false,
+          doubleClickZoom: false,
+          dragRotate: false,
+          touchZoomRotate: false
         });
 
         map.current.once('load', () => {
