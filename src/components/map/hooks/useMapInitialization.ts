@@ -28,18 +28,15 @@ export const useMapInitialization = ({
     console.log('Initializing map with token:', mapboxToken.slice(0, 8) + '...');
     
     try {
-      // Set the access token
       mapboxgl.accessToken = mapboxToken;
 
-      // Create a new map instance
       const mapInstance = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/outdoors-v12',
-        center: [18.0686, 59.3293], // Stockholm coordinates
+        center: [18.0686, 59.3293],
         zoom: 9
       });
 
-      // Store the map instance in the ref
       map.current = mapInstance;
 
       // Initialize draw control with specific options
@@ -49,7 +46,6 @@ export const useMapInitialization = ({
           polygon: true,
           trash: true
         },
-        defaultMode: 'simple_select',
         styles: [
           {
             'id': 'gl-draw-polygon-fill-inactive',
@@ -122,7 +118,6 @@ export const useMapInitialization = ({
         ]
       });
 
-      // Store the draw instance in the ref
       draw.current = drawInstance;
 
       // Handle draw.create event
@@ -131,10 +126,11 @@ export const useMapInitialization = ({
         if (e.features && e.features[0]) {
           const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
           onFeatureCreate(serializedFeature);
+          // Clear the drawing after creation
+          drawInstance.deleteAll();
         }
       };
 
-      // Wait for map to load before adding controls
       mapInstance.on('load', () => {
         console.log('Map loaded, adding controls');
         mapInstance.addControl(drawInstance);
@@ -147,21 +143,17 @@ export const useMapInitialization = ({
         console.log('Map loaded successfully');
       });
 
-      // Return cleanup function
       return () => {
         console.log('Cleaning up map');
         if (map.current) {
           try {
-            // Remove the draw.create event listener
             map.current.off('draw.create', handleDrawCreate);
             
-            // Remove all controls first
             if (draw.current) {
               map.current.removeControl(draw.current);
               draw.current = null;
             }
 
-            // Finally remove the map
             map.current.remove();
             map.current = null;
             setMapLoaded(false);
