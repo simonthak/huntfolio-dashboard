@@ -14,7 +14,9 @@ const DateSelectionHandler = ({
   onEventSelect 
 }: DateSelectionHandlerProps) => {
   const handleDateSelect = (selectInfo: { start: Date }) => {
-    const selectedDate = normalizeDate(selectInfo.start);
+    // Ensure we're working with dates in the local timezone
+    const selectedDate = new Date(selectInfo.start);
+    selectedDate.setHours(0, 0, 0, 0);
     console.log("DateSelectionHandler - Selected date:", selectedDate);
     
     const existingEvent = findEventOnDate(events, selectedDate);
