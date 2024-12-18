@@ -15,21 +15,18 @@ export const useMapInitialization = ({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const initialized = useRef(false);
   const { draw, initializeDraw } = useDrawControls();
 
   useEffect(() => {
-    if (!mapContainer.current || !mapboxToken || initialized.current || map.current) {
+    if (!mapContainer.current || !mapboxToken || map.current) {
       console.log('Map initialization skipped:', 
         !mapContainer.current ? 'No container' : 
         !mapboxToken ? 'No token' : 
-        initialized.current ? 'Already initialized' :
         'Map already exists'
       );
       return;
     }
 
-    initialized.current = true;
     console.log('Initializing map with token:', mapboxToken.slice(0, 8) + '...');
     
     try {
@@ -85,14 +82,19 @@ export const useMapInitialization = ({
         console.log('Cleaning up map');
         if (map.current) {
           try {
+            // Remove all event listeners first
+            map.current.off();
+            
+            // Remove controls in reverse order
             if (draw.current) {
               map.current.removeControl(draw.current);
               draw.current = null;
             }
+            
+            // Finally remove the map
             map.current.remove();
             map.current = null;
             setMapLoaded(false);
-            initialized.current = false;
           } catch (error) {
             console.error('Error cleaning up map:', error);
           }
@@ -101,7 +103,6 @@ export const useMapInitialization = ({
     } catch (error) {
       console.error('Error initializing map:', error);
       setMapLoaded(false);
-      initialized.current = false;
     }
   }, [mapboxToken, onFeatureCreate]);
 
