@@ -15,6 +15,32 @@ export const useMapLayers = ({
   areas, 
   passes 
 }: UseMapLayersProps) => {
+  // Cleanup function to remove all existing layers and sources
+  const cleanup = () => {
+    if (!map.current) return;
+    
+    console.log('Cleaning up map layers...');
+    
+    // Remove area layers and sources
+    if (areas) {
+      areas.forEach(area => {
+        const fillLayer = `area-fill-${area.id}`;
+        const lineLayer = `area-line-${area.id}`;
+        const source = `area-${area.id}`;
+
+        if (map.current?.getLayer(fillLayer)) {
+          map.current.removeLayer(fillLayer);
+        }
+        if (map.current?.getLayer(lineLayer)) {
+          map.current.removeLayer(lineLayer);
+        }
+        if (map.current?.getSource(source)) {
+          map.current.removeSource(source);
+        }
+      });
+    }
+  };
+
   // Display existing areas
   useEffect(() => {
     if (!map.current || !mapLoaded || !areas) {
@@ -28,28 +54,7 @@ export const useMapLayers = ({
 
     console.log('Adding area layers to map:', areas.length);
 
-    // Remove existing layers before adding new ones
-    const cleanup = () => {
-      if (map.current) {
-        areas.forEach(area => {
-          const fillLayer = `area-fill-${area.id}`;
-          const lineLayer = `area-line-${area.id}`;
-          const source = `area-${area.id}`;
-
-          if (map.current?.getLayer(fillLayer)) {
-            map.current.removeLayer(fillLayer);
-          }
-          if (map.current?.getLayer(lineLayer)) {
-            map.current.removeLayer(lineLayer);
-          }
-          if (map.current?.getSource(source)) {
-            map.current.removeSource(source);
-          }
-        });
-      }
-    };
-
-    // Clean up existing layers first
+    // Clean up existing layers before adding new ones
     cleanup();
 
     // Add new layers
@@ -99,20 +104,29 @@ export const useMapLayers = ({
   useEffect(() => {
     if (!map.current || !mapLoaded || !passes) return;
 
+    console.log('Adding pass markers to map:', passes.length);
     const markers: mapboxgl.Marker[] = [];
 
     passes.forEach(pass => {
-      if (!pass.location) return;
+      if (!pass.location) {
+        console.log('Skipping pass without location:', pass.id);
+        return;
+      }
       
-      const marker = new mapboxgl.Marker()
-        .setLngLat((pass.location as any).coordinates)
-        .addTo(map.current!);
-      
-      markers.push(marker);
+      try {
+        const marker = new mapboxgl.Marker()
+          .setLngLat((pass.location as any).coordinates)
+          .addTo(map.current!);
+        
+        markers.push(marker);
+      } catch (error) {
+        console.error('Error adding pass marker:', error);
+      }
     });
 
-    // Cleanup
+    // Cleanup markers when component unmounts or passes change
     return () => {
+      console.log('Cleaning up pass markers...');
       markers.forEach(marker => marker.remove());
     };
   }, [passes, mapLoaded]);
