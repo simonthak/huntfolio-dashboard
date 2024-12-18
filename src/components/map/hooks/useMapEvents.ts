@@ -11,21 +11,31 @@ interface UseMapEventsProps {
 
 export const useMapEvents = ({ map, draw, onFeatureCreate }: UseMapEventsProps) => {
   useEffect(() => {
-    if (!map.current || !draw.current) return;
+    if (!map.current || !draw.current) {
+      console.log('Map or draw not initialized yet');
+      return;
+    }
 
     const setupDrawEvents = () => {
-      if (!draw.current || typeof draw.current.on !== 'function') {
-        console.error('Draw instance or .on method not available');
+      if (!draw.current) {
+        console.error('Draw instance not available');
         return;
       }
 
+      // Wait for the map to be loaded before setting up draw events
+      if (!map.current?.loaded()) {
+        console.log('Map not loaded yet, waiting...');
+        map.current?.once('load', setupDrawEvents);
+        return;
+      }
+
+      console.log('Setting up draw events');
       draw.current.on('draw.create', (e: { features: Feature[] }) => {
         console.log('Draw create event triggered:', e);
         if (e.features?.[0]) {
           const feature = e.features[0];
           const geometry = feature.geometry as Point | Polygon;
           
-          // Create a new feature with properly typed geometry
           const simpleFeature: Feature<Point | Polygon> = {
             type: 'Feature',
             geometry: geometry,
@@ -39,6 +49,13 @@ export const useMapEvents = ({ map, draw, onFeatureCreate }: UseMapEventsProps) 
     };
 
     const setupCursorEvents = () => {
+      if (!map.current?.loaded()) {
+        console.log('Map not loaded yet for cursor events, waiting...');
+        map.current?.once('load', setupCursorEvents);
+        return;
+      }
+
+      console.log('Setting up cursor events');
       map.current?.on('mousedown', () => {
         if (map.current) {
           const canvas = map.current.getCanvas();
@@ -54,7 +71,16 @@ export const useMapEvents = ({ map, draw, onFeatureCreate }: UseMapEventsProps) 
       });
     };
 
+    // Initialize both event systems
     setupDrawEvents();
     setupCursorEvents();
+
+    return () => {
+      // Cleanup if needed
+      if (map.current) {
+        map.current.off('mousedown');
+        map.current.off('mouseup');
+      }
+    };
   }, [map, draw, onFeatureCreate]);
 };

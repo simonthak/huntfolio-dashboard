@@ -33,7 +33,7 @@ export const useDriveAreaOperations = ({ teamId }: UseDriveAreaOperationsProps) 
         .insert({
           team_id: teamId,
           name,
-          boundary: feature,
+          boundary: JSON.parse(JSON.stringify(feature)), // Convert to plain JSON for Supabase
           created_by: user.id
         });
 
