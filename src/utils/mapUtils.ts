@@ -4,18 +4,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const initializeMapbox = async () => {
-  console.log('Fetching Mapbox token...');
   const { data: { token }, error } = await supabase.functions.invoke('get-mapbox-token');
   
-  if (error) {
-    console.error('Error fetching Mapbox token:', error);
+  if (error || !token) {
     toast.error('Kunde inte ladda kartan');
-    throw error;
-  }
-
-  if (!token) {
-    console.error('No Mapbox token received');
-    toast.error('Kunde inte ladda kartan - ingen token mottagen');
     throw new Error('No token received');
   }
 
@@ -23,7 +15,6 @@ export const initializeMapbox = async () => {
 };
 
 export const createMapInstance = (container: HTMLElement, token: string) => {
-  console.log('Setting up map with token:', token.substring(0, 8) + '...');
   mapboxgl.accessToken = token;
 
   const map = new mapboxgl.Map({
@@ -42,7 +33,6 @@ export const createMapInstance = (container: HTMLElement, token: string) => {
   });
 
   map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-  map.addControl(new mapboxgl.FullscreenControl());
   map.addControl(draw);
 
   return { map, draw };

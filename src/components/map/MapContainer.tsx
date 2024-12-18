@@ -15,76 +15,37 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
   const drawInstanceRef = useRef<any>(null);
-  const isInitializedRef = useRef(false);
 
   useEffect(() => {
+    if (!mapContainerRef.current || !currentTeamId) return;
+
     const initializeMap = async () => {
-      // Prevent multiple initializations
-      if (isInitializedRef.current || !mapContainerRef.current || !currentTeamId) {
-        console.log('Skipping map initialization:', {
-          isInitialized: isInitializedRef.current,
-          hasContainer: !!mapContainerRef.current,
-          hasTeamId: !!currentTeamId
-        });
-        return;
-      }
-
       try {
-        console.log('Initializing map with token...');
         const token = await initializeMapbox();
-
-        if (!mapContainerRef.current) {
-          console.error('Map container not found after token fetch');
-          return;
-        }
-
-        console.log('Creating map instance...');
-        const { map, draw } = createMapInstance(mapContainerRef.current, token);
-
-        // Store instances locally
+        const { map, draw } = createMapInstance(mapContainerRef.current!, token);
+        
         mapInstanceRef.current = map;
         drawInstanceRef.current = draw;
-        isInitializedRef.current = true;
 
-        // Handle map load event
         map.once('load', () => {
-          console.log('Map loaded successfully');
-          // Ensure we have valid instances before calling onMapLoad
           if (mapInstanceRef.current && drawInstanceRef.current) {
-            try {
-              onMapLoad(mapInstanceRef.current, drawInstanceRef.current);
-            } catch (error) {
-              console.error('Error in onMapLoad callback:', error);
-              toast.error('Ett fel uppstod när kartan skulle initialiseras');
-            }
+            onMapLoad(mapInstanceRef.current, drawInstanceRef.current);
           }
         });
-
-        // Handle map errors
-        map.on('error', (e) => {
-          console.error('Map error:', e);
-          toast.error('Ett fel uppstod med kartan');
-        });
-
       } catch (error) {
         console.error('Error initializing map:', error);
         toast.error('Ett fel uppstod när kartan skulle laddas');
-        isInitializedRef.current = false;
       }
     };
 
-    console.log('MapContainer mounted, initializing map...');
     initializeMap();
 
-    // Cleanup function
     return () => {
-      console.log('MapContainer unmounting, cleaning up...');
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
       drawInstanceRef.current = null;
-      isInitializedRef.current = false;
     };
   }, [currentTeamId, onMapLoad]);
 

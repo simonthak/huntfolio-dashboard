@@ -1,15 +1,14 @@
 import { Button } from '@/components/ui/button';
-import { MapPin, Target, Flag } from 'lucide-react';
+import { Map, MapPin } from 'lucide-react';
 
 interface MapControlsProps {
   isDrawing: boolean;
   onDrawArea: () => void;
   onSaveArea: () => void;
-  onAddTower: () => void;
-  onAddStand: () => void;
+  onAddPass: () => void;
 }
 
-const MapControls = ({ isDrawing, onDrawArea, onSaveArea, onAddTower, onAddStand }: MapControlsProps) => {
+const MapControls = ({ isDrawing, onDrawArea, onSaveArea, onAddPass }: MapControlsProps) => {
   return (
     <div className="space-x-2">
       {!isDrawing ? (
@@ -19,23 +18,15 @@ const MapControls = ({ isDrawing, onDrawArea, onSaveArea, onAddTower, onAddStand
             onClick={onDrawArea}
             className="flex items-center gap-2"
           >
-            <Target className="w-4 h-4" />
-            Rita område
+            <Map className="w-4 h-4" />
+            Rita drev
           </Button>
           <Button 
             variant="outline" 
-            onClick={onAddTower}
+            onClick={onAddPass}
             className="flex items-center gap-2"
           >
             <MapPin className="w-4 h-4" />
-            Lägg till jakttorn
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={onAddStand}
-            className="flex items-center gap-2"
-          >
-            <Flag className="w-4 h-4" />
             Lägg till pass
           </Button>
         </>
@@ -45,7 +36,7 @@ const MapControls = ({ isDrawing, onDrawArea, onSaveArea, onAddTower, onAddStand
           onClick={onSaveArea}
           className="bg-[#13B67F] hover:bg-[#13B67F]/90"
         >
-          Spara område
+          Spara drev
         </Button>
       )}
     </div>
