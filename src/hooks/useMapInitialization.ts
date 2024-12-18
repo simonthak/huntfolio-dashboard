@@ -1,17 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const useMapInitialization = (currentTeamId: string | null) => {
-  const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
-  const [drawInstance, setDrawInstance] = useState<any>(null);
-
   const loadExistingData = useCallback(async (map: mapboxgl.Map, draw: any) => {
     if (!currentTeamId) return;
     
     try {
+      console.log('Loading existing data for team:', currentTeamId);
+      
       const { data: grounds, error: groundsError } = await supabase
         .from('hunting_grounds')
         .select('*')
@@ -56,19 +55,16 @@ export const useMapInitialization = (currentTeamId: string | null) => {
       }
     } catch (error) {
       console.error('Error loading map data:', error);
+      toast.error('Kunde inte ladda kartdata');
     }
   }, [currentTeamId]);
 
   const handleMapLoad = useCallback((map: mapboxgl.Map, draw: any) => {
     console.log('Map and draw instances received:', { map, draw });
-    setMapInstance(map);
-    setDrawInstance(draw);
     loadExistingData(map, draw);
   }, [loadExistingData]);
 
   return {
-    mapInstance,
-    drawInstance,
     handleMapLoad,
   };
 };

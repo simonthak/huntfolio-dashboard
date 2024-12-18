@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import { supabase } from '@/integrations/supabase/client';
@@ -52,11 +52,12 @@ const Map = () => {
     getCurrentUser();
   }, []);
 
-  const onMapLoaded = (map: mapboxgl.Map, draw: any) => {
+  const onMapLoaded = useCallback((map: mapboxgl.Map, draw: any) => {
+    console.log('Map loaded callback triggered');
     mapRef.current = map;
     drawRef.current = draw;
     handleMapLoad(map, draw);
-  };
+  }, [handleMapLoad]);
 
   return (
     <div className="space-y-4">

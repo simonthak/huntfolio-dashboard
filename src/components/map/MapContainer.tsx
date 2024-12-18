@@ -16,9 +16,10 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const draw = useRef<any>(null);
+  const initialized = useRef(false);
 
   const initializeMap = useCallback(async () => {
-    if (!mapContainer.current || !currentTeamId || map.current) return;
+    if (!mapContainer.current || !currentTeamId || map.current || initialized.current) return;
 
     try {
       console.log('Fetching Mapbox token...');
@@ -62,6 +63,7 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
 
       mapInstance.on('load', () => {
         console.log('Map loaded successfully');
+        initialized.current = true;
         if (map.current && draw.current) {
           onMapLoad(mapInstance, drawInstance);
         }
@@ -86,6 +88,7 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
         map.current.remove();
         map.current = null;
       }
+      initialized.current = false;
     };
   }, [initializeMap]);
 
