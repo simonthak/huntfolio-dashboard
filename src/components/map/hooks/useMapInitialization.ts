@@ -19,8 +19,13 @@ export const useMapInitialization = ({
   const { draw, initializeDraw } = useDrawControls();
 
   useEffect(() => {
-    if (!mapContainer.current || !mapboxToken || initialized.current) {
-      console.log('Map initialization skipped:', !mapContainer.current ? 'No container' : !mapboxToken ? 'No token' : 'Already initialized');
+    if (!mapContainer.current || !mapboxToken || initialized.current || map.current) {
+      console.log('Map initialization skipped:', 
+        !mapContainer.current ? 'No container' : 
+        !mapboxToken ? 'No token' : 
+        initialized.current ? 'Already initialized' :
+        'Map already exists'
+      );
       return;
     }
 
@@ -84,7 +89,6 @@ export const useMapInitialization = ({
               map.current.removeControl(draw.current);
               draw.current = null;
             }
-
             map.current.remove();
             map.current = null;
             setMapLoaded(false);
