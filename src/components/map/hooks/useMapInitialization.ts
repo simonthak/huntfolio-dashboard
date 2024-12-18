@@ -43,7 +43,7 @@ export const useMapInitialization = ({
       
       map.current = mapInstance;
 
-      mapInstance.on('load', () => {
+      const setupMapControls = () => {
         console.log('Map loaded, adding controls');
         
         mapInstance.addControl(drawInstance);
@@ -53,15 +53,15 @@ export const useMapInitialization = ({
         mapInstance.getCanvas().style.cursor = 'grab';
 
         // Add cursor style handlers for drag interactions
-        mapInstance.on('mousedown', () => {
+        mapInstance.on('mousedown', 'mousedown.cursor', () => {
           mapInstance.getCanvas().style.cursor = 'grabbing';
         });
 
-        mapInstance.on('mouseup', () => {
+        mapInstance.on('mouseup', 'mouseup.cursor', () => {
           mapInstance.getCanvas().style.cursor = 'grab';
         });
         
-        mapInstance.on('draw.create', (e: { features: Feature[] }) => {
+        mapInstance.on('draw.create', 'draw.create', (e: { features: Feature[] }) => {
           console.log('Draw feature created:', e.features[0]);
           if (e.features && e.features[0]) {
             const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
@@ -70,20 +70,25 @@ export const useMapInitialization = ({
           }
         });
 
-        mapInstance.on('draw.modechange', (e: any) => {
+        mapInstance.on('draw.modechange', 'draw.modechange', (e: any) => {
           console.log('Draw mode changed:', e.mode);
         });
         
         setMapLoaded(true);
         console.log('Map loaded successfully');
-      });
+      };
+
+      mapInstance.once('load', setupMapControls);
 
       return () => {
         console.log('Cleaning up map');
         if (map.current) {
           try {
-            // Remove all event listeners first
-            map.current.off();
+            // Remove specific event listeners
+            map.current.off('mousedown.cursor');
+            map.current.off('mouseup.cursor');
+            map.current.off('draw.create');
+            map.current.off('draw.modechange');
             
             // Remove controls in reverse order
             if (draw.current) {
