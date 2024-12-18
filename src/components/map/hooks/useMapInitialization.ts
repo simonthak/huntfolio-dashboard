@@ -92,13 +92,21 @@ export const useMapInitialization = ({
             }
 
             // Setup draw event listener
-            if (drawInstance && drawInstance.on) {
+            if (drawInstance && typeof drawInstance.on === 'function') {
               try {
                 drawInstance.on('draw.create', (e: { features: Feature[] }) => {
                   console.log('Draw create event triggered:', e);
                   if (e.features?.[0]) {
-                    const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
-                    onFeatureCreate(serializedFeature);
+                    // Create a new simple object that can be cloned
+                    const simpleFeature = {
+                      type: e.features[0].type,
+                      geometry: {
+                        type: e.features[0].geometry.type,
+                        coordinates: [...e.features[0].geometry.coordinates]
+                      },
+                      properties: { ...e.features[0].properties }
+                    };
+                    onFeatureCreate(simpleFeature);
                     drawInstance.deleteAll();
                   }
                 });
