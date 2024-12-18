@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
-import { Feature } from 'geojson';
+import { Feature, Geometry } from 'geojson';
 import { useDrawControls } from './useDrawControls';
 
 interface UseMapInitializationProps {
@@ -97,14 +97,15 @@ export const useMapInitialization = ({
                 drawInstance.on('draw.create', (e: { features: Feature[] }) => {
                   console.log('Draw create event triggered:', e);
                   if (e.features?.[0]) {
-                    // Create a new simple object that can be cloned
-                    const simpleFeature = {
-                      type: e.features[0].type,
+                    const feature = e.features[0];
+                    // Ensure we're creating a valid Feature object with proper typing
+                    const simpleFeature: Feature = {
+                      type: 'Feature',
                       geometry: {
-                        type: e.features[0].geometry.type,
-                        coordinates: [...e.features[0].geometry.coordinates]
-                      },
-                      properties: { ...e.features[0].properties }
+                        type: feature.geometry.type,
+                        coordinates: feature.geometry.coordinates
+                      } as Geometry,
+                      properties: { ...feature.properties }
                     };
                     onFeatureCreate(simpleFeature);
                     drawInstance.deleteAll();
