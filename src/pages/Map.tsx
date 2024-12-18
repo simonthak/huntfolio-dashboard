@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import { supabase } from '@/integrations/supabase/client';
 import MapContainer from '@/components/map/MapContainer';
@@ -40,22 +39,10 @@ const Map = () => {
   }, []);
 
   const handleMapLoad = (map: mapboxgl.Map, draw: any) => {
-    const drawTools = new MapboxDraw({
-      displayControlsDefault: false,
-      controls: {
-        polygon: true,
-        trash: true
-      }
-    });
-
-    map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-    map.addControl(new mapboxgl.FullscreenControl());
-    map.addControl(drawTools);
-
+    console.log('Map and draw instances received:', { map, draw });
     setMapInstance(map);
-    setDrawInstance(drawTools);
-
-    loadExistingData(map, drawTools);
+    setDrawInstance(draw);
+    loadExistingData(map, draw);
   };
 
   const loadExistingData = async (map: mapboxgl.Map, draw: any) => {
@@ -70,9 +57,12 @@ const Map = () => {
         return;
       }
 
-      if (grounds) {
+      if (grounds && grounds.length > 0) {
+        console.log('Adding hunting grounds to map:', grounds);
         grounds.forEach(ground => {
-          draw.add(ground.boundary);
+          if (ground.boundary) {
+            draw.add(ground.boundary);
+          }
         });
       }
 
@@ -87,6 +77,7 @@ const Map = () => {
       }
 
       if (towers) {
+        console.log('Adding towers to map:', towers);
         towers.forEach(tower => {
           const location = tower.location as { coordinates: [number, number] };
           new mapboxgl.Marker()
@@ -104,8 +95,12 @@ const Map = () => {
   };
 
   const handleDrawArea = () => {
+    if (!drawInstance) {
+      console.error('Draw instance not initialized');
+      return;
+    }
     setIsDrawing(true);
-    drawInstance?.changeMode('draw_polygon');
+    drawInstance.changeMode('draw_polygon');
   };
 
   const handleAddTower = () => {

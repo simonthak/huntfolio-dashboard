@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
+import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
@@ -44,11 +46,26 @@ const MapContainer = ({ onMapLoad, currentTeamId }: MapContainerProps) => {
           zoom: 5
         });
 
+        // Initialize draw before setting it to ref
+        const drawInstance = new MapboxDraw({
+          displayControlsDefault: false,
+          controls: {
+            polygon: true,
+            trash: true
+          }
+        });
+
         map.current = mapInstance;
+        draw.current = drawInstance;
+
+        // Add controls to map
+        mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        mapInstance.addControl(new mapboxgl.FullscreenControl());
+        mapInstance.addControl(drawInstance);
 
         mapInstance.on('load', () => {
           console.log('Map loaded successfully');
-          if (map.current) {
+          if (map.current && draw.current) {
             onMapLoad(map.current, draw.current);
           }
         });
