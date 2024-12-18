@@ -18,34 +18,6 @@ export const useMapInitialization = ({
   const { draw, initializeDraw } = useDrawControls();
   const initialized = useRef(false);
 
-  const cleanupMap = () => {
-    if (!map.current) return;
-    console.log('Cleaning up map and WebGL context');
-
-    try {
-      // First remove the draw control if it exists
-      if (draw.current && map.current && !map.current._removed) {
-        try {
-          map.current.removeControl(draw.current);
-        } catch (error) {
-          console.warn('Error removing draw control:', error);
-        }
-      }
-
-      // Then remove the map if it hasn't been removed yet
-      if (!map.current._removed) {
-        map.current.remove();
-      }
-    } catch (error) {
-      console.warn('Error during cleanup:', error);
-    }
-    
-    // Reset all refs and state
-    map.current = null;
-    draw.current = null;
-    setMapLoaded(false);
-  };
-
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken || initialized.current) {
       console.log('Map initialization skipped:', 
@@ -58,78 +30,88 @@ export const useMapInitialization = ({
 
     console.log('Initializing map with token:', mapboxToken.slice(0, 8) + '...');
     
-    // Set initialization flag first to prevent multiple initializations
+    // Set initialization flag
     initialized.current = true;
-    
+
     try {
       mapboxgl.accessToken = mapboxToken;
 
-      // Create new map instance
-      const mapInstance = new mapboxgl.Map({
+      const newMap = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/outdoors-v12',
         center: [18.0686, 59.3293],
         zoom: 9
       });
 
-      // Store map reference
-      map.current = mapInstance;
+      map.current = newMap;
 
-      // Wait for both map and style to be loaded before adding controls
-      mapInstance.once('load', () => {
-        if (!mapInstance || mapInstance._removed) return;
+      const setupMap = () => {
+        if (!newMap || newMap._removed) return;
         
         console.log('Map loaded, adding controls');
         
-        // Initialize draw control
         const drawInstance = initializeDraw();
+        newMap.addControl(drawInstance);
+        newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
         
-        // Add controls
-        mapInstance.addControl(drawInstance);
-        mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
-        
-        // Set cursor style
-        if (mapInstance.getCanvas()) {
-          mapInstance.getCanvas().style.cursor = 'grab';
+        if (newMap.getCanvas()) {
+          newMap.getCanvas().style.cursor = 'grab';
         }
 
-        // Add draw event listeners
-        mapInstance.on('draw.create', (e: { features: Feature[] }) => {
+        newMap.on('draw.create', (e: { features: Feature[] }) => {
           console.log('Draw feature created:', e.features[0]);
-          if (e.features && e.features[0]) {
+          if (e.features?.[0]) {
             const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
             onFeatureCreate(serializedFeature);
             drawInstance.deleteAll();
           }
         });
 
-        // Add mouse event listeners
-        mapInstance.on('mousedown', () => {
-          if (mapInstance.getCanvas()) {
-            mapInstance.getCanvas().style.cursor = 'grabbing';
+        newMap.on('mousedown', () => {
+          if (newMap.getCanvas()) {
+            newMap.getCanvas().style.cursor = 'grabbing';
           }
         });
 
-        mapInstance.on('mouseup', () => {
-          if (mapInstance.getCanvas()) {
-            mapInstance.getCanvas().style.cursor = 'grab';
+        newMap.on('mouseup', () => {
+          if (newMap.getCanvas()) {
+            newMap.getCanvas().style.cursor = 'grab';
           }
         });
 
         setMapLoaded(true);
         console.log('Map loaded successfully');
-      });
+      };
+
+      newMap.once('load', setupMap);
 
     } catch (error) {
       console.error('Error initializing map:', error);
-      cleanupMap();
+      if (map.current && !map.current._removed) {
+        map.current.remove();
+      }
+      map.current = null;
+      draw.current = null;
       initialized.current = false;
+      setMapLoaded(false);
     }
 
-    // Cleanup function
     return () => {
-      cleanupMap();
+      console.log('Cleaning up map and WebGL context');
+      if (map.current && !map.current._removed) {
+        if (draw.current) {
+          try {
+            map.current.removeControl(draw.current);
+          } catch (error) {
+            console.warn('Error removing draw control:', error);
+          }
+        }
+        map.current.remove();
+      }
+      map.current = null;
+      draw.current = null;
       initialized.current = false;
+      setMapLoaded(false);
     };
   }, [mapboxToken, onFeatureCreate]);
 
