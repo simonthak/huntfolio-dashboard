@@ -41,10 +41,10 @@ export const useMapInitialization = ({
         // Then remove the map
         try {
           map.current.remove();
+          map.current = null;
         } catch (error) {
           console.error('Error removing map:', error);
         }
-        map.current = null;
       }
     };
 
@@ -77,7 +77,6 @@ export const useMapInitialization = ({
         },
         defaultMode: 'simple_select',
         styles: [
-          // Existing styles for the draw control
           {
             'id': 'gl-draw-polygon-fill-inactive',
             'type': 'fill',
@@ -130,8 +129,9 @@ export const useMapInitialization = ({
       // Store the draw instance in the ref
       draw.current = drawInstance;
 
-      // Add controls after map is loaded
+      // Wait for map to load before adding controls
       mapInstance.on('load', () => {
+        console.log('Map loaded, adding controls');
         mapInstance.addControl(drawInstance);
         mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
         setMapLoaded(true);
@@ -140,13 +140,15 @@ export const useMapInitialization = ({
 
       // Set up draw.create event handler
       mapInstance.on('draw.create', (e: { features: Feature[] }) => {
-        console.log('Feature created:', e.features[0]);
-        // Clone the feature to ensure it's serializable
-        const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
-        onFeatureCreate(serializedFeature);
-        // Reset the draw mode after creation
-        if (draw.current) {
-          draw.current.changeMode('simple_select');
+        console.log('Draw feature created:', e.features[0]);
+        if (e.features && e.features[0]) {
+          const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
+          onFeatureCreate(serializedFeature);
+          
+          // Reset the draw mode after creation
+          if (draw.current) {
+            draw.current.changeMode('simple_select');
+          }
         }
       });
 

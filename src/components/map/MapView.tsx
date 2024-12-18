@@ -48,6 +48,7 @@ const MapView = () => {
   useMapLayers({ map, mapLoaded, areas, passes });
 
   const handleToolClick = (mode: 'area' | 'pass') => {
+    console.log('Tool clicked:', mode);
     if (!draw.current || !map.current) return;
 
     setDrawMode(mode);
@@ -56,14 +57,16 @@ const MapView = () => {
     draw.current.deleteAll();
 
     if (mode === 'area') {
-      // Enable polygon drawing mode
+      console.log('Enabling polygon draw mode');
       draw.current.changeMode('draw_polygon');
     } else {
+      console.log('Enabling point placement mode');
       // Disable draw mode and enable marker placement
       draw.current.changeMode('simple_select');
       map.current.getCanvas().style.cursor = 'crosshair';
       
       const onClick = (e: mapboxgl.MapMouseEvent) => {
+        console.log('Map clicked for point placement:', e.lngLat);
         const feature: Feature = {
           type: 'Feature',
           geometry: {
@@ -79,8 +82,10 @@ const MapView = () => {
         setShowCreateDialog(true);
         
         // Clean up
-        map.current?.off('click', onClick);
-        map.current!.getCanvas().style.cursor = '';
+        if (map.current) {
+          map.current.off('click', onClick);
+          map.current.getCanvas().style.cursor = '';
+        }
       };
       
       // Use once to ensure the handler is removed after first use
