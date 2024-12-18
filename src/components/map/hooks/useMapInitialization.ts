@@ -46,6 +46,7 @@ export const useMapInitialization = ({
           polygon: true,
           trash: true
         },
+        defaultMode: 'draw_polygon',
         styles: [
           {
             'id': 'gl-draw-polygon-fill-inactive',
@@ -120,24 +121,21 @@ export const useMapInitialization = ({
 
       draw.current = drawInstance;
 
-      // Handle draw.create event
-      const handleDrawCreate = (e: { features: Feature[] }) => {
-        console.log('Draw feature created:', e.features[0]);
-        if (e.features && e.features[0]) {
-          const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
-          onFeatureCreate(serializedFeature);
-          // Clear the drawing after creation
-          drawInstance.deleteAll();
-        }
-      };
-
       mapInstance.on('load', () => {
         console.log('Map loaded, adding controls');
         mapInstance.addControl(drawInstance);
         mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
         
         // Add draw.create event listener after controls are added
-        mapInstance.on('draw.create', handleDrawCreate);
+        mapInstance.on('draw.create', (e: { features: Feature[] }) => {
+          console.log('Draw feature created:', e.features[0]);
+          if (e.features && e.features[0]) {
+            const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
+            onFeatureCreate(serializedFeature);
+            // Clear the drawing after creation
+            drawInstance.deleteAll();
+          }
+        });
         
         setMapLoaded(true);
         console.log('Map loaded successfully');
@@ -147,8 +145,6 @@ export const useMapInitialization = ({
         console.log('Cleaning up map');
         if (map.current) {
           try {
-            map.current.off('draw.create', handleDrawCreate);
-            
             if (draw.current) {
               map.current.removeControl(draw.current);
               draw.current = null;
