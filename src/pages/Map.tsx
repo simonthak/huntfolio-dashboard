@@ -8,11 +8,14 @@ import TowerDialog from '@/components/map/TowerDialog';
 import { useMapOperations } from '@/hooks/useMapOperations';
 import { useMapInitialization } from '@/hooks/useMapInitialization';
 import { useMapInteractions } from '@/hooks/useMapInteractions';
+import mapboxgl from 'mapbox-gl';
 
 const Map = () => {
   const [searchParams] = useSearchParams();
   const currentTeamId = searchParams.get('team');
   const [userId, setUserId] = useState<string | null>(null);
+  const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
+  const [drawInstance, setDrawInstance] = useState<any>(null);
 
   const {
     showTowerDialog,
@@ -49,6 +52,12 @@ const Map = () => {
     getCurrentUser();
   }, []);
 
+  const onMapLoaded = (map: mapboxgl.Map, draw: any) => {
+    setMapInstance(map);
+    setDrawInstance(draw);
+    handleMapLoad(map, draw);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -56,7 +65,7 @@ const Map = () => {
         <MapControls
           isDrawing={isDrawing}
           onDrawArea={handleDrawArea}
-          onSaveArea={() => handleSaveArea(isDrawing, setIsDrawing)}
+          onSaveArea={() => handleSaveArea(drawInstance)}
           onAddTower={handleAddMarker}
           onAddStand={handleAddMarker}
         />
@@ -64,7 +73,7 @@ const Map = () => {
 
       <MapContainer
         currentTeamId={currentTeamId}
-        onMapLoad={handleMapLoad}
+        onMapLoad={onMapLoaded}
       />
 
       <TowerDialog
@@ -74,7 +83,7 @@ const Map = () => {
         onTowerNameChange={setNewTowerName}
         towerDescription={newTowerDescription}
         onTowerDescriptionChange={setNewTowerDescription}
-        onSave={handleSaveTower}
+        onSave={() => mapInstance && handleSaveTower(mapInstance)}
       />
     </div>
   );
