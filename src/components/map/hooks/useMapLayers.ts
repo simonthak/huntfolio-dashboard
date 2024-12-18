@@ -57,40 +57,58 @@ export const useMapLayers = ({
         console.log('Adding area to map:', { id: area.id, name: area.name });
 
         try {
-          map.current?.addSource(source, {
-            type: 'geojson',
-            data: area.boundary
-          });
+          // Ensure the map style is loaded before adding sources and layers
+          if (!map.current?.isStyleLoaded()) {
+            console.log('Map style not loaded yet, waiting...');
+            map.current?.once('style.load', () => {
+              console.log('Style loaded, now adding area:', area.id);
+              addAreaToMap(area, source);
+            });
+            return;
+          }
 
-          map.current?.addLayer({
-            id: `area-fill-${area.id}`,
-            type: 'fill',
-            source: source,
-            paint: {
-              'fill-color': '#13B67F',
-              'fill-opacity': 0.2
-            }
-          });
-
-          map.current?.addLayer({
-            id: `area-line-${area.id}`,
-            type: 'line',
-            source: source,
-            paint: {
-              'line-color': '#13B67F',
-              'line-width': 2
-            }
-          });
+          addAreaToMap(area, source);
         } catch (error) {
           console.error('Error adding area to map:', error);
         }
       });
     };
 
+    const addAreaToMap = (area: DriveArea, source: string) => {
+      if (!map.current) return;
+
+      map.current.addSource(source, {
+        type: 'geojson',
+        data: area.boundary
+      });
+
+      map.current.addLayer({
+        id: `area-fill-${area.id}`,
+        type: 'fill',
+        source: source,
+        paint: {
+          'fill-color': '#13B67F',
+          'fill-opacity': 0.2
+        }
+      });
+
+      map.current.addLayer({
+        id: `area-line-${area.id}`,
+        type: 'line',
+        source: source,
+        paint: {
+          'line-color': '#13B67F',
+          'line-width': 2
+        }
+      });
+    };
+
     // Only add layers when style is loaded
     if (map.current.isStyleLoaded()) {
+      console.log('Style already loaded, adding layers immediately');
       addLayers();
     } else {
+      console.log('Waiting for style to load before adding layers');
       map.current.once('style.load', addLayers);
     }
 
