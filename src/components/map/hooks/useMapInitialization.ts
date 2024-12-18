@@ -18,7 +18,27 @@ export const useMapInitialization = ({
   const { draw, initializeDraw } = useDrawControls();
   const initialized = useRef(false);
 
+  // Cleanup function to ensure proper WebGL context cleanup
+  const cleanupMap = () => {
+    console.log('Cleaning up map and WebGL context');
+    if (map.current && !map.current._removed) {
+      // Remove the map instance which will clean up the WebGL context
+      map.current.remove();
+      map.current = null;
+    }
+    
+    if (draw.current) {
+      draw.current = null;
+    }
+    
+    setMapLoaded(false);
+    initialized.current = false;
+  };
+
   useEffect(() => {
+    // Clean up any existing map instance first
+    cleanupMap();
+
     if (!mapContainer.current || !mapboxToken || initialized.current) {
       console.log('Map initialization skipped:', 
         !mapContainer.current ? 'No container' : 
@@ -93,33 +113,11 @@ export const useMapInitialization = ({
       mapInstance.once('load', setupMapControls);
 
       return () => {
-        console.log('Cleaning up map');
-        try {
-          if (mapInstance && !mapInstance._removed) {
-            mapInstance.off('mousedown', handleMouseDown);
-            mapInstance.off('mouseup', handleMouseUp);
-            mapInstance.off('draw.create', handleDrawCreate);
-            mapInstance.off('draw.modechange', handleDrawModeChange);
-            
-            if (draw.current) {
-              mapInstance.removeControl(draw.current);
-              draw.current = null;
-            }
-            
-            mapInstance.remove();
-          }
-        } catch (error) {
-          console.error('Error during map cleanup:', error);
-        }
-        
-        map.current = null;
-        setMapLoaded(false);
-        initialized.current = false;
+        cleanupMap();
       };
     } catch (error) {
       console.error('Error initializing map:', error);
-      setMapLoaded(false);
-      initialized.current = false;
+      cleanupMap();
     }
   }, [mapboxToken, onFeatureCreate]);
 
