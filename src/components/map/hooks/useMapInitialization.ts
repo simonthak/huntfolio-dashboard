@@ -22,29 +22,39 @@ export const useMapInitialization = ({
   // Cleanup function to ensure proper WebGL context cleanup
   const cleanupMap = () => {
     console.log('Cleaning up map and WebGL context');
+    
+    // First remove the draw control if it exists
+    if (map.current && draw.current) {
+      try {
+        map.current.removeControl(draw.current);
+      } catch (error) {
+        console.warn('Error removing draw control:', error);
+      }
+    }
+
+    // Then remove event listeners if the map still exists
     if (map.current && !map.current._removed) {
-      // Remove event listeners
-      if (eventHandlers.current.mouseDown) {
-        map.current.off('mousedown', eventHandlers.current.mouseDown);
-      }
-      if (eventHandlers.current.mouseUp) {
-        map.current.off('mouseup', eventHandlers.current.mouseUp);
-      }
-      if (eventHandlers.current.drawCreate) {
-        map.current.off('draw.create', eventHandlers.current.drawCreate);
-      }
-      if (eventHandlers.current.drawModeChange) {
-        map.current.off('draw.modechange', eventHandlers.current.drawModeChange);
+      try {
+        Object.entries(eventHandlers.current).forEach(([key, handler]) => {
+          if (handler) {
+            const eventName = key.toLowerCase().replace(/^handle/, '');
+            map.current?.off(eventName, handler);
+          }
+        });
+      } catch (error) {
+        console.warn('Error removing event listeners:', error);
       }
 
-      // Remove controls and map
-      if (draw.current) {
-        map.current.removeControl(draw.current);
+      // Finally remove the map
+      try {
+        map.current.remove();
+      } catch (error) {
+        console.warn('Error removing map:', error);
       }
-      map.current.remove();
-      map.current = null;
     }
     
+    // Reset all refs and state
+    map.current = null;
     draw.current = null;
     eventHandlers.current = {};
     setMapLoaded(false);
@@ -118,10 +128,11 @@ export const useMapInitialization = ({
           mapInstance.getCanvas().style.cursor = 'grab';
         }
 
-        mapInstance.on('mousedown', eventHandlers.current.mouseDown);
-        mapInstance.on('mouseup', eventHandlers.current.mouseUp);
-        mapInstance.on('draw.create', eventHandlers.current.drawCreate);
-        mapInstance.on('draw.modechange', eventHandlers.current.drawModeChange);
+        // Add event listeners
+        Object.entries(eventHandlers.current).forEach(([key, handler]) => {
+          const eventName = key.toLowerCase().replace(/^handle/, '');
+          mapInstance.on(eventName, handler);
+        });
         
         setMapLoaded(true);
         console.log('Map loaded successfully');
