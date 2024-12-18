@@ -2,11 +2,20 @@ import { startOfDay, isSameDay, isBefore } from "date-fns";
 import { Event } from "@/components/calendar/types";
 
 export const findEventOnDate = (events: Event[], date: Date): Event | undefined => {
+  console.log("calendarUtils - Finding event for date:", date);
   const normalizedDate = startOfDay(date);
-  return events.find(event => {
+  const foundEvent = events.find(event => {
     const eventDate = new Date(event.date);
-    return isSameDay(eventDate, normalizedDate);
+    const isSame = isSameDay(eventDate, normalizedDate);
+    console.log("calendarUtils - Comparing dates:", {
+      eventDate,
+      normalizedDate,
+      isSame
+    });
+    return isSame;
   });
+  console.log("calendarUtils - Found event:", foundEvent);
+  return foundEvent;
 };
 
 export const validateFutureDate = (date: Date): boolean => {
