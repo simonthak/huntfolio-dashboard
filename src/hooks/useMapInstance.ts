@@ -55,6 +55,23 @@ export const useMapInstance = (
           zoom: 4.5
         });
 
+        // Handle wheel events with serializable data
+        map.on('wheel', (e: mapboxgl.MapWheelEvent) => {
+          const safeWheelData = {
+            type: 'MAP_SCROLLED',
+            payload: {
+              center: map.getCenter().toArray(),
+              zoom: map.getZoom(),
+              deltaY: e.originalEvent.deltaY,
+              deltaX: e.originalEvent.deltaX
+            }
+          };
+
+          requestAnimationFrame(() => {
+            window.postMessage(safeWheelData, '*');
+          });
+        });
+
         const draw = new MapboxDraw({
           displayControlsDefault: false,
           controls: {
