@@ -54,9 +54,11 @@ const Map = () => {
 
   const onMapLoaded = useCallback((map: mapboxgl.Map, draw: any) => {
     console.log('Map loaded callback triggered');
-    mapRef.current = map;
-    drawRef.current = draw;
-    handleMapLoad(map, draw);
+    if (map && draw) {
+      mapRef.current = map;
+      drawRef.current = draw;
+      handleMapLoad(map, draw);
+    }
   }, [handleMapLoad]);
 
   return (

@@ -12,11 +12,15 @@ export const useMapInteractions = (
 
   const handleAddMarker = () => {
     const handleMapClick = (e: { lngLat: { lng: number; lat: number } }) => {
-      setNewTowerLocation([e.lngLat.lng, e.lngLat.lat]);
-      setShowTowerDialog(true);
+      if (e?.lngLat?.lng != null && e?.lngLat?.lat != null) {
+        console.log('Adding marker at:', [e.lngLat.lng, e.lngLat.lat]);
+        setNewTowerLocation([e.lngLat.lng, e.lngLat.lat]);
+        setShowTowerDialog(true);
+      } else {
+        console.error('Invalid coordinates received:', e);
+      }
     };
 
-    // We'll pass this function to the MapContainer component
     return handleMapClick;
   };
 

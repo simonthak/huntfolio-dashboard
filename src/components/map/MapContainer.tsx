@@ -21,6 +21,7 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
 
     const initializeMap = async () => {
       try {
+        console.log('Initializing map...');
         const token = await initializeMapbox();
         const { map, draw } = createMapInstance(mapContainerRef.current!, token);
         
@@ -28,6 +29,7 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
         drawInstanceRef.current = draw;
 
         map.once('load', () => {
+          console.log('Map loaded, calling onMapLoad callback');
           if (mapInstanceRef.current && drawInstanceRef.current) {
             onMapLoad(mapInstanceRef.current, drawInstanceRef.current);
           }
