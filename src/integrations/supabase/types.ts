@@ -104,6 +104,48 @@ export type Database = {
           },
         ]
       }
+      drive_areas: {
+        Row: {
+          boundary: Json
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          team_id: string
+        }
+        Insert: {
+          boundary: Json
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          team_id: string
+        }
+        Update: {
+          boundary?: Json
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drive_areas_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drive_areas_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_notification_history: {
         Row: {
           id: string
@@ -245,6 +287,61 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      hunting_passes: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          drive_area_id: string
+          id: string
+          location: Json
+          name: string
+          team_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          drive_area_id: string
+          id?: string
+          location: Json
+          name: string
+          team_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          drive_area_id?: string
+          id?: string
+          location?: Json
+          name?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hunting_passes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hunting_passes_drive_area_id_fkey"
+            columns: ["drive_area_id"]
+            isOneToOne: false
+            referencedRelation: "drive_areas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hunting_passes_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       hunting_reports: {
         Row: {

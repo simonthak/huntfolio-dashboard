@@ -9,11 +9,13 @@ import {
   UserCircle,
   FolderOpen,
   Phone,
+  Map,
 } from "lucide-react";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Calendar, label: "Kalender", path: "/calendar" },
+  { icon: Map, label: "Karta", path: "/map" },
   { icon: FileText, label: "Rapporter", path: "/reports" },
   { icon: FolderOpen, label: "Dokument", path: "/documents" },
   { icon: Phone, label: "Kontakter", path: "/contacts" },
