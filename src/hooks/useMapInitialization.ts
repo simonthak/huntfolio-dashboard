@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,7 +8,9 @@ export const useMapInitialization = (currentTeamId: string | null) => {
   const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
   const [drawInstance, setDrawInstance] = useState<any>(null);
 
-  const loadExistingData = async (map: mapboxgl.Map, draw: any) => {
+  const loadExistingData = useCallback(async (map: mapboxgl.Map, draw: any) => {
+    if (!currentTeamId) return;
+    
     try {
       const { data: grounds, error: groundsError } = await supabase
         .from('hunting_grounds')
@@ -55,14 +57,14 @@ export const useMapInitialization = (currentTeamId: string | null) => {
     } catch (error) {
       console.error('Error loading map data:', error);
     }
-  };
+  }, [currentTeamId]);
 
-  const handleMapLoad = (map: mapboxgl.Map, draw: any) => {
+  const handleMapLoad = useCallback((map: mapboxgl.Map, draw: any) => {
     console.log('Map and draw instances received:', { map, draw });
     setMapInstance(map);
     setDrawInstance(draw);
     loadExistingData(map, draw);
-  };
+  }, [loadExistingData]);
 
   return {
     mapInstance,

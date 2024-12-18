@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -17,78 +17,77 @@ const MapContainer = ({ onMapLoad, currentTeamId }: MapContainerProps) => {
   const map = useRef<mapboxgl.Map | null>(null);
   const draw = useRef<any>(null);
 
-  useEffect(() => {
-    const initializeMap = async () => {
-      if (!mapContainer.current || !currentTeamId) return;
+  const initializeMap = useCallback(async () => {
+    if (!mapContainer.current || !currentTeamId || map.current) return;
 
-      try {
-        console.log('Fetching Mapbox token...');
-        const { data: { token }, error } = await supabase.functions.invoke('get-mapbox-token');
-        
-        if (error) {
-          console.error('Error fetching Mapbox token:', error);
-          toast.error('Kunde inte ladda kartan');
-          return;
-        }
-
-        if (!token) {
-          console.error('No Mapbox token received');
-          toast.error('Kunde inte ladda kartan - ingen token mottagen');
-          return;
-        }
-
-        mapboxgl.accessToken = token;
-        
-        const mapInstance = new mapboxgl.Map({
-          container: mapContainer.current,
-          style: 'mapbox://styles/mapbox/satellite-streets-v12',
-          center: [15.4319, 59.2753], // Center of Sweden
-          zoom: 5
-        });
-
-        // Initialize draw before setting it to ref
-        const drawInstance = new MapboxDraw({
-          displayControlsDefault: false,
-          controls: {
-            polygon: true,
-            trash: true
-          }
-        });
-
-        map.current = mapInstance;
-        draw.current = drawInstance;
-
-        // Add controls to map
-        mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
-        mapInstance.addControl(new mapboxgl.FullscreenControl());
-        mapInstance.addControl(drawInstance);
-
-        mapInstance.on('load', () => {
-          console.log('Map loaded successfully');
-          if (map.current && draw.current) {
-            onMapLoad(map.current, draw.current);
-          }
-        });
-
-        mapInstance.on('error', (e) => {
-          console.error('Map error:', e);
-          toast.error('Ett fel uppstod med kartan');
-        });
-
-      } catch (error) {
-        console.error('Error initializing map:', error);
-        toast.error('Ett fel uppstod när kartan skulle laddas');
+    try {
+      console.log('Fetching Mapbox token...');
+      const { data: { token }, error } = await supabase.functions.invoke('get-mapbox-token');
+      
+      if (error) {
+        console.error('Error fetching Mapbox token:', error);
+        toast.error('Kunde inte ladda kartan');
+        return;
       }
-    };
 
+      if (!token) {
+        console.error('No Mapbox token received');
+        toast.error('Kunde inte ladda kartan - ingen token mottagen');
+        return;
+      }
+
+      mapboxgl.accessToken = token;
+      
+      const mapInstance = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/satellite-streets-v12',
+        center: [15.4319, 59.2753],
+        zoom: 5
+      });
+
+      const drawInstance = new MapboxDraw({
+        displayControlsDefault: false,
+        controls: {
+          polygon: true,
+          trash: true
+        }
+      });
+
+      map.current = mapInstance;
+      draw.current = drawInstance;
+
+      mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      mapInstance.addControl(new mapboxgl.FullscreenControl());
+      mapInstance.addControl(drawInstance);
+
+      mapInstance.on('load', () => {
+        console.log('Map loaded successfully');
+        if (map.current && draw.current) {
+          onMapLoad(map.current, draw.current);
+        }
+      });
+
+      mapInstance.on('error', (e) => {
+        console.error('Map error:', e);
+        toast.error('Ett fel uppstod med kartan');
+      });
+
+    } catch (error) {
+      console.error('Error initializing map:', error);
+      toast.error('Ett fel uppstod när kartan skulle laddas');
+    }
+  }, [currentTeamId, onMapLoad]);
+
+  useEffect(() => {
     initializeMap();
 
     return () => {
       if (map.current) {
         map.current.remove();
+        map.current = null;
       }
     };
-  }, [currentTeamId, onMapLoad]);
+  }, [initializeMap]);
 
   if (!currentTeamId) {
     return (
