@@ -71,6 +71,10 @@ const MapView = () => {
       // Remove instructions when drawing is complete
       const onDrawCreate = () => {
         setShowDrawInstructions(false);
+        // Reset to grab cursor after drawing
+        if (map.current) {
+          map.current.getCanvas().style.cursor = 'grab';
+        }
       };
       
       map.current.once('draw.create', onDrawCreate);
@@ -95,10 +99,10 @@ const MapView = () => {
         setDrawnFeature(JSON.parse(JSON.stringify(feature)));
         setShowCreateDialog(true);
         
-        // Clean up
+        // Clean up and reset cursor
         if (map.current) {
           map.current.off('click', onClick);
-          map.current.getCanvas().style.cursor = '';
+          map.current.getCanvas().style.cursor = 'grab';
         }
       };
       

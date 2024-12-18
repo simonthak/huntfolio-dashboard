@@ -47,6 +47,18 @@ export const useMapInitialization = ({
         mapInstance.addControl(drawInstance);
         mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
         
+        // Set initial cursor style to grab
+        mapInstance.getCanvas().style.cursor = 'grab';
+
+        // Add cursor style handlers for drag interactions
+        mapInstance.on('mousedown', () => {
+          mapInstance.getCanvas().style.cursor = 'grabbing';
+        });
+
+        mapInstance.on('mouseup', () => {
+          mapInstance.getCanvas().style.cursor = 'grab';
+        });
+        
         mapInstance.on('draw.create', (e: { features: Feature[] }) => {
           console.log('Draw feature created:', e.features[0]);
           if (e.features && e.features[0]) {
