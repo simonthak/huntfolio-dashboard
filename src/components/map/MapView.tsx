@@ -9,7 +9,7 @@ import MapToolbar from './MapToolbar';
 import { useSearchParams } from 'react-router-dom';
 import CreateAreaDialog from './CreateAreaDialog';
 import { Feature, Geometry } from 'geojson';
-import { DriveArea, HuntingPass } from './types';
+import { DriveArea, HuntingPass, SupabaseDriveArea, SupabaseHuntingPass } from './types';
 
 interface DrawCreateEvent {
   features: Feature[];
@@ -47,7 +47,12 @@ const MapView = () => {
         .eq('team_id', currentTeamId);
       
       if (error) throw error;
-      return data as DriveArea[];
+      
+      // Convert Supabase JSON to DriveArea type
+      return (data as SupabaseDriveArea[]).map(area => ({
+        ...area,
+        boundary: area.boundary as Feature
+      })) as DriveArea[];
     },
     enabled: !!currentTeamId,
   });
@@ -63,7 +68,12 @@ const MapView = () => {
         .eq('team_id', currentTeamId);
       
       if (error) throw error;
-      return data as HuntingPass[];
+      
+      // Convert Supabase JSON to HuntingPass type
+      return (data as SupabaseHuntingPass[]).map(pass => ({
+        ...pass,
+        location: pass.location as Geometry
+      })) as HuntingPass[];
     },
     enabled: !!currentTeamId,
   });
@@ -142,7 +152,7 @@ const MapView = () => {
       const source = `area-${area.id}`;
       map.current?.addSource(source, {
         type: 'geojson',
-        data: area.boundary as Feature
+        data: area.boundary
       });
 
       map.current?.addLayer({
@@ -167,7 +177,6 @@ const MapView = () => {
     });
   }, [areas, mapLoaded]);
 
-  // Display existing passes
   useEffect(() => {
     if (!map.current || !mapLoaded || !passes) return;
 
