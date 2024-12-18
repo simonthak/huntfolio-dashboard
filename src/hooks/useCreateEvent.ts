@@ -11,19 +11,18 @@ interface CreateEventData {
   dogHandlersLimit: number;
   endDate?: string;
   startTime?: string;
+  date: Date;
 }
 
 export const useCreateEvent = (
-  selectedDate: Date | undefined,
-  currentTeamId: string | null,
   onEventCreated: () => void,
   onSuccess: () => void
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { sendNotification } = useNotifications();
 
-  const createEvent = async (data: CreateEventData) => {
-    if (!selectedDate) {
+  const createEvent = async (data: CreateEventData, currentTeamId: string | null) => {
+    if (!data.date) {
       toast.error("Please select a date");
       return;
     }
@@ -35,7 +34,7 @@ export const useCreateEvent = (
 
     setIsSubmitting(true);
     // Format date in YYYY-MM-DD format in local timezone
-    const formattedDate = format(selectedDate, "yyyy-MM-dd");
+    const formattedDate = format(data.date, "yyyy-MM-dd");
     console.log("useCreateEvent - Using date:", formattedDate);
 
     try {

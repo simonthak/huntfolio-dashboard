@@ -15,6 +15,7 @@ interface EventFormProps {
     dogHandlersLimit: number;
     endDate?: string;
     startTime?: string;
+    date: Date;
   }) => Promise<void>;
   onCancel: () => void;
   isSubmitting: boolean;
@@ -78,6 +79,7 @@ const EventForm = ({
       dogHandlersLimit: dogLimit,
       endDate: endDate || undefined,
       startTime: startTime || undefined,
+      date: selectedDate,
     });
   };
 

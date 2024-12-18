@@ -20,8 +20,6 @@ const CreateEventDialog = ({
   const currentTeamId = searchParams.get('team');
   
   const { createEvent, isSubmitting } = useCreateEvent(
-    selectedDate,
-    currentTeamId,
     onEventCreated,
     () => onOpenChange(false)
   );
@@ -49,7 +47,7 @@ const CreateEventDialog = ({
           initialDate={selectedDate}
           onSubmit={async (data) => {
             console.log("CreateEventDialog - Submitting form with date:", data);
-            await createEvent(data);
+            await createEvent(data, currentTeamId);
           }}
           onCancel={() => onOpenChange(false)}
           isSubmitting={isSubmitting}
