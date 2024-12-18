@@ -17,7 +17,16 @@ export const useMapLayers = ({
 }: UseMapLayersProps) => {
   // Display existing areas
   useEffect(() => {
-    if (!map.current || !mapLoaded || !areas) return;
+    if (!map.current || !mapLoaded || !areas) {
+      console.log('Map layers not ready:', { 
+        mapExists: !!map.current, 
+        mapLoaded, 
+        areasExist: !!areas 
+      });
+      return;
+    }
+
+    console.log('Adding area layers to map:', areas.length);
 
     const addLayers = () => {
       // Remove existing layers before adding new ones
@@ -39,33 +48,42 @@ export const useMapLayers = ({
 
       // Add new layers
       areas.forEach(area => {
-        if (!area.boundary) return;
+        if (!area.boundary) {
+          console.log('Skipping area without boundary:', area.id);
+          return;
+        }
         
         const source = `area-${area.id}`;
-        map.current?.addSource(source, {
-          type: 'geojson',
-          data: area.boundary
-        });
+        console.log('Adding area to map:', { id: area.id, name: area.name });
 
-        map.current?.addLayer({
-          id: `area-fill-${area.id}`,
-          type: 'fill',
-          source: source,
-          paint: {
-            'fill-color': '#13B67F',
-            'fill-opacity': 0.2
-          }
-        });
+        try {
+          map.current?.addSource(source, {
+            type: 'geojson',
+            data: area.boundary
+          });
 
-        map.current?.addLayer({
-          id: `area-line-${area.id}`,
-          type: 'line',
-          source: source,
-          paint: {
-            'line-color': '#13B67F',
-            'line-width': 2
-          }
-        });
+          map.current?.addLayer({
+            id: `area-fill-${area.id}`,
+            type: 'fill',
+            source: source,
+            paint: {
+              'fill-color': '#13B67F',
+              'fill-opacity': 0.2
+            }
+          });
+
+          map.current?.addLayer({
+            id: `area-line-${area.id}`,
+            type: 'line',
+            source: source,
+            paint: {
+              'line-color': '#13B67F',
+              'line-width': 2
+            }
+          });
+        } catch (error) {
+          console.error('Error adding area to map:', error);
+        }
       });
     };
 
