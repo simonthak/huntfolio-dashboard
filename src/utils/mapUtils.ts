@@ -23,6 +23,7 @@ export const initializeMapbox = async () => {
 };
 
 export const createMapInstance = (container: HTMLElement, token: string) => {
+  console.log('Setting up map with token:', token.substring(0, 8) + '...');
   mapboxgl.accessToken = token;
 
   const map = new mapboxgl.Map({

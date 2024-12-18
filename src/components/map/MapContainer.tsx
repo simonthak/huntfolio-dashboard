@@ -13,25 +13,24 @@ interface MapContainerProps {
 
 const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const draw = useRef<any>(null);
+  const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
+  const drawInstanceRef = useRef<any>(null);
+  const isInitializedRef = useRef(false);
 
   useEffect(() => {
     const initializeMap = async () => {
-      if (!mapContainerRef.current || !currentTeamId) {
-        console.log('Initialization conditions not met:', {
+      // Prevent multiple initializations
+      if (isInitializedRef.current || !mapContainerRef.current || !currentTeamId) {
+        console.log('Skipping map initialization:', {
+          isInitialized: isInitializedRef.current,
           hasContainer: !!mapContainerRef.current,
           hasTeamId: !!currentTeamId
         });
         return;
       }
 
-      if (map.current) {
-        console.log('Map already initialized');
-        return;
-      }
-
       try {
+        console.log('Initializing map with token...');
         const token = await initializeMapbox();
 
         if (!mapContainerRef.current) {
@@ -40,22 +39,20 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
         }
 
         console.log('Creating map instance...');
-        const { map: mapInstance, draw: drawInstance } = createMapInstance(mapContainerRef.current, token);
+        const { map, draw } = createMapInstance(mapContainerRef.current, token);
 
-        map.current = mapInstance;
-        draw.current = drawInstance;
+        mapInstanceRef.current = map;
+        drawInstanceRef.current = draw;
+        isInitializedRef.current = true;
 
-        let isMapLoaded = false;
-
-        mapInstance.on('load', () => {
+        map.on('load', () => {
           console.log('Map loaded successfully');
-          if (!isMapLoaded && map.current && draw.current) {
-            isMapLoaded = true;
-            onMapLoad(map.current, draw.current);
+          if (mapInstanceRef.current && drawInstanceRef.current) {
+            onMapLoad(mapInstanceRef.current, drawInstanceRef.current);
           }
         });
 
-        mapInstance.on('error', (e) => {
+        map.on('error', (e) => {
           console.error('Map error:', e);
           toast.error('Ett fel uppstod med kartan');
         });
@@ -63,19 +60,22 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
       } catch (error) {
         console.error('Error initializing map:', error);
         toast.error('Ett fel uppstod när kartan skulle laddas');
+        isInitializedRef.current = false;
       }
     };
 
     console.log('MapContainer mounted, initializing map...');
     initializeMap();
 
+    // Cleanup function
     return () => {
       console.log('MapContainer unmounting, cleaning up...');
-      if (map.current) {
-        map.current.remove();
-        map.current = null;
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
       }
-      draw.current = null;
+      drawInstanceRef.current = null;
+      isInitializedRef.current = false;
     };
   }, [currentTeamId, onMapLoad]);
 
@@ -90,7 +90,7 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
   return (
     <div className="relative w-full h-[calc(100vh-12rem)] rounded-lg overflow-hidden border">
       <div ref={mapContainerRef} className="absolute inset-0" />
-      {!map.current && (
+      {!mapInstanceRef.current && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/50">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
