@@ -23,21 +23,32 @@ export const useMapInitialization = ({
       return;
     }
 
-    console.log('Initializing map with token:', mapboxToken.slice(0, 8) + '...');
-    mapboxgl.accessToken = mapboxToken;
+    // Clean up any existing map instance
+    if (map.current) {
+      console.log('Cleaning up existing map instance');
+      map.current.remove();
+      map.current = null;
+    }
 
+    console.log('Initializing map with token:', mapboxToken.slice(0, 8) + '...');
+    
     try {
-      const initializeMap = new mapboxgl.Map({
+      // Set the access token
+      mapboxgl.accessToken = mapboxToken;
+
+      // Create a new map instance
+      const mapInstance = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/outdoors-v12',
         center: [18.0686, 59.3293], // Stockholm coordinates
         zoom: 9
       });
 
-      map.current = initializeMap;
+      // Store the map instance in the ref
+      map.current = mapInstance;
 
       // Initialize draw control
-      draw.current = new MapboxDraw({
+      const drawInstance = new MapboxDraw({
         displayControlsDefault: false,
         controls: {
           polygon: true,
@@ -46,26 +57,39 @@ export const useMapInitialization = ({
         defaultMode: 'simple_select'
       });
 
-      initializeMap.addControl(draw.current, 'top-left');
-      initializeMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      // Store the draw instance in the ref
+      draw.current = drawInstance;
 
-      initializeMap.on('load', () => {
+      // Add controls
+      mapInstance.addControl(drawInstance, 'top-left');
+      mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+      // Set up event listeners
+      const loadHandler = () => {
         console.log('Map loaded successfully');
         setMapLoaded(true);
-      });
+      };
 
-      // Handle draw events
-      initializeMap.on('draw.create', (e: { features: Feature[] }) => {
+      const drawCreateHandler = (e: { features: Feature[] }) => {
         console.log('Feature created:', e.features[0]);
-        onFeatureCreate(e.features[0]);
-      });
+        // Clone the feature to ensure it's serializable
+        const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
+        onFeatureCreate(serializedFeature);
+      };
 
+      mapInstance.on('load', loadHandler);
+      mapInstance.on('draw.create', drawCreateHandler);
+
+      // Cleanup function
       return () => {
         console.log('Cleaning up map');
-        initializeMap.remove();
+        mapInstance.off('load', loadHandler);
+        mapInstance.off('draw.create', drawCreateHandler);
+        mapInstance.remove();
       };
     } catch (error) {
       console.error('Error initializing map:', error);
+      setMapLoaded(false);
     }
   }, [mapboxToken, onFeatureCreate]);
 
