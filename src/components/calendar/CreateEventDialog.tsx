@@ -19,10 +19,7 @@ const CreateEventDialog = ({
   const [searchParams] = useSearchParams();
   const currentTeamId = searchParams.get('team');
   
-  const { createEvent, isSubmitting } = useCreateEvent(
-    onEventCreated,
-    () => onOpenChange(false)
-  );
+  const { createEvent, isSubmitting } = useCreateEvent(onEventCreated, () => onOpenChange(false));
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen && event?.type === 'click' && (event.target as HTMLElement).closest('[data-state="open"]')) {
@@ -31,11 +28,16 @@ const CreateEventDialog = ({
     onOpenChange(newOpen);
   };
 
+  const handleSubmit = async (formData: any) => {
+    console.log("CreateEventDialog - Form submission with date:", selectedDate);
+    await createEvent({
+      ...formData,
+      date: formData.date || selectedDate as Date
+    }, currentTeamId);
+  };
+
   return (
-    <Dialog 
-      open={open} 
-      onOpenChange={handleOpenChange}
-    >
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[500px]" aria-describedby="event-form-description">
         <DialogHeader>
           <DialogTitle>Skapa en ny händelse</DialogTitle>
@@ -45,13 +47,7 @@ const CreateEventDialog = ({
         </DialogHeader>
         <EventForm
           initialDate={selectedDate}
-          onSubmit={async (formData) => {
-            console.log("CreateEventDialog - Form data:", formData);
-            await createEvent({
-              ...formData,
-              date: formData.date || selectedDate as Date
-            }, currentTeamId);
-          }}
+          onSubmit={handleSubmit}
           onCancel={() => onOpenChange(false)}
           isSubmitting={isSubmitting}
         />

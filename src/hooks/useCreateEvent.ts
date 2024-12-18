@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { useNotifications } from "./useNotifications";
+import { formatEventDate, validateEventDate } from "@/utils/dateUtils";
 
 interface CreateEventData {
   hunt_type_id: number;
@@ -22,10 +22,10 @@ export const useCreateEvent = (
   const { sendNotification } = useNotifications();
 
   const createEvent = async (data: CreateEventData, currentTeamId: string | null) => {
-    console.log("useCreateEvent - Received data:", data);
+    console.log("useCreateEvent - Starting event creation with data:", data);
     
-    if (!data.date) {
-      toast.error("Please select a date");
+    if (!validateEventDate(data.date)) {
+      toast.error("Please select a valid future date");
       return;
     }
 
@@ -35,8 +35,8 @@ export const useCreateEvent = (
     }
 
     setIsSubmitting(true);
-    const formattedDate = format(data.date, "yyyy-MM-dd");
-    console.log("useCreateEvent - Formatted date:", formattedDate);
+    const formattedDate = formatEventDate(data.date);
+    console.log("useCreateEvent - Using formatted date:", formattedDate);
 
     try {
       console.log("Getting authenticated user...");
@@ -113,15 +113,13 @@ export const useCreateEvent = (
 
       console.log("Creator added as participant successfully");
       
-      // Call onEventCreated and onSuccess immediately
       await onEventCreated();
       onSuccess();
       toast.success("Event created successfully");
 
-      // Send notifications asynchronously after success
+      // Send notifications asynchronously
       const sendNotifications = async () => {
         try {
-          // Get team members to notify
           const { data: teamMembers, error: membersError } = await supabase
             .from('team_members')
             .select('user_id')
@@ -132,7 +130,6 @@ export const useCreateEvent = (
             return;
           }
 
-          // Send notifications to all team members except creator
           console.log("Sending notifications to team members...");
           const notificationPromises = teamMembers
             .filter(member => member.user_id !== user.id)
@@ -149,7 +146,6 @@ export const useCreateEvent = (
         }
       };
 
-      // Fire and forget notifications
       sendNotifications();
 
     } catch (error) {
