@@ -61,20 +61,22 @@ export const useMapEvents = ({ map, draw, onFeatureCreate }: UseMapEventsProps) 
 
       console.log('Setting up cursor events');
       
-      // Add proper event type and layer parameters
-      map.current?.on('mousedown', 'events', () => {
+      const handleMouseDown = () => {
         if (map.current) {
           const canvas = map.current.getCanvas();
           canvas.style.cursor = 'grabbing';
         }
-      });
+      };
 
-      map.current?.on('mouseup', 'events', () => {
+      const handleMouseUp = () => {
         if (map.current) {
           const canvas = map.current.getCanvas();
           canvas.style.cursor = 'grab';
         }
-      });
+      };
+
+      map.current.on('mousedown', handleMouseDown);
+      map.current.on('mouseup', handleMouseUp);
     };
 
     // Initialize both event systems
@@ -82,10 +84,9 @@ export const useMapEvents = ({ map, draw, onFeatureCreate }: UseMapEventsProps) 
     setupCursorEvents();
 
     return () => {
-      // Cleanup with proper event type and layer parameters
       if (map.current) {
-        map.current.off('mousedown', 'events');
-        map.current.off('mouseup', 'events');
+        map.current.off('mousedown');
+        map.current.off('mouseup');
       }
     };
   }, [map, draw, onFeatureCreate]);
