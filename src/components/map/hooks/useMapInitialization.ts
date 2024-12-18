@@ -31,12 +31,7 @@ export const useMapInitialization = ({
     if (!map.current || map.current._removed) return;
 
     try {
-      // First remove the draw control
-      if (draw.current) {
-        map.current.removeControl(draw.current);
-      }
-
-      // Remove all event listeners with their specific handlers
+      // First remove all event listeners with their specific handlers
       if (eventHandlers.current.handleMouseDown) {
         map.current.off('mousedown', eventHandlers.current.handleMouseDown);
       }
@@ -50,8 +45,15 @@ export const useMapInitialization = ({
         map.current.off('draw.modechange', eventHandlers.current.handleDrawModeChange);
       }
 
+      // Then remove the draw control if it exists
+      if (draw.current && !map.current._removed) {
+        map.current.removeControl(draw.current);
+      }
+
       // Finally remove the map
-      map.current.remove();
+      if (!map.current._removed) {
+        map.current.remove();
+      }
     } catch (error) {
       console.warn('Error during cleanup:', error);
     }
@@ -78,6 +80,11 @@ export const useMapInitialization = ({
     
     // Clean up any existing map instance first
     cleanupMap();
+    
+    // Clear the container before initialization
+    if (mapContainer.current) {
+      mapContainer.current.innerHTML = '';
+    }
     
     initialized.current = true;
     
@@ -125,6 +132,12 @@ export const useMapInitialization = ({
         if (!mapInstance || mapInstance._removed) return;
         
         console.log('Map loaded, adding controls');
+        
+        // Wait for style to be fully loaded before adding controls
+        if (!mapInstance.isStyleLoaded()) {
+          mapInstance.once('style.load', setupMapControls);
+          return;
+        }
         
         mapInstance.addControl(drawInstance);
         mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
