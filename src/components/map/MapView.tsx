@@ -8,6 +8,7 @@ import CreateAreaDialog from './CreateAreaDialog';
 import { useMapInitialization } from './hooks/useMapInitialization';
 import { useMapLayers } from './hooks/useMapLayers';
 import { useMapData } from './hooks/useMapData';
+import 'mapbox-gl/dist/mapbox-gl.css';  // Add this import
 
 const MapView = () => {
   const [searchParams] = useSearchParams();
@@ -27,6 +28,7 @@ const MapView = () => {
   });
 
   const handleFeatureCreate = (feature: Feature) => {
+    console.log('Feature created:', feature);
     setDrawnFeature(feature);
     setShowCreateDialog(true);
   };
@@ -74,7 +76,7 @@ const MapView = () => {
   };
 
   return (
-    <div className="relative h-[calc(100vh-13rem)]">
+    <div className="relative h-[calc(100vh-4rem)] w-full">
       <MapToolbar onToolClick={handleToolClick} />
       <div ref={mapContainer} className="absolute inset-0" />
       
