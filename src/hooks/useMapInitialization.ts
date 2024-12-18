@@ -8,17 +8,20 @@ import { Json } from '@/integrations/supabase/types';
 interface GeoJSONGeometry {
   type: string;
   coordinates: number[][][];
+  [key: string]: Json;
 }
 
 interface GeoJSONFeature {
   type: string;
   geometry: GeoJSONGeometry;
   properties?: Record<string, any>;
+  [key: string]: Json | undefined;
 }
 
 interface TowerLocation {
   type: string;
   coordinates: [number, number];
+  [key: string]: Json;
 }
 
 function isValidJson(json: Json): json is Record<string, any> {
