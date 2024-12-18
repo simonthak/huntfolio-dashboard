@@ -19,23 +19,37 @@ interface TowerLocation {
   coordinates: [number, number];
 }
 
+function isValidJson(json: Json): json is Record<string, any> {
+  return typeof json === 'object' && json !== null && !Array.isArray(json);
+}
+
 function isGeoJSONFeature(json: Json): json is GeoJSONFeature {
-  const feature = json as GeoJSONFeature;
+  if (!isValidJson(json)) return false;
+  
   return (
-    feature?.type !== undefined &&
-    feature?.geometry?.type !== undefined &&
-    Array.isArray(feature?.geometry?.coordinates)
+    typeof json.type === 'string' &&
+    isValidJson(json.geometry) &&
+    typeof json.geometry.type === 'string' &&
+    Array.isArray(json.geometry.coordinates) &&
+    json.geometry.coordinates.every((coord: any) => 
+      Array.isArray(coord) && coord.every((innerCoord: any) => 
+        Array.isArray(innerCoord) && innerCoord.length === 2 &&
+        typeof innerCoord[0] === 'number' && 
+        typeof innerCoord[1] === 'number'
+      )
+    )
   );
 }
 
 function isTowerLocation(json: Json): json is TowerLocation {
-  const location = json as TowerLocation;
+  if (!isValidJson(json)) return false;
+  
   return (
-    location?.type !== undefined &&
-    Array.isArray(location?.coordinates) &&
-    location.coordinates.length === 2 &&
-    typeof location.coordinates[0] === 'number' &&
-    typeof location.coordinates[1] === 'number'
+    typeof json.type === 'string' &&
+    Array.isArray(json.coordinates) &&
+    json.coordinates.length === 2 &&
+    typeof json.coordinates[0] === 'number' &&
+    typeof json.coordinates[1] === 'number'
   );
 }
 
@@ -65,6 +79,13 @@ export const useMapInitialization = (currentTeamId: string | null) => {
             console.warn('Invalid boundary data for ground:', ground);
           }
         });
+      } else {
+        console.log('No hunting grounds found for team:', currentTeamId);
+        // Set default view to Sweden when no hunting grounds exist
+        map.flyTo({
+          center: [15.4515, 62.2750], // Center of Sweden
+          zoom: 4.5
+        });
       }
 
       const { data: towers, error: towersError } = await supabase
@@ -77,7 +98,7 @@ export const useMapInitialization = (currentTeamId: string | null) => {
         return;
       }
 
-      if (towers) {
+      if (towers && towers.length > 0) {
         console.log('Adding towers to map:', towers);
         towers.forEach(tower => {
           if (isTowerLocation(tower.location)) {
@@ -92,6 +113,8 @@ export const useMapInitialization = (currentTeamId: string | null) => {
             console.warn('Invalid location data for tower:', tower);
           }
         });
+      } else {
+        console.log('No hunting towers found for team:', currentTeamId);
       }
     } catch (error) {
       console.error('Error loading map data:', error);
