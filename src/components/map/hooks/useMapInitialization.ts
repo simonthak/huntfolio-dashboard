@@ -17,20 +17,36 @@ export const useMapInitialization = ({
   const [mapLoaded, setMapLoaded] = useState(false);
   const { draw, initializeDraw } = useDrawControls();
   const initialized = useRef(false);
+  const eventHandlers = useRef<{ [key: string]: any }>({});
 
   // Cleanup function to ensure proper WebGL context cleanup
   const cleanupMap = () => {
     console.log('Cleaning up map and WebGL context');
     if (map.current && !map.current._removed) {
-      // Remove the map instance which will clean up the WebGL context
+      // Remove event listeners
+      if (eventHandlers.current.mouseDown) {
+        map.current.off('mousedown', eventHandlers.current.mouseDown);
+      }
+      if (eventHandlers.current.mouseUp) {
+        map.current.off('mouseup', eventHandlers.current.mouseUp);
+      }
+      if (eventHandlers.current.drawCreate) {
+        map.current.off('draw.create', eventHandlers.current.drawCreate);
+      }
+      if (eventHandlers.current.drawModeChange) {
+        map.current.off('draw.modechange', eventHandlers.current.drawModeChange);
+      }
+
+      // Remove controls and map
+      if (draw.current) {
+        map.current.removeControl(draw.current);
+      }
       map.current.remove();
       map.current = null;
     }
     
-    if (draw.current) {
-      draw.current = null;
-    }
-    
+    draw.current = null;
+    eventHandlers.current = {};
     setMapLoaded(false);
     initialized.current = false;
   };
@@ -64,19 +80,20 @@ export const useMapInitialization = ({
       const drawInstance = initializeDraw();
       map.current = mapInstance;
 
-      const handleMouseDown = () => {
+      // Store event handlers in ref to properly remove them later
+      eventHandlers.current.mouseDown = () => {
         if (mapInstance.getCanvas()) {
           mapInstance.getCanvas().style.cursor = 'grabbing';
         }
       };
 
-      const handleMouseUp = () => {
+      eventHandlers.current.mouseUp = () => {
         if (mapInstance.getCanvas()) {
           mapInstance.getCanvas().style.cursor = 'grab';
         }
       };
 
-      const handleDrawCreate = (e: { features: Feature[] }) => {
+      eventHandlers.current.drawCreate = (e: { features: Feature[] }) => {
         console.log('Draw feature created:', e.features[0]);
         if (e.features && e.features[0]) {
           const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
@@ -85,7 +102,7 @@ export const useMapInitialization = ({
         }
       };
 
-      const handleDrawModeChange = (e: any) => {
+      eventHandlers.current.drawModeChange = (e: any) => {
         console.log('Draw mode changed:', e.mode);
       };
 
@@ -101,10 +118,10 @@ export const useMapInitialization = ({
           mapInstance.getCanvas().style.cursor = 'grab';
         }
 
-        mapInstance.on('mousedown', handleMouseDown);
-        mapInstance.on('mouseup', handleMouseUp);
-        mapInstance.on('draw.create', handleDrawCreate);
-        mapInstance.on('draw.modechange', handleDrawModeChange);
+        mapInstance.on('mousedown', eventHandlers.current.mouseDown);
+        mapInstance.on('mouseup', eventHandlers.current.mouseUp);
+        mapInstance.on('draw.create', eventHandlers.current.drawCreate);
+        mapInstance.on('draw.modechange', eventHandlers.current.drawModeChange);
         
         setMapLoaded(true);
         console.log('Map loaded successfully');
