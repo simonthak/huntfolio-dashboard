@@ -141,6 +141,19 @@ const Map = () => {
     mapInstance.once('click', onClick);
   };
 
+  const handleAddStand = () => {
+    if (!mapInstance) return;
+    
+    mapInstance.getCanvas().style.cursor = 'crosshair';
+    const onClick = (e: mapboxgl.MapMouseEvent) => {
+      setNewTowerLocation([e.lngLat.lng, e.lngLat.lat]);
+      setShowTowerDialog(true);
+      mapInstance.off('click', onClick);
+      mapInstance.getCanvas().style.cursor = '';
+    };
+    mapInstance.once('click', onClick);
+  };
+
   const handleSaveTower = async () => {
     if (!newTowerLocation || !newTowerName || !userId || !mapInstance) return;
 
@@ -187,6 +200,7 @@ const Map = () => {
           onDrawArea={handleDrawArea}
           onSaveArea={handleSaveArea}
           onAddTower={handleAddTower}
+          onAddStand={handleAddStand}
         />
       </div>
 

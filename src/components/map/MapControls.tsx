@@ -1,14 +1,15 @@
 import { Button } from '@/components/ui/button';
-import { MapPin, Target } from 'lucide-react';
+import { MapPin, Target, Flag } from 'lucide-react';
 
 interface MapControlsProps {
   isDrawing: boolean;
   onDrawArea: () => void;
   onSaveArea: () => void;
   onAddTower: () => void;
+  onAddStand: () => void;
 }
 
-const MapControls = ({ isDrawing, onDrawArea, onSaveArea, onAddTower }: MapControlsProps) => {
+const MapControls = ({ isDrawing, onDrawArea, onSaveArea, onAddTower, onAddStand }: MapControlsProps) => {
   return (
     <div className="space-x-2">
       {!isDrawing ? (
@@ -28,6 +29,14 @@ const MapControls = ({ isDrawing, onDrawArea, onSaveArea, onAddTower }: MapContr
           >
             <MapPin className="w-4 h-4" />
             Lägg till jakttorn
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={onAddStand}
+            className="flex items-center gap-2"
+          >
+            <Flag className="w-4 h-4" />
+            Lägg till pass
           </Button>
         </>
       ) : (
