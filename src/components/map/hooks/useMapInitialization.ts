@@ -6,11 +6,13 @@ import { useDrawControls } from './useDrawControls';
 interface UseMapInitializationProps {
   mapboxToken: string;
   onFeatureCreate: (feature: Feature) => void;
+  areas?: { boundary: Feature }[];
 }
 
 export const useMapInitialization = ({ 
   mapboxToken, 
-  onFeatureCreate 
+  onFeatureCreate,
+  areas = []
 }: UseMapInitializationProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -34,11 +36,15 @@ export const useMapInitialization = ({
           console.log('Initializing map with token:', mapboxToken);
           mapboxgl.accessToken = mapboxToken;
           
+          // Default center coordinates for Sweden
+          const defaultCenter = [15.4367, 62.1983]; // Center of Sweden
+          const defaultZoom = 4.5; // Zoom level to show most of Sweden
+          
           map.current = new mapboxgl.Map({
             container: mapContainer.current!,
             style: 'mapbox://styles/mapbox/outdoors-v12',
-            center: [18.0686, 59.3293],
-            zoom: 9
+            center: defaultCenter,
+            zoom: defaultZoom
           });
 
           // Setup map only once when it's loaded
@@ -56,6 +62,27 @@ export const useMapInitialization = ({
             
             // Set default cursor
             map.current.getCanvas().style.cursor = 'grab';
+
+            // If there are areas, fit the map to them
+            if (areas.length > 0) {
+              console.log('Fitting map to areas:', areas.length);
+              const bounds = new mapboxgl.LngLatBounds();
+              
+              areas.forEach(area => {
+                if (area.boundary.geometry.type === 'Polygon') {
+                  const coordinates = area.boundary.geometry.coordinates[0];
+                  coordinates.forEach((coord: [number, number]) => {
+                    bounds.extend(coord);
+                  });
+                }
+              });
+              
+              // Add some padding around the areas
+              map.current.fitBounds(bounds, {
+                padding: 50,
+                maxZoom: 15
+              });
+            }
 
             // Setup draw event listener
             map.current.on('draw.create', (e: { features: Feature[] }) => {
@@ -118,7 +145,7 @@ export const useMapInitialization = ({
 
     // Return cleanup function
     return cleanup;
-  }, [mapboxToken]); // Only re-run if token changes
+  }, [mapboxToken, areas]); // Added areas to dependencies
 
   return { mapContainer, map, draw, mapLoaded };
 };

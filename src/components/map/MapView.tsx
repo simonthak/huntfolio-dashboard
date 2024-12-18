@@ -33,6 +33,8 @@ const MapView = () => {
     },
   });
 
+  const { areas, passes } = useMapData(currentTeamId);
+
   const handleFeatureCreate = (feature: Feature) => {
     console.log('Feature created:', feature);
     setDrawnFeature(feature);
@@ -43,9 +45,8 @@ const MapView = () => {
   const { mapContainer, map, draw, mapLoaded } = useMapInitialization({
     mapboxToken: mapboxToken || '',
     onFeatureCreate: handleFeatureCreate,
+    areas: areas || [],
   });
-
-  const { areas, passes } = useMapData(currentTeamId);
 
   useMapLayers({ map, mapLoaded, areas, passes });
 
