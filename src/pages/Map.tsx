@@ -12,7 +12,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuth } from '@supabase/auth-helpers-react';
 
 const Map = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -26,92 +25,101 @@ const Map = () => {
   const [newTowerLocation, setNewTowerLocation] = useState<[number, number] | null>(null);
   const [newTowerName, setNewTowerName] = useState('');
   const [newTowerDescription, setNewTowerDescription] = useState('');
-  const user = useAuth();
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const initializeMap = async () => {
-      if (!mapContainer.current || !currentTeamId) return;
-
-      try {
-        console.log('Fetching Mapbox token...');
-        const { data: { token }, error } = await supabase.functions.invoke('get-mapbox-token');
-        
-        if (error) {
-          console.error('Error fetching Mapbox token:', error);
-          toast.error('Kunde inte ladda kartan');
-          return;
-        }
-
-        mapboxgl.accessToken = token;
-        
-        map.current = new mapboxgl.Map({
-          container: mapContainer.current,
-          style: 'mapbox://styles/mapbox/satellite-streets-v12',
-          center: [15.4319, 59.2753], // Center of Sweden
-          zoom: 5
-        });
-
-        // Initialize drawing tools
-        draw.current = new MapboxDraw({
-          displayControlsDefault: false,
-          controls: {
-            polygon: true,
-            trash: true
-          }
-        });
-
-        map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-        map.current.addControl(new mapboxgl.FullscreenControl());
-        map.current.addControl(draw.current);
-
-        // Load existing hunting grounds
-        const { data: grounds, error: groundsError } = await supabase
-          .from('hunting_grounds')
-          .select('*')
-          .eq('team_id', currentTeamId);
-
-        if (groundsError) {
-          console.error('Error loading hunting grounds:', groundsError);
-          toast.error('Kunde inte ladda jaktmarker');
-        } else if (grounds) {
-          grounds.forEach(ground => {
-            draw.current.add(ground.boundary);
-          });
-        }
-
-        // Load existing towers
-        const { data: towers, error: towersError } = await supabase
-          .from('hunting_towers')
-          .select('*')
-          .eq('team_id', currentTeamId);
-
-        if (towersError) {
-          console.error('Error loading hunting towers:', towersError);
-          toast.error('Kunde inte ladda jakttorn');
-        } else if (towers) {
-          towers.forEach(tower => {
-            const location = tower.location as { coordinates: [number, number] };
-            new mapboxgl.Marker()
-              .setLngLat(location.coordinates)
-              .setPopup(new mapboxgl.Popup().setHTML(`
-                <h3 class="font-bold">${tower.name}</h3>
-                ${tower.description ? `<p>${tower.description}</p>` : ''}
-              `))
-              .addTo(map.current!);
-          });
-        }
-
-        map.current.on('load', () => {
-          setIsLoading(false);
-          console.log('Map loaded successfully');
-        });
-
-      } catch (error) {
-        console.error('Error initializing map:', error);
-        toast.error('Ett fel uppstod när kartan skulle laddas');
-      }
+    // Get current user's ID
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id || null);
     };
+    getCurrentUser();
+  }, []);
 
+  const initializeMap = async () => {
+    if (!mapContainer.current || !currentTeamId) return;
+
+    try {
+      console.log('Fetching Mapbox token...');
+      const { data: { token }, error } = await supabase.functions.invoke('get-mapbox-token');
+      
+      if (error) {
+        console.error('Error fetching Mapbox token:', error);
+        toast.error('Kunde inte ladda kartan');
+        return;
+      }
+
+      mapboxgl.accessToken = token;
+      
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/satellite-streets-v12',
+        center: [15.4319, 59.2753], // Center of Sweden
+        zoom: 5
+      });
+
+      // Initialize drawing tools
+      draw.current = new MapboxDraw({
+        displayControlsDefault: false,
+        controls: {
+          polygon: true,
+          trash: true
+        }
+      });
+
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      map.current.addControl(new mapboxgl.FullscreenControl());
+      map.current.addControl(draw.current);
+
+      // Load existing hunting grounds
+      const { data: grounds, error: groundsError } = await supabase
+        .from('hunting_grounds')
+        .select('*')
+        .eq('team_id', currentTeamId);
+
+      if (groundsError) {
+        console.error('Error loading hunting grounds:', groundsError);
+        toast.error('Kunde inte ladda jaktmarker');
+      } else if (grounds) {
+        grounds.forEach(ground => {
+          draw.current.add(ground.boundary);
+        });
+      }
+
+      // Load existing towers
+      const { data: towers, error: towersError } = await supabase
+        .from('hunting_towers')
+        .select('*')
+        .eq('team_id', currentTeamId);
+
+      if (towersError) {
+        console.error('Error loading hunting towers:', towersError);
+        toast.error('Kunde inte ladda jakttorn');
+      } else if (towers) {
+        towers.forEach(tower => {
+          const location = tower.location as { coordinates: [number, number] };
+          new mapboxgl.Marker()
+            .setLngLat(location.coordinates)
+            .setPopup(new mapboxgl.Popup().setHTML(`
+              <h3 class="font-bold">${tower.name}</h3>
+              ${tower.description ? `<p>${tower.description}</p>` : ''}
+            `))
+            .addTo(map.current!);
+        });
+      }
+
+      map.current.on('load', () => {
+        setIsLoading(false);
+        console.log('Map loaded successfully');
+      });
+
+    } catch (error) {
+      console.error('Error initializing map:', error);
+      toast.error('Ett fel uppstod när kartan skulle laddas');
+    }
+  };
+
+  useEffect(() => {
     initializeMap();
 
     return () => {
@@ -127,7 +135,7 @@ const Map = () => {
   };
 
   const handleSaveArea = async () => {
-    if (!user) {
+    if (!userId) {
       toast.error('Du måste vara inloggad');
       return;
     }
@@ -143,7 +151,7 @@ const Map = () => {
         team_id: currentTeamId,
         name: 'Jaktmark',
         boundary: features.features[0],
-        created_by: user.id
+        created_by: userId
       });
 
       if (error) throw error;
@@ -169,7 +177,7 @@ const Map = () => {
   };
 
   const handleSaveTower = async () => {
-    if (!newTowerLocation || !newTowerName || !user) return;
+    if (!newTowerLocation || !newTowerName || !userId) return;
 
     try {
       const { error } = await supabase.from('hunting_towers').insert({
@@ -180,7 +188,7 @@ const Map = () => {
           type: 'Point',
           coordinates: newTowerLocation
         },
-        created_by: user.id
+        created_by: userId
       });
 
       if (error) throw error;
