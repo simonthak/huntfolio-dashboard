@@ -1,11 +1,9 @@
-import { useEffect, useRef, useCallback, memo } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import mapboxgl from 'mapbox-gl';
-import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
+import { initializeMapbox, createMapInstance } from '@/utils/mapUtils';
 
 interface MapContainerProps {
   onMapLoad: (map: mapboxgl.Map, draw: any) => void;
@@ -17,92 +15,56 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
   const map = useRef<mapboxgl.Map | null>(null);
   const draw = useRef<any>(null);
 
-  const initializeMap = useCallback(async () => {
-    if (!mapContainer.current || !currentTeamId) {
-      console.log('Initialization conditions not met:', {
-        hasContainer: !!mapContainer.current,
-        hasTeamId: !!currentTeamId
-      });
-      return;
-    }
-
-    // Prevent multiple initializations
-    if (map.current) {
-      console.log('Map already initialized');
-      return;
-    }
-
-    try {
-      console.log('Fetching Mapbox token...');
-      const { data: { token }, error } = await supabase.functions.invoke('get-mapbox-token');
-      
-      if (error) {
-        console.error('Error fetching Mapbox token:', error);
-        toast.error('Kunde inte ladda kartan');
-        return;
-      }
-
-      if (!token) {
-        console.error('No Mapbox token received');
-        toast.error('Kunde inte ladda kartan - ingen token mottagen');
-        return;
-      }
-
-      mapboxgl.accessToken = token;
-
-      // Double check container exists
-      if (!mapContainer.current) {
-        console.error('Map container not found after token fetch');
-        return;
-      }
-
-      console.log('Creating map instance...');
-      const mapInstance = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/satellite-streets-v12',
-        center: [15.4319, 59.2753],
-        zoom: 5
-      });
-
-      const drawInstance = new MapboxDraw({
-        displayControlsDefault: false,
-        controls: {
-          polygon: true,
-          trash: true
-        }
-      });
-
-      map.current = mapInstance;
-      draw.current = drawInstance;
-
-      mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
-      mapInstance.addControl(new mapboxgl.FullscreenControl());
-      mapInstance.addControl(drawInstance);
-
-      // Use a serializable flag to track map load
-      let isMapLoaded = false;
-
-      mapInstance.on('load', () => {
-        console.log('Map loaded successfully');
-        if (!isMapLoaded && map.current && draw.current) {
-          isMapLoaded = true;
-          // Clone only necessary data for the callback
-          onMapLoad(map.current, draw.current);
-        }
-      });
-
-      mapInstance.on('error', (e) => {
-        console.error('Map error:', e);
-        toast.error('Ett fel uppstod med kartan');
-      });
-
-    } catch (error) {
-      console.error('Error initializing map:', error);
-      toast.error('Ett fel uppstod när kartan skulle laddas');
-    }
-  }, [currentTeamId, onMapLoad]);
-
   useEffect(() => {
+    const initializeMap = async () => {
+      if (!mapContainer.current || !currentTeamId) {
+        console.log('Initialization conditions not met:', {
+          hasContainer: !!mapContainer.current,
+          hasTeamId: !!currentTeamId
+        });
+        return;
+      }
+
+      if (map.current) {
+        console.log('Map already initialized');
+        return;
+      }
+
+      try {
+        const token = await initializeMapbox();
+
+        if (!mapContainer.current) {
+          console.error('Map container not found after token fetch');
+          return;
+        }
+
+        console.log('Creating map instance...');
+        const { map: mapInstance, draw: drawInstance } = createMapInstance(mapContainer.current, token);
+
+        map.current = mapInstance;
+        draw.current = drawInstance;
+
+        let isMapLoaded = false;
+
+        mapInstance.on('load', () => {
+          console.log('Map loaded successfully');
+          if (!isMapLoaded && map.current && draw.current) {
+            isMapLoaded = true;
+            onMapLoad(map.current, draw.current);
+          }
+        });
+
+        mapInstance.on('error', (e) => {
+          console.error('Map error:', e);
+          toast.error('Ett fel uppstod med kartan');
+        });
+
+      } catch (error) {
+        console.error('Error initializing map:', error);
+        toast.error('Ett fel uppstod när kartan skulle laddas');
+      }
+    };
+
     console.log('MapContainer mounted, initializing map...');
     initializeMap();
 
@@ -114,7 +76,7 @@ const MapContainer = memo(({ onMapLoad, currentTeamId }: MapContainerProps) => {
       }
       draw.current = null;
     };
-  }, [initializeMap]);
+  }, [currentTeamId, onMapLoad]);
 
   if (!currentTeamId) {
     return (
