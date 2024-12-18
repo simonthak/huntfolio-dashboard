@@ -85,9 +85,14 @@ export const useMapEvents = ({ map, draw, onFeatureCreate }: UseMapEventsProps) 
     // Cleanup function
     return () => {
       if (map.current) {
-        map.current.off('draw.create');
-        map.current.off('mousedown');
-        map.current.off('mouseup');
+        const mapInstance = map.current;
+        
+        // Remove draw events
+        mapInstance.off('draw.create', () => {});
+        
+        // Remove cursor events
+        mapInstance.off('mousedown', () => {});
+        mapInstance.off('mouseup', () => {});
       }
     };
   }, [map, draw, onFeatureCreate]);
