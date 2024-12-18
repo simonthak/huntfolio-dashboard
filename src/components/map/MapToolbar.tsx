@@ -13,7 +13,7 @@ const MapToolbar = ({ onToolClick }: MapToolbarProps) => {
   };
 
   return (
-    <div className="absolute top-4 left-4 z-10 bg-white rounded-lg shadow-lg p-2 space-x-2">
+    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-white rounded-lg shadow-lg p-2 space-x-2">
       <Tooltip>
         <TooltipTrigger asChild>
           <Button 
