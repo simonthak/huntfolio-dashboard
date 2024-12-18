@@ -3,17 +3,19 @@ import { Event } from "@/components/calendar/types";
 
 export const findEventOnDate = (events: Event[], date: Date): Event | undefined => {
   console.log("calendarUtils - Finding event for date:", date);
-  const normalizedDate = startOfDay(date);
+  const normalizedSelectedDate = startOfDay(date);
+  
   const foundEvent = events.find(event => {
-    const eventDate = new Date(event.date);
-    const isSame = isSameDay(eventDate, normalizedDate);
+    const eventDate = startOfDay(new Date(event.date));
+    const isSame = isSameDay(eventDate, normalizedSelectedDate);
     console.log("calendarUtils - Comparing dates:", {
-      eventDate,
-      normalizedDate,
+      eventDate: eventDate.toISOString(),
+      normalizedSelectedDate: normalizedSelectedDate.toISOString(),
       isSame
     });
     return isSame;
   });
+  
   console.log("calendarUtils - Found event:", foundEvent);
   return foundEvent;
 };
@@ -25,7 +27,7 @@ export const validateFutureDate = (date: Date): boolean => {
 };
 
 export const normalizeDate = (date: Date): Date => {
-  const normalized = new Date(date);
-  normalized.setHours(0, 0, 0, 0);
+  const normalized = startOfDay(new Date(date));
+  console.log("calendarUtils - Normalized date:", normalized.toISOString());
   return normalized;
 };
