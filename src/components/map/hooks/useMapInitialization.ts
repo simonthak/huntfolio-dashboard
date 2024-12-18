@@ -54,10 +54,11 @@ export const useMapInitialization = ({
             console.log('Map loaded, initializing controls...');
             
             // Initialize draw control
-            draw.current = initializeDraw();
+            const drawInstance = initializeDraw();
+            draw.current = drawInstance;
             
             // Add controls
-            map.current.addControl(draw.current);
+            map.current.addControl(drawInstance);
             map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
             
             // Set default cursor
@@ -85,12 +86,11 @@ export const useMapInitialization = ({
             }
 
             // Setup draw event listener
-            map.current.on('draw.create', (e: { features: Feature[] }) => {
+            drawInstance.on('draw.create', (e: { features: Feature[] }) => {
               if (e.features?.[0]) {
-                // Clone the feature to ensure it's serializable
                 const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
                 onFeatureCreate(serializedFeature);
-                draw.current?.deleteAll();
+                drawInstance.deleteAll();
               }
             });
 
