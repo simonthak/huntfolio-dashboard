@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,20 +11,34 @@ export const useMapInstance = (
 ) => {
   const [isLoading, setIsLoading] = useState(true);
   const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
+  const drawInstanceRef = useRef<any>(null);
   const isMountedRef = useRef<boolean>(true);
+
+  const cleanupMap = useCallback(() => {
+    console.log('Cleaning up map resources...');
+    if (mapInstanceRef.current) {
+      try {
+        mapInstanceRef.current.remove();
+      } catch (error) {
+        console.error('Error removing map:', error);
+      }
+      mapInstanceRef.current = null;
+    }
+    drawInstanceRef.current = null;
+  }, []);
 
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
+      console.log('Component unmounting, cleaning up...');
       isMountedRef.current = false;
+      cleanupMap();
     };
-  }, []);
+  }, [cleanupMap]);
 
   useEffect(() => {
     if (!mapContainerRef.current || !currentTeamId) return;
 
-    let mapInstance: mapboxgl.Map | null = null;
-    
     const initializeMap = async () => {
       try {
         console.log('Initializing map...');
@@ -43,6 +57,9 @@ export const useMapInstance = (
           console.log('Component unmounted during initialization');
           return;
         }
+
+        // Clean up existing instances before creating new ones
+        cleanupMap();
 
         mapboxgl.accessToken = token;
         
@@ -64,14 +81,19 @@ export const useMapInstance = (
         map.addControl(new mapboxgl.NavigationControl(), 'top-right');
         map.addControl(draw);
 
-        mapInstance = map;
         mapInstanceRef.current = map;
+        drawInstanceRef.current = draw;
 
         map.once('load', () => {
           console.log('Map loaded, calling onMapLoad callback');
           if (isMountedRef.current) {
             setIsLoading(false);
-            onMapLoad(map, draw);
+            // Create local references to avoid closure issues
+            const currentMap = mapInstanceRef.current;
+            const currentDraw = drawInstanceRef.current;
+            if (currentMap && currentDraw) {
+              onMapLoad(currentMap, currentDraw);
+            }
           }
         });
 
@@ -87,20 +109,9 @@ export const useMapInstance = (
     initializeMap();
 
     return () => {
-      console.log('Starting cleanup...');
-      isMountedRef.current = false;
-      
-      if (mapInstance) {
-        console.log('Removing map instance...');
-        try {
-          mapInstance.remove();
-          mapInstanceRef.current = null;
-        } catch (error) {
-          console.error('Error removing map:', error);
-        }
-      }
+      cleanupMap();
     };
-  }, [currentTeamId, onMapLoad]);
+  }, [currentTeamId, onMapLoad, cleanupMap]);
 
   return {
     isLoading
