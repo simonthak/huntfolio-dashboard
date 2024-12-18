@@ -17,7 +17,7 @@ const menuItems = [
   { icon: FileText, label: "Rapporter", path: "/reports" },
   { icon: FolderOpen, label: "Dokument", path: "/documents" },
   { icon: Phone, label: "Kontakter", path: "/contacts" },
-  { icon: Users, label: "Team", path: "/team" },
+  { icon: Users, label: "Mitt jaktlag", path: "/team" },
   { icon: UserCircle, label: "Profil", path: "/profile" },
   { icon: Settings, label: "Inställningar", path: "/settings" },
 ];
