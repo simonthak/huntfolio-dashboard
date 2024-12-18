@@ -23,12 +23,33 @@ export const useMapInitialization = ({
       return;
     }
 
-    // Clean up any existing map instance
-    if (map.current) {
-      console.log('Cleaning up existing map instance');
-      map.current.remove();
-      map.current = null;
-    }
+    // Clean up function to handle proper disposal
+    const cleanupMap = () => {
+      if (map.current) {
+        console.log('Cleaning up map instance');
+        
+        // First remove the draw control if it exists
+        if (draw.current) {
+          try {
+            map.current.removeControl(draw.current);
+            draw.current = null;
+          } catch (error) {
+            console.error('Error removing draw control:', error);
+          }
+        }
+
+        // Then remove the map
+        try {
+          map.current.remove();
+        } catch (error) {
+          console.error('Error removing map:', error);
+        }
+        map.current = null;
+      }
+    };
+
+    // Clean up any existing instance before creating a new one
+    cleanupMap();
 
     console.log('Initializing map with token:', mapboxToken.slice(0, 8) + '...');
     
@@ -80,12 +101,12 @@ export const useMapInitialization = ({
       mapInstance.on('load', loadHandler);
       mapInstance.on('draw.create', drawCreateHandler);
 
-      // Cleanup function
+      // Return cleanup function
       return () => {
         console.log('Cleaning up map');
         mapInstance.off('load', loadHandler);
         mapInstance.off('draw.create', drawCreateHandler);
-        mapInstance.remove();
+        cleanupMap();
       };
     } catch (error) {
       console.error('Error initializing map:', error);
