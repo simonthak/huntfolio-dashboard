@@ -27,70 +27,69 @@ export const useMapInitialization = ({
     console.log('Starting map initialization...');
     initializationAttempted.current = true;
 
-    try {
-      // Set token and create map
-      mapboxgl.accessToken = mapboxToken;
-      
-      if (!map.current) {
-        map.current = new mapboxgl.Map({
-          container: mapContainer.current,
-          style: 'mapbox://styles/mapbox/outdoors-v12',
-          center: [18.0686, 59.3293],
-          zoom: 9
-        });
-
-        // Setup map only once when it's loaded
-        map.current.once('load', () => {
-          if (!map.current) return;
+    const initializeMap = () => {
+      try {
+        // Set token and create map only if it doesn't exist
+        if (!map.current) {
+          console.log('Initializing map with token:', mapboxToken);
+          mapboxgl.accessToken = mapboxToken;
           
-          console.log('Map loaded, initializing controls...');
-          
-          // Initialize draw control
-          draw.current = initializeDraw();
-          
-          // Add controls
-          map.current.addControl(draw.current);
-          map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-          
-          // Set default cursor
-          const canvas = map.current.getCanvas();
-          if (canvas) {
-            canvas.style.cursor = 'grab';
-          }
-
-          // Setup draw event listener
-          map.current.on('draw.create', (e: { features: Feature[] }) => {
-            if (e.features?.[0]) {
-              // Clone the feature to ensure it's serializable
-              const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
-              onFeatureCreate(serializedFeature);
-              draw.current?.deleteAll();
-            }
+          map.current = new mapboxgl.Map({
+            container: mapContainer.current!,
+            style: 'mapbox://styles/mapbox/outdoors-v12',
+            center: [18.0686, 59.3293],
+            zoom: 9
           });
 
-          // Setup cursor event listeners
-          map.current.on('mousedown', () => {
-            if (map.current?.getCanvas()) {
-              map.current.getCanvas().style.cursor = 'grabbing';
-            }
-          });
+          // Setup map only once when it's loaded
+          map.current.once('load', () => {
+            if (!map.current) return;
+            
+            console.log('Map loaded, initializing controls...');
+            
+            // Initialize draw control
+            draw.current = initializeDraw();
+            
+            // Add controls
+            map.current.addControl(draw.current);
+            map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+            
+            // Set default cursor
+            map.current.getCanvas().style.cursor = 'grab';
 
-          map.current.on('mouseup', () => {
-            if (map.current?.getCanvas()) {
-              map.current.getCanvas().style.cursor = 'grab';
-            }
-          });
+            // Setup draw event listener
+            map.current.on('draw.create', (e: { features: Feature[] }) => {
+              if (e.features?.[0]) {
+                // Clone the feature to ensure it's serializable
+                const serializedFeature = JSON.parse(JSON.stringify(e.features[0]));
+                onFeatureCreate(serializedFeature);
+                draw.current?.deleteAll();
+              }
+            });
 
-          setMapLoaded(true);
-          console.log('Map initialization complete');
-        });
+            // Setup cursor event listeners
+            map.current.on('mousedown', () => {
+              if (map.current?.getCanvas()) {
+                map.current.getCanvas().style.cursor = 'grabbing';
+              }
+            });
+
+            map.current.on('mouseup', () => {
+              if (map.current?.getCanvas()) {
+                map.current.getCanvas().style.cursor = 'grab';
+              }
+            });
+
+            setMapLoaded(true);
+            console.log('Map initialization complete');
+          });
+        }
+      } catch (error) {
+        console.error('Error during map initialization:', error);
+        cleanup();
       }
-    } catch (error) {
-      console.error('Error during map initialization:', error);
-      cleanup();
-    }
+    };
 
-    // Cleanup function
     const cleanup = () => {
       console.log('Running map cleanup...');
       
@@ -105,17 +104,17 @@ export const useMapInitialization = ({
         }
 
         // Remove map instance
-        if (!map.current._removed) {
-          map.current.remove();
-        }
+        map.current.remove();
+        map.current = null;
       }
 
       // Reset all refs and state
-      map.current = null;
       draw.current = null;
       setMapLoaded(false);
       initializationAttempted.current = false;
     };
+
+    initializeMap();
 
     // Return cleanup function
     return cleanup;
