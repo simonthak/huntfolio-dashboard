@@ -60,10 +60,12 @@ export const useReportsData = (currentTeamId: string | null) => {
           ),
           report_animals(
             quantity,
+            animal_type:animal_types(id, name),
+            animal_subtype:animal_subtypes(id, name),
+            animal_sub_subtype:animal_sub_subtypes(id, name),
             animal_type_id,
             animal_subtype_id,
-            animal_type:animal_types(id, name),
-            animal_subtype:animal_subtypes(id, name)
+            animal_sub_subtype_id
           )
         `)
         .eq('team_id', currentTeamId)

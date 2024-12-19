@@ -21,7 +21,11 @@ export const useAnimalTypes = () => {
       // Fetch subtypes
       const { data: subtypes, error: subtypesError } = await supabase
         .from("animal_subtypes")
-        .select("*")
+        .select(`
+          id,
+          name,
+          animal_type_id
+        `)
         .order("name");
 
       if (subtypesError) {
@@ -32,13 +36,19 @@ export const useAnimalTypes = () => {
       // Fetch sub-subtypes
       const { data: subSubtypes, error: subSubtypesError } = await supabase
         .from("animal_sub_subtypes")
-        .select("*")
+        .select(`
+          id,
+          name,
+          animal_subtype_id
+        `)
         .order("name");
 
       if (subSubtypesError) {
         console.error("Error fetching animal sub-subtypes:", subSubtypesError);
         throw subSubtypesError;
       }
+
+      console.log("Fetched sub-subtypes:", subSubtypes);
 
       // Organize subtypes by type
       const subtypesByType = subtypes.reduce((acc: Record<number, any[]>, subtype) => {
@@ -62,7 +72,12 @@ export const useAnimalTypes = () => {
         return acc;
       }, {});
 
-      console.log("Successfully fetched animal types, subtypes, and sub-subtypes");
+      console.log("Successfully fetched animal types, subtypes, and sub-subtypes", {
+        types,
+        subtypesByType,
+        subSubtypesBySubtype
+      });
+
       return {
         types,
         subtypesByType,
