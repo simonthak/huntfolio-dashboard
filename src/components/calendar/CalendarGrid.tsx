@@ -4,6 +4,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { Event } from "./types";
 import CalendarEventContent from "./CalendarEventContent";
 import DateSelectionHandler from "./DateSelectionHandler";
+import svLocale from '@fullcalendar/core/locales/sv';
 
 interface CalendarGridProps {
   events: Event[];
@@ -57,6 +58,7 @@ const CalendarGrid = ({
         plugins={[dayGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
         firstDay={1}
+        locale={svLocale}
         selectable={true}
         select={handleDateSelect}
         events={calendarEvents}
