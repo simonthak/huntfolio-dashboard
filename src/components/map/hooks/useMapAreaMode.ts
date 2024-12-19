@@ -6,7 +6,7 @@ export const useMapAreaMode = (
   map: MutableRefObject<mapboxgl.Map | null>,
   draw: MutableRefObject<MapboxDraw | null>
 ) => {
-  const enableAreaMode = () => {
+  const enableAreaMode = (onFeatureCreate?: (feature: any) => void) => {
     if (!draw.current || !map.current) return;
 
     console.log('Enabling polygon draw mode');
