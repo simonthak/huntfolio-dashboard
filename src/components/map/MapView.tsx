@@ -9,6 +9,7 @@ import DrawingInstructions from './DrawingInstructions';
 import { useMapInitialization } from './hooks/useMapInitialization';
 import { useMapLayers } from './hooks/useMapLayers';
 import { useMapData } from './hooks/useMapData';
+import { useDrawingMode } from './hooks/useDrawingMode';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 const MapView = () => {
@@ -17,7 +18,6 @@ const MapView = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [drawMode, setDrawMode] = useState<'area' | 'pass' | null>(null);
   const [drawnFeature, setDrawnFeature] = useState<Feature | null>(null);
-  const [showDrawInstructions, setShowDrawInstructions] = useState(false);
 
   const { data: mapboxToken, isError, error } = useQuery({
     queryKey: ['mapbox-token'],
@@ -39,7 +39,6 @@ const MapView = () => {
     console.log('Feature created:', feature);
     setDrawnFeature(feature);
     setShowCreateDialog(true);
-    setShowDrawInstructions(false);
   };
 
   const { mapContainer, map, draw, mapLoaded } = useMapInitialization({
@@ -48,85 +47,13 @@ const MapView = () => {
     areas: areas || [],
   });
 
+  const { showDrawInstructions, handleToolClick } = useDrawingMode({
+    map,
+    draw,
+    onFeatureCreate: handleFeatureCreate,
+  });
+
   useMapLayers({ map, mapLoaded, areas, passes });
-
-  const handleToolClick = (mode: 'area' | 'pass') => {
-    console.log('MapView: Tool clicked:', mode);
-    if (!draw.current || !map.current) {
-      console.error('Draw or map not initialized');
-      return;
-    }
-
-    // If clicking the same mode again, disable it
-    if (mode === drawMode) {
-      setDrawMode(null);
-      draw.current.changeMode('simple_select');
-      map.current.getCanvas().style.cursor = 'grab';
-      if (map.current.listens('click')) {
-        map.current.off('click');
-      }
-      return;
-    }
-
-    setDrawMode(mode);
-    
-    // Remove any existing drawn features
-    draw.current.deleteAll();
-    console.log('Deleted existing features');
-
-    if (mode === 'area') {
-      console.log('Enabling polygon draw mode');
-      draw.current.changeMode('draw_polygon');
-      map.current.getCanvas().style.cursor = 'crosshair';
-      setShowDrawInstructions(true);
-      
-      // Remove instructions when drawing is complete
-      const onDrawCreate = () => {
-        setShowDrawInstructions(false);
-        // Reset to grab cursor after drawing
-        if (map.current) {
-          map.current.getCanvas().style.cursor = 'grab';
-        }
-      };
-      
-      map.current.once('draw.create', onDrawCreate);
-      
-      console.log('Draw mode changed to draw_polygon');
-    } else if (mode === 'pass') {
-      console.log('Enabling point placement mode');
-      draw.current.changeMode('simple_select');
-      map.current.getCanvas().style.cursor = 'crosshair';
-      
-      // Remove any existing click handlers
-      if (map.current.listens('click')) {
-        map.current.off('click');
-      }
-      
-      const onClick = (e: mapboxgl.MapMouseEvent) => {
-        console.log('Map clicked for point placement:', e.lngLat);
-        const feature: Feature = {
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [e.lngLat.lng, e.lngLat.lat]
-          },
-          properties: {}
-        };
-        
-        setDrawnFeature(JSON.parse(JSON.stringify(feature)));
-        setShowCreateDialog(true);
-        setDrawMode(null);
-        
-        // Clean up and reset cursor
-        if (map.current) {
-          map.current.off('click', onClick);
-          map.current.getCanvas().style.cursor = 'grab';
-        }
-      };
-      
-      map.current.once('click', onClick);
-    }
-  };
 
   if (isError) {
     console.error('Error loading map:', error);
