@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { LogOut, Deer } from "lucide-react";
+import { LogOut } from "lucide-react";
 import NavigationMenu from "./NavigationMenu";
 import TeamDropdown from "./TeamDropdown";
+import LogoHeader from "./LogoHeader";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -21,10 +22,7 @@ const Sidebar = () => {
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 p-4 flex flex-col h-screen">
-      <div className="flex items-center gap-2 mb-6">
-        <Deer className="w-8 h-8 text-primary" />
-        <span className="text-xl font-semibold text-gray-900">Lovable</span>
-      </div>
+      <LogoHeader />
       
       <TeamDropdown />
       
