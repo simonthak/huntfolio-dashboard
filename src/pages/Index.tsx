@@ -97,13 +97,13 @@ const Index = () => {
       change: null 
     },
     { 
-      label: "Fällt vilt", 
+      label: "Jaktlycka", 
       value: `${stats.successRate}%`, 
       icon: Target, 
       change: null 
     },
     { 
-      label: "Jaktlycka", 
+      label: "Fällt vilt", 
       value: stats.totalGame.toString(), 
       icon: Trophy, 
       change: null 
