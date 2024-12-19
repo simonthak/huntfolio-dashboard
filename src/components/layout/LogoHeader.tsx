@@ -17,9 +17,9 @@ const LogoHeader = () => {
   return (
     <div className="flex items-center justify-start gap-2 mb-6 pl-4">
       {isLoading ? (
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
       ) : (
-        <img src={logoUrl} alt="Antlers logo" className="w-8 h-8" />
+        <img src={logoUrl} alt="Antlers logo" className="w-6 h-6" />
       )}
       <span className="text-2xl font-semibold text-gray-900">Antlers</span>
     </div>
