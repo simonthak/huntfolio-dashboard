@@ -76,7 +76,7 @@ const TeamDropdown = () => {
     meta: {
       onError: (error: Error) => {
         console.error("Query error:", error);
-        toast.error("Failed to fetch teams");
+        toast.error("Kunde inte hämta lag");
       }
     }
   });
@@ -100,7 +100,7 @@ const TeamDropdown = () => {
         >
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-[#13B67F]" />
-            <span>{currentTeam?.name || "Select Team"}</span>
+            <span>{currentTeam?.name || "Välj lag"}</span>
           </div>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
@@ -130,7 +130,7 @@ const TeamDropdown = () => {
         }}>
           <div className="flex items-center gap-2 w-full">
             <Plus className="w-4 h-4" />
-            <span>Join Team</span>
+            <span>Gå med i lag</span>
           </div>
         </DropdownMenuItem>
       </DropdownMenuContent>
