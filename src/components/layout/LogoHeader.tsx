@@ -1,35 +1,17 @@
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 
 const LogoHeader = () => {
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const logoUrl = "https://nlxlpxddixvieiwsxdbu.supabase.co/storage/v1/object/public/logos/symbol.svg?t=2024-12-19T15%3A39%3A32.547Z";
 
+  // Simulate loading to ensure the logo is ready
   useEffect(() => {
-    const fetchLogo = async () => {
-      try {
-        console.log("Fetching logo from Supabase storage...");
-        const { data: { publicUrl }, error } = supabase.storage
-          .from('logos')
-          .getPublicUrl('antlers-logo.png');
-
-        if (error) {
-          console.error("Error fetching logo:", error);
-          setIsLoading(false);
-          return;
-        }
-
-        console.log("Logo URL fetched:", publicUrl);
-        setLogoUrl(publicUrl);
-      } catch (error) {
-        console.error("Unexpected error fetching logo:", error);
-      } finally {
-        setIsLoading(false);
-      }
+    const img = new Image();
+    img.onload = () => {
+      setIsLoading(false);
     };
-
-    fetchLogo();
+    img.src = logoUrl;
   }, []);
 
   return (
@@ -37,7 +19,7 @@ const LogoHeader = () => {
       {isLoading ? (
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       ) : (
-        logoUrl && <img src={logoUrl} alt="Antlers logo" className="w-8 h-8" />
+        <img src={logoUrl} alt="Antlers logo" className="w-8 h-8" />
       )}
       <span className="text-xl font-semibold text-gray-900">Antlers</span>
     </div>
