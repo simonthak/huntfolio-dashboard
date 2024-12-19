@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Trash } from "lucide-react";
-import AnimalTypeSelect from "./fields/AnimalTypeSelect";
-import AnimalSubtypeSelect from "./fields/AnimalSubtypeSelect";
-import AnimalSubSubtypeSelect from "./fields/AnimalSubSubtypeSelect";
+import AnimalSelectionFields from "./fields/AnimalSelectionFields";
 import QuantityInput from "./fields/QuantityInput";
 
 interface AnimalEntryProps {
@@ -33,74 +31,34 @@ const AnimalEntry = ({
   onRemove,
   onChange,
 }: AnimalEntryProps) => {
-  const [animalTypeId, setAnimalTypeId] = useState<string>(
-    initialData?.animal_type_id?.toString() || ""
-  );
-  const [animalSubtypeId, setAnimalSubtypeId] = useState<string>(
-    initialData?.animal_subtype_id?.toString() || ""
-  );
-  const [animalSubSubtypeId, setAnimalSubSubtypeId] = useState<string>(
-    initialData?.animal_sub_subtype_id?.toString() || ""
-  );
   const [quantity, setQuantity] = useState<string>(
     initialData?.quantity ? initialData.quantity.toString() : ""
   );
+  const [animalData, setAnimalData] = useState({
+    animal_type_id: initialData?.animal_type_id || 0,
+    animal_subtype_id: initialData?.animal_subtype_id,
+    animal_sub_subtype_id: initialData?.animal_sub_subtype_id,
+  });
 
   useEffect(() => {
-    if (animalTypeId) {
+    if (animalData.animal_type_id) {
       onChange({
-        animal_type_id: parseInt(animalTypeId),
-        animal_subtype_id: animalSubtypeId ? parseInt(animalSubtypeId) : undefined,
-        animal_sub_subtype_id: animalSubSubtypeId ? parseInt(animalSubSubtypeId) : undefined,
+        ...animalData,
         quantity: quantity ? parseInt(quantity) : 0,
       });
     }
-  }, [animalTypeId, animalSubtypeId, animalSubSubtypeId, quantity, onChange]);
-
-  const handleAnimalTypeChange = (value: string) => {
-    setAnimalTypeId(value);
-    setAnimalSubtypeId(""); // Reset subtype when type changes
-    setAnimalSubSubtypeId(""); // Reset sub-subtype when type changes
-  };
-
-  const handleAnimalSubtypeChange = (value: string) => {
-    setAnimalSubtypeId(value);
-    setAnimalSubSubtypeId(""); // Reset sub-subtype when subtype changes
-  };
-
-  console.log("Current animal entry state:", {
-    animalTypeId,
-    animalSubtypeId,
-    animalSubSubtypeId,
-    quantity,
-    availableSubSubtypes: animalSubtypeId ? animalSubSubtypes[parseInt(animalSubtypeId)] : []
-  });
+  }, [animalData, quantity, onChange]);
 
   return (
     <div className="flex gap-2 items-start">
       <div className="flex-1 space-y-2">
-        <AnimalTypeSelect
-          value={animalTypeId}
+        <AnimalSelectionFields
+          initialData={initialData}
           animalTypes={animalTypes}
-          onChange={handleAnimalTypeChange}
+          animalSubtypes={animalSubtypes}
+          animalSubSubtypes={animalSubSubtypes}
+          onChange={setAnimalData}
         />
-
-        {animalTypeId && animalSubtypes[parseInt(animalTypeId)] && (
-          <AnimalSubtypeSelect
-            value={animalSubtypeId}
-            subtypes={animalSubtypes[parseInt(animalTypeId)]}
-            onChange={handleAnimalSubtypeChange}
-          />
-        )}
-
-        {animalSubtypeId && animalSubSubtypes[parseInt(animalSubtypeId)] && (
-          <AnimalSubSubtypeSelect
-            value={animalSubSubtypeId}
-            subSubtypes={animalSubSubtypes[parseInt(animalSubtypeId)]}
-            onChange={setAnimalSubSubtypeId}
-          />
-        )}
-
         <QuantityInput value={quantity} onChange={setQuantity} />
       </div>
 
