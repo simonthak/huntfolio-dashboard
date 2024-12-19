@@ -29,7 +29,7 @@ const DialogActions = ({
           className="flex items-center gap-2"
         >
           <Trash2 className="w-4 h-4" />
-          {isDeleting ? "Deleting..." : "Delete Event"}
+          {isDeleting ? "Tar bort..." : "Ta bort händelse"}
         </Button>
       )}
       {isUserParticipant && (
@@ -39,7 +39,7 @@ const DialogActions = ({
           className="flex items-center gap-2"
         >
           <LogOut className="w-4 h-4" />
-          Leave Event
+          Lämna händelse
         </Button>
       )}
     </div>
