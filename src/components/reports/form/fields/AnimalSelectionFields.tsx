@@ -37,28 +37,31 @@ const AnimalSelectionFields = ({
   );
 
   useEffect(() => {
-    if (animalTypeId && parseInt(animalTypeId) !== 0) {
+    const typeId = parseInt(animalTypeId);
+    if (typeId && typeId !== 0) {
       onChange({
-        animal_type_id: parseInt(animalTypeId),
+        animal_type_id: typeId,
         animal_subtype_id: animalSubtypeId ? parseInt(animalSubtypeId) : undefined,
         animal_sub_subtype_id: animalSubSubtypeId ? parseInt(animalSubSubtypeId) : undefined,
       });
 
-      // Only log when there's a valid animal type selected
-      const availableSubtypes = animalTypeId ? animalSubtypes[parseInt(animalTypeId)] : [];
-      const availableSubSubtypes = animalSubtypeId ? animalSubSubtypes[parseInt(animalSubtypeId)] : [];
-      
-      if (availableSubtypes || availableSubSubtypes) {
-        console.log("Animal selection state:", {
-          animalTypeId,
-          animalSubtypeId,
-          animalSubSubtypeId,
-          availableSubtypes: availableSubtypes || [],
-          availableSubSubtypes: availableSubSubtypes || [],
-        });
+      // Only log when we have valid selections and available options
+      const availableSubtypes = animalSubtypes[typeId];
+      if (availableSubtypes?.length > 0) {
+        const subtypeId = parseInt(animalSubtypeId);
+        const availableSubSubtypes = subtypeId ? animalSubSubtypes[subtypeId] : [];
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log("Valid animal selection:", {
+            type: animalTypes.find(t => t.id === typeId)?.name,
+            subtype: availableSubtypes.find(st => st.id === subtypeId)?.name,
+            availableSubtypes: availableSubtypes.map(st => st.name),
+            availableSubSubtypes: availableSubSubtypes?.map(sst => sst.name) || []
+          });
+        }
       }
     }
-  }, [animalTypeId, animalSubtypeId, animalSubSubtypeId, onChange, animalSubtypes, animalSubSubtypes]);
+  }, [animalTypeId, animalSubtypeId, animalSubSubtypeId, onChange, animalTypes, animalSubtypes, animalSubSubtypes]);
 
   const handleAnimalTypeChange = (value: string) => {
     setAnimalTypeId(value);
