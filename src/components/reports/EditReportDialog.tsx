@@ -55,7 +55,7 @@ const EditReportDialog = ({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Hunting Report</DialogTitle>
+          <DialogTitle>Redigera jaktrapport</DialogTitle>
         </DialogHeader>
         <ReportForm
           initialData={{
