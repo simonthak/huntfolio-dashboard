@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import AnimalTypeSelect from "./AnimalTypeSelect";
 import AnimalSubtypeSelect from "./AnimalSubtypeSelect";
 import AnimalSubSubtypeSelect from "./AnimalSubSubtypeSelect";
@@ -27,31 +27,36 @@ const AnimalSelectionFields = ({
   onChange,
 }: AnimalSelectionFieldsProps) => {
   const [animalTypeId, setAnimalTypeId] = useState<string>(
-    initialData?.animal_type_id?.toString() || ""
+    initialData?.animal_type_id ? initialData.animal_type_id.toString() : ""
   );
   const [animalSubtypeId, setAnimalSubtypeId] = useState<string>(
-    initialData?.animal_subtype_id?.toString() || ""
+    initialData?.animal_subtype_id ? initialData.animal_subtype_id.toString() : ""
   );
   const [animalSubSubtypeId, setAnimalSubSubtypeId] = useState<string>(
-    initialData?.animal_sub_subtype_id?.toString() || ""
+    initialData?.animal_sub_subtype_id ? initialData.animal_sub_subtype_id.toString() : ""
   );
 
   useEffect(() => {
-    if (animalTypeId) {
+    if (animalTypeId && parseInt(animalTypeId) !== 0) {
       onChange({
         animal_type_id: parseInt(animalTypeId),
         animal_subtype_id: animalSubtypeId ? parseInt(animalSubtypeId) : undefined,
         animal_sub_subtype_id: animalSubSubtypeId ? parseInt(animalSubSubtypeId) : undefined,
       });
 
-      // Only log when values actually change
-      console.log("Animal selection updated:", {
-        animalTypeId,
-        animalSubtypeId,
-        animalSubSubtypeId,
-        availableSubtypes: animalTypeId ? animalSubtypes[parseInt(animalTypeId)] : [],
-        availableSubSubtypes: animalSubtypeId ? animalSubSubtypes[parseInt(animalSubtypeId)] : [],
-      });
+      // Only log when there's a valid animal type selected
+      const availableSubtypes = animalTypeId ? animalSubtypes[parseInt(animalTypeId)] : [];
+      const availableSubSubtypes = animalSubtypeId ? animalSubSubtypes[parseInt(animalSubtypeId)] : [];
+      
+      if (availableSubtypes || availableSubSubtypes) {
+        console.log("Animal selection state:", {
+          animalTypeId,
+          animalSubtypeId,
+          animalSubSubtypeId,
+          availableSubtypes: availableSubtypes || [],
+          availableSubSubtypes: availableSubSubtypes || [],
+        });
+      }
     }
   }, [animalTypeId, animalSubtypeId, animalSubSubtypeId, onChange, animalSubtypes, animalSubSubtypes]);
 
