@@ -465,6 +465,7 @@ export type Database = {
       }
       report_animals: {
         Row: {
+          animal_sub_subtype_id: number | null
           animal_subtype_id: number | null
           animal_type_id: number
           created_at: string
@@ -473,6 +474,7 @@ export type Database = {
           report_id: string
         }
         Insert: {
+          animal_sub_subtype_id?: number | null
           animal_subtype_id?: number | null
           animal_type_id: number
           created_at?: string
@@ -481,6 +483,7 @@ export type Database = {
           report_id: string
         }
         Update: {
+          animal_sub_subtype_id?: number | null
           animal_subtype_id?: number | null
           animal_type_id?: number
           created_at?: string
@@ -489,6 +492,13 @@ export type Database = {
           report_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "report_animals_animal_sub_subtype_id_fkey"
+            columns: ["animal_sub_subtype_id"]
+            isOneToOne: false
+            referencedRelation: "animal_sub_subtypes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "report_animals_animal_subtype_id_fkey"
             columns: ["animal_subtype_id"]
