@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { Feature } from 'geojson';
 import mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
+import { useMapDragMode } from './useMapDragMode';
+import { useMapAreaMode } from './useMapAreaMode';
+import { useMapPassMode } from './useMapPassMode';
 
 interface UseDrawingModeProps {
   map: React.MutableRefObject<mapboxgl.Map | null>;
@@ -12,6 +15,10 @@ interface UseDrawingModeProps {
 export const useDrawingMode = ({ map, draw, onFeatureCreate }: UseDrawingModeProps) => {
   const [drawMode, setDrawMode] = useState<'drag' | 'area' | 'pass'>('drag');
   const [showDrawInstructions, setShowDrawInstructions] = useState(false);
+
+  const { enableDragMode } = useMapDragMode(map, draw);
+  const { enableAreaMode } = useMapAreaMode(map, draw);
+  const { enablePassMode } = useMapPassMode(map, draw, onFeatureCreate);
 
   const handleToolClick = (mode: 'drag' | 'area' | 'pass') => {
     console.log('DrawingMode: Tool clicked:', mode);
@@ -37,63 +44,15 @@ export const useDrawingMode = ({ map, draw, onFeatureCreate }: UseDrawingModePro
     }
 
     if (mode === 'drag') {
-      handleDragMode();
+      enableDragMode();
+      setShowDrawInstructions(false);
     } else if (mode === 'area') {
-      handleAreaMode();
+      enableAreaMode();
+      setShowDrawInstructions(true);
     } else if (mode === 'pass') {
-      handlePassMode();
+      enablePassMode();
+      setShowDrawInstructions(false);
     }
-  };
-
-  const handleDragMode = () => {
-    if (!draw.current || !map.current) return;
-
-    console.log('Enabling drag mode');
-    draw.current.changeMode('simple_select');
-    map.current.getCanvas().style.cursor = 'grab';
-    setShowDrawInstructions(false);
-  };
-
-  const handleAreaMode = () => {
-    if (!draw.current || !map.current) return;
-
-    console.log('Enabling polygon draw mode');
-    draw.current.changeMode('draw_polygon');
-    map.current.getCanvas().style.cursor = 'crosshair';
-    setShowDrawInstructions(true);
-  };
-
-  const handleMapClick = (e: mapboxgl.MapMouseEvent) => {
-    console.log('Map clicked for point placement:', e.lngLat);
-    const feature: Feature = {
-      type: 'Feature',
-      geometry: {
-        type: 'Point',
-        coordinates: [e.lngLat.lng, e.lngLat.lat]
-      },
-      properties: {}
-    };
-    
-    onFeatureCreate(JSON.parse(JSON.stringify(feature)));
-    
-    // Clean up and reset cursor
-    if (map.current) {
-      map.current.off('click', handleMapClick);
-      map.current.getCanvas().style.cursor = 'grab';
-    }
-    setDrawMode('drag');
-  };
-
-  const handlePassMode = () => {
-    if (!draw.current || !map.current) return;
-
-    console.log('Enabling point placement mode');
-    draw.current.changeMode('simple_select');
-    map.current.getCanvas().style.cursor = 'crosshair';
-    
-    // Remove any existing click handlers before adding a new one
-    map.current.off('click', handleMapClick);
-    map.current.on('click', handleMapClick);
   };
 
   return {
