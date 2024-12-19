@@ -57,6 +57,17 @@ const MapView = () => {
       return;
     }
 
+    // If clicking the same mode again, disable it
+    if (mode === drawMode) {
+      setDrawMode(null);
+      draw.current.changeMode('simple_select');
+      map.current.getCanvas().style.cursor = 'grab';
+      if (map.current.listens('click')) {
+        map.current.off('click');
+      }
+      return;
+    }
+
     setDrawMode(mode);
     
     // Remove any existing drawn features
@@ -81,10 +92,15 @@ const MapView = () => {
       map.current.once('draw.create', onDrawCreate);
       
       console.log('Draw mode changed to draw_polygon');
-    } else {
+    } else if (mode === 'pass') {
       console.log('Enabling point placement mode');
       draw.current.changeMode('simple_select');
       map.current.getCanvas().style.cursor = 'crosshair';
+      
+      // Remove any existing click handlers
+      if (map.current.listens('click')) {
+        map.current.off('click');
+      }
       
       const onClick = (e: mapboxgl.MapMouseEvent) => {
         console.log('Map clicked for point placement:', e.lngLat);
@@ -99,6 +115,7 @@ const MapView = () => {
         
         setDrawnFeature(JSON.parse(JSON.stringify(feature)));
         setShowCreateDialog(true);
+        setDrawMode(null);
         
         // Clean up and reset cursor
         if (map.current) {
