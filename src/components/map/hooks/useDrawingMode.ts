@@ -32,7 +32,7 @@ export const useDrawingMode = ({ map, draw, onFeatureCreate }: UseDrawingModePro
     console.log('Deleted existing features');
 
     // Remove any existing click handlers
-    if (map.current.listens('click')) {
+    if (map.current) {
       map.current.off('click');
     }
 
