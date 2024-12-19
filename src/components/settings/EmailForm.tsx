@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 const emailFormSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().email("Ogiltig e-postadress"),
 });
 
 const EmailForm = () => {
@@ -38,11 +38,11 @@ const EmailForm = () => {
       
       if (error) throw error;
 
-      toast.success("Email update request sent. Please check your inbox.");
+      toast.success("E-postuppdateringsförfrågan skickad. Kontrollera din inkorg.");
       emailForm.reset();
     } catch (error: any) {
       console.error("Error updating email:", error);
-      toast.error(error.message || "Failed to update email");
+      toast.error(error.message || "Det gick inte att uppdatera e-postadressen");
     } finally {
       setIsEmailLoading(false);
     }
@@ -50,7 +50,7 @@ const EmailForm = () => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow">
-      <h3 className="text-lg font-semibold mb-4">Update Email Address</h3>
+      <h3 className="text-lg font-semibold mb-4">Uppdatera e-postadress</h3>
       <Form {...emailForm}>
         <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4">
           <FormField
@@ -58,16 +58,16 @@ const EmailForm = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>New Email</FormLabel>
+                <FormLabel>Ny e-postadress</FormLabel>
                 <FormControl>
-                  <Input placeholder="New email address" {...field} />
+                  <Input placeholder="Ny e-postadress" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
           <Button type="submit" disabled={isEmailLoading} className="bg-[#13B67F] hover:bg-[#0ea16f]">
-            {isEmailLoading ? "Updating..." : "Update Email"}
+            {isEmailLoading ? "Uppdaterar..." : "Uppdatera e-post"}
           </Button>
         </form>
       </Form>

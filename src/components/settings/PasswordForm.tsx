@@ -16,10 +16,10 @@ import {
 import { Input } from "@/components/ui/input";
 
 const passwordFormSchema = z.object({
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(6, "Lösenordet måste vara minst 6 tecken"),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
+  message: "Lösenorden matchar inte",
   path: ["confirmPassword"],
 });
 
@@ -43,11 +43,11 @@ const PasswordForm = () => {
 
       if (error) throw error;
 
-      toast.success("Password updated successfully");
+      toast.success("Lösenordet har uppdaterats");
       passwordForm.reset();
     } catch (error: any) {
       console.error("Error updating password:", error);
-      toast.error(error.message || "Failed to update password");
+      toast.error(error.message || "Det gick inte att uppdatera lösenordet");
     } finally {
       setIsPasswordLoading(false);
     }
@@ -55,7 +55,7 @@ const PasswordForm = () => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow">
-      <h3 className="text-lg font-semibold mb-4">Change Password</h3>
+      <h3 className="text-lg font-semibold mb-4">Ändra lösenord</h3>
       <Form {...passwordForm}>
         <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
           <FormField
@@ -63,9 +63,9 @@ const PasswordForm = () => {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>New Password</FormLabel>
+                <FormLabel>Nytt lösenord</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="New password" {...field} />
+                  <Input type="password" placeholder="Nytt lösenord" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -77,9 +77,9 @@ const PasswordForm = () => {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
+                <FormLabel>Bekräfta lösenord</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="Confirm new password" {...field} />
+                  <Input type="password" placeholder="Bekräfta nytt lösenord" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -87,7 +87,7 @@ const PasswordForm = () => {
           />
 
           <Button type="submit" disabled={isPasswordLoading} className="bg-[#13B67F] hover:bg-[#0ea16f]">
-            {isPasswordLoading ? "Updating..." : "Update Password"}
+            {isPasswordLoading ? "Uppdaterar..." : "Uppdatera lösenord"}
           </Button>
         </form>
       </Form>
