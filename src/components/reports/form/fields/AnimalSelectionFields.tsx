@@ -36,9 +36,15 @@ const AnimalSelectionFields = ({
     initialData?.animal_sub_subtype_id ? initialData.animal_sub_subtype_id.toString() : ""
   );
 
+  // Get available subtypes for the selected animal type
+  const availableSubtypes = animalTypeId ? animalSubtypes[parseInt(animalTypeId)] || [] : [];
+  
+  // Get available sub-subtypes for the selected subtype
+  const availableSubSubtypes = animalSubtypeId ? animalSubSubtypes[parseInt(animalSubtypeId)] || [] : [];
+
   useEffect(() => {
     const typeId = parseInt(animalTypeId);
-    if (typeId && typeId !== 0) {
+    if (!isNaN(typeId) && typeId !== 0) {
       onChange({
         animal_type_id: typeId,
         animal_subtype_id: animalSubtypeId ? parseInt(animalSubtypeId) : undefined,
@@ -49,13 +55,13 @@ const AnimalSelectionFields = ({
 
   const handleAnimalTypeChange = (value: string) => {
     setAnimalTypeId(value);
-    setAnimalSubtypeId("");
-    setAnimalSubSubtypeId("");
+    setAnimalSubtypeId("");  // Reset subtype when type changes
+    setAnimalSubSubtypeId("");  // Reset sub-subtype when type changes
   };
 
   const handleAnimalSubtypeChange = (value: string) => {
     setAnimalSubtypeId(value);
-    setAnimalSubSubtypeId("");
+    setAnimalSubSubtypeId("");  // Reset sub-subtype when subtype changes
   };
 
   return (
@@ -66,18 +72,18 @@ const AnimalSelectionFields = ({
         onChange={handleAnimalTypeChange}
       />
 
-      {animalTypeId && animalSubtypes[parseInt(animalTypeId)] && (
+      {availableSubtypes.length > 0 && (
         <AnimalSubtypeSelect
           value={animalSubtypeId}
-          subtypes={animalSubtypes[parseInt(animalTypeId)]}
+          subtypes={availableSubtypes}
           onChange={handleAnimalSubtypeChange}
         />
       )}
 
-      {animalSubtypeId && animalSubSubtypes[parseInt(animalSubtypeId)] && (
+      {animalSubtypeId && availableSubSubtypes.length > 0 && (
         <AnimalSubSubtypeSelect
           value={animalSubSubtypeId}
-          subSubtypes={animalSubSubtypes[parseInt(animalSubtypeId)]}
+          subSubtypes={availableSubSubtypes}
           onChange={setAnimalSubSubtypeId}
         />
       )}
