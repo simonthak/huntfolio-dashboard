@@ -68,6 +68,14 @@ const AnimalEntry = ({
     setAnimalSubSubtypeId(""); // Reset sub-subtype when subtype changes
   };
 
+  console.log("Current animal entry state:", {
+    animalTypeId,
+    animalSubtypeId,
+    animalSubSubtypeId,
+    quantity,
+    availableSubSubtypes: animalSubtypeId ? animalSubSubtypes[parseInt(animalSubtypeId)] : []
+  });
+
   return (
     <div className="flex gap-2 items-start">
       <div className="flex-1 space-y-2">
