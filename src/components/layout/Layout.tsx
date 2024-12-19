@@ -25,17 +25,26 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       try {
         console.log("Checking user session and team membership...");
         
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error("Session error:", sessionError);
           throw sessionError;
         }
 
-        const session = sessionData?.session;
-
         if (!session) {
           console.log("No session found, redirecting to login");
+          if (location.pathname !== '/login') {
+            navigate("/login");
+          }
+          if (isSubscribed) setIsLoading(false);
+          return;
+        }
+
+        // Verify the session is still valid
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) {
+          console.error("Session refresh error:", refreshError);
           if (location.pathname !== '/login') {
             navigate("/login");
           }
@@ -48,9 +57,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           .from('team_members')
           .select('team_id')
           .eq('user_id', session.user.id)
-          .single();
+          .limit(1)
+          .maybeSingle();
 
-        if (teamError && teamError.code !== 'PGRST116') {
+        if (teamError) {
           console.error('Error checking team membership:', teamError);
           toast.error('Kunde inte kontrollera lagmedlemskap');
           if (isSubscribed) setIsLoading(false);
@@ -85,14 +95,16 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     checkUserAndTeam();
 
     // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
-      if (event === 'SIGNED_OUT') {
-        console.log("User signed out, redirecting to login");
-        navigate("/login");
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        console.log("User signed out or token refreshed");
+        if (!session && location.pathname !== '/login') {
+          navigate("/login");
+        }
       } else if (event === 'SIGNED_IN' && session) {
         console.log("User signed in, checking team membership");
-        checkUserAndTeam();
+        await checkUserAndTeam();
       }
     });
 

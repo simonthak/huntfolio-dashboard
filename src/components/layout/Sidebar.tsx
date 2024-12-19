@@ -11,11 +11,24 @@ const Sidebar = () => {
 
   const handleLogout = async () => {
     try {
+      // First try to refresh the session to ensure we have a valid token
+      const { error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError) {
+        console.error("Session refresh error:", refreshError);
+        // If refresh fails, we can assume the user is already logged out
+        navigate("/login");
+        return;
+      }
+
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      
+      console.log("Successfully logged out");
       navigate("/login");
     } catch (error) {
       console.error("Error logging out:", error);
+      // Even if there's an error, redirect to login for safety
+      navigate("/login");
       toast.error("Ett fel uppstod vid utloggning");
     }
   };
