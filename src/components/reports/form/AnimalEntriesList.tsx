@@ -9,12 +9,17 @@ interface AnimalEntriesListProps {
     animal_sub_subtype_id?: number;
     quantity: number;
   }>;
-  animalTypes: any[];
-  animalSubtypes: Record<number, any[]>;
-  animalSubSubtypes: Record<number, any[]>;
+  animalTypes: Array<{ id: number; name: string }>;
+  animalSubtypes: Record<number, Array<{ id: number; name: string }>>;
+  animalSubSubtypes: Record<number, Array<{ id: number; name: string }>>;
   onAddAnimal: () => void;
   onRemoveAnimal: (index: number) => void;
-  onAnimalChange: (index: number, data: any) => void;
+  onAnimalChange: (index: number, data: {
+    animal_type_id: number;
+    animal_subtype_id?: number;
+    animal_sub_subtype_id?: number;
+    quantity: number;
+  }) => void;
 }
 
 const AnimalEntriesList = ({

@@ -4,7 +4,7 @@ import { useAnimalTypes } from "@/hooks/useAnimalTypes";
 import HuntTypeSelector from "./HuntTypeSelector";
 import DateField from "./fields/DateField";
 import ParticipantField from "./fields/ParticipantField";
-import AnimalsField from "./fields/AnimalsField";
+import AnimalsField from "./AnimalsField";
 import DescriptionField from "./fields/DescriptionField";
 
 interface ReportFormFieldsProps {
