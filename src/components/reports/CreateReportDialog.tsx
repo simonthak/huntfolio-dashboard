@@ -25,7 +25,7 @@ const CreateReportDialog = ({ open, onOpenChange, onReportCreated }: CreateRepor
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create New Hunting Report</DialogTitle>
+          <DialogTitle>Skapa ny jaktrapport</DialogTitle>
         </DialogHeader>
         <ReportForm
           onSubmit={createReport}
