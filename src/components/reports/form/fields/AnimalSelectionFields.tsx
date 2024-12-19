@@ -44,24 +44,8 @@ const AnimalSelectionFields = ({
         animal_subtype_id: animalSubtypeId ? parseInt(animalSubtypeId) : undefined,
         animal_sub_subtype_id: animalSubSubtypeId ? parseInt(animalSubSubtypeId) : undefined,
       });
-
-      // Only log when we have valid selections and available options
-      const availableSubtypes = animalSubtypes[typeId];
-      if (availableSubtypes?.length > 0) {
-        const subtypeId = parseInt(animalSubtypeId);
-        const availableSubSubtypes = subtypeId ? animalSubSubtypes[subtypeId] : [];
-        
-        if (process.env.NODE_ENV === 'development') {
-          console.log("Valid animal selection:", {
-            type: animalTypes.find(t => t.id === typeId)?.name,
-            subtype: availableSubtypes.find(st => st.id === subtypeId)?.name,
-            availableSubtypes: availableSubtypes.map(st => st.name),
-            availableSubSubtypes: availableSubSubtypes?.map(sst => sst.name) || []
-          });
-        }
-      }
     }
-  }, [animalTypeId, animalSubtypeId, animalSubSubtypeId, onChange, animalTypes, animalSubtypes, animalSubSubtypes]);
+  }, [animalTypeId, animalSubtypeId, animalSubSubtypeId, onChange]);
 
   const handleAnimalTypeChange = (value: string) => {
     setAnimalTypeId(value);
