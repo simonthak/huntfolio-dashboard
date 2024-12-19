@@ -97,7 +97,7 @@ const Index = () => {
       change: null 
     },
     { 
-      label: "Jaktlycka", 
+      label: "Fällt vilt", 
       value: `${stats.successRate}%`, 
       icon: Target, 
       change: null 
