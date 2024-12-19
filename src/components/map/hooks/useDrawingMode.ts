@@ -47,7 +47,7 @@ export const useDrawingMode = ({ map, draw, onFeatureCreate }: UseDrawingModePro
       enableDragMode();
       setShowDrawInstructions(false);
     } else if (mode === 'area') {
-      enableAreaMode(onFeatureCreate);
+      enableAreaMode(map, draw, onFeatureCreate);
       setShowDrawInstructions(true);
     } else if (mode === 'pass') {
       enablePassMode();
