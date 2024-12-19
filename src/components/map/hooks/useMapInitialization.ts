@@ -29,5 +29,13 @@ export const useMapInitialization = ({
   
   useMapBounds({ map, mapLoaded, areas });
 
+  // Ensure map starts in drag mode
+  if (map.current && draw.current) {
+    draw.current.changeMode('simple_select');
+    if (map.current.getCanvas()) {
+      map.current.getCanvas().style.cursor = 'grab';
+    }
+  }
+
   return { mapContainer, map, draw, mapLoaded };
 };
