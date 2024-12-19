@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { Feature } from 'geojson';
 import { useMapInstance } from './useMapInstance';
 import { useMapControls } from './useMapControls';
@@ -29,13 +29,16 @@ export const useMapInitialization = ({
   
   useMapBounds({ map, mapLoaded, areas });
 
-  // Ensure map starts in drag mode
-  if (map.current && draw.current) {
-    draw.current.changeMode('simple_select');
-    if (map.current.getCanvas()) {
-      map.current.getCanvas().style.cursor = 'grab';
+  // Set initial mode after map and draw are initialized
+  useEffect(() => {
+    if (map.current && draw.current && mapLoaded) {
+      console.log('Setting initial drag mode');
+      draw.current.changeMode('simple_select');
+      if (map.current.getCanvas()) {
+        map.current.getCanvas().style.cursor = 'grab';
+      }
     }
-  }
+  }, [map.current, draw.current, mapLoaded]);
 
   return { mapContainer, map, draw, mapLoaded };
 };
