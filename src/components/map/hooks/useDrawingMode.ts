@@ -33,7 +33,7 @@ export const useDrawingMode = ({ map, draw, onFeatureCreate }: UseDrawingModePro
 
     // Remove any existing click handlers
     if (map.current.listens('click')) {
-      map.current.off('click', handleMapClick);
+      map.current.off('click');
     }
 
     if (mode === 'drag') {
@@ -61,16 +61,6 @@ export const useDrawingMode = ({ map, draw, onFeatureCreate }: UseDrawingModePro
     draw.current.changeMode('draw_polygon');
     map.current.getCanvas().style.cursor = 'crosshair';
     setShowDrawInstructions(true);
-    
-    const onDrawCreate = () => {
-      setShowDrawInstructions(false);
-      if (map.current) {
-        map.current.getCanvas().style.cursor = 'grab';
-      }
-    };
-    
-    map.current.once('draw.create', onDrawCreate);
-    console.log('Draw mode changed to draw_polygon');
   };
 
   const handleMapClick = (e: mapboxgl.MapMouseEvent) => {
@@ -85,13 +75,13 @@ export const useDrawingMode = ({ map, draw, onFeatureCreate }: UseDrawingModePro
     };
     
     onFeatureCreate(JSON.parse(JSON.stringify(feature)));
-    setDrawMode('drag');
     
     // Clean up and reset cursor
     if (map.current) {
       map.current.off('click', handleMapClick);
       map.current.getCanvas().style.cursor = 'grab';
     }
+    setDrawMode('drag');
   };
 
   const handlePassMode = () => {
@@ -101,12 +91,9 @@ export const useDrawingMode = ({ map, draw, onFeatureCreate }: UseDrawingModePro
     draw.current.changeMode('simple_select');
     map.current.getCanvas().style.cursor = 'crosshair';
     
-    // Remove any existing click handlers
-    if (map.current.listens('click')) {
-      map.current.off('click', handleMapClick);
-    }
-    
-    map.current.once('click', handleMapClick);
+    // Remove any existing click handlers before adding a new one
+    map.current.off('click', handleMapClick);
+    map.current.on('click', handleMapClick);
   };
 
   return {

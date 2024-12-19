@@ -38,7 +38,7 @@ export const useMapInitialization = ({
         map.current.getCanvas().style.cursor = 'grab';
       }
     }
-  }, [map.current, draw.current, mapLoaded]);
+  }, [mapLoaded]);
 
   return { mapContainer, map, draw, mapLoaded };
 };

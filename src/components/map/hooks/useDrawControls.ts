@@ -10,7 +10,7 @@ export const useDrawControls = () => {
     draw.current = new MapboxDraw({
       displayControlsDefault: false,
       controls: {},
-      defaultMode: 'draw_polygon',
+      defaultMode: 'simple_select',
       styles
     });
 
