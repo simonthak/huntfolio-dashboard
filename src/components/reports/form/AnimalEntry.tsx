@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash } from "lucide-react";
+import AnimalTypeSelect from "./fields/AnimalTypeSelect";
+import AnimalSubtypeSelect from "./fields/AnimalSubtypeSelect";
+import AnimalSubSubtypeSelect from "./fields/AnimalSubSubtypeSelect";
+import QuantityInput from "./fields/QuantityInput";
 
 interface AnimalEntryProps {
   initialData?: {
@@ -69,57 +71,29 @@ const AnimalEntry = ({
   return (
     <div className="flex gap-2 items-start">
       <div className="flex-1 space-y-2">
-        <Select value={animalTypeId} onValueChange={handleAnimalTypeChange}>
-          <SelectTrigger>
-            <SelectValue placeholder="Välj djurtyp" />
-          </SelectTrigger>
-          <SelectContent>
-            {animalTypes.map((type) => (
-              <SelectItem key={type.id} value={type.id.toString()}>
-                {type.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <AnimalTypeSelect
+          value={animalTypeId}
+          animalTypes={animalTypes}
+          onChange={handleAnimalTypeChange}
+        />
 
         {animalTypeId && animalSubtypes[parseInt(animalTypeId)] && (
-          <Select value={animalSubtypeId} onValueChange={handleAnimalSubtypeChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Välj underkategori" />
-            </SelectTrigger>
-            <SelectContent>
-              {animalSubtypes[parseInt(animalTypeId)].map((subtype) => (
-                <SelectItem key={subtype.id} value={subtype.id.toString()}>
-                  {subtype.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <AnimalSubtypeSelect
+            value={animalSubtypeId}
+            subtypes={animalSubtypes[parseInt(animalTypeId)]}
+            onChange={handleAnimalSubtypeChange}
+          />
         )}
 
         {animalSubtypeId && animalSubSubtypes[parseInt(animalSubtypeId)] && (
-          <Select value={animalSubSubtypeId} onValueChange={setAnimalSubSubtypeId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Välj detaljerad kategori" />
-            </SelectTrigger>
-            <SelectContent>
-              {animalSubSubtypes[parseInt(animalSubtypeId)].map((subSubtype) => (
-                <SelectItem key={subSubtype.id} value={subSubtype.id.toString()}>
-                  {subSubtype.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <AnimalSubSubtypeSelect
+            value={animalSubSubtypeId}
+            subSubtypes={animalSubSubtypes[parseInt(animalSubtypeId)]}
+            onChange={setAnimalSubSubtypeId}
+          />
         )}
 
-        <Input
-          type="number"
-          min="1"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-          placeholder="Antal"
-          className="no-spinner"
-        />
+        <QuantityInput value={quantity} onChange={setQuantity} />
       </div>
 
       <Button
