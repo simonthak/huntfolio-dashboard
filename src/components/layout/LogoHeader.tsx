@@ -21,7 +21,7 @@ const LogoHeader = () => {
       ) : (
         <img src={logoUrl} alt="Antlers logo" className="w-8 h-8" />
       )}
-      <span className="text-xl font-semibold text-gray-900">Antlers</span>
+      <span className="text-2xl font-semibold text-gray-900">Antlers</span>
     </div>
   );
 };
