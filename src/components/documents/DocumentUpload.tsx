@@ -58,7 +58,7 @@ const DocumentUpload = ({ onUpload }: DocumentUploadProps) => {
             style={{ backgroundColor: '#13B67F' }}
             className="text-white hover:bg-[#0ea16f]"
           >
-            {selectedFile ? selectedFile.name : 'Ladda upp'}
+            Ladda upp
           </Button>
         </div>
       </div>
