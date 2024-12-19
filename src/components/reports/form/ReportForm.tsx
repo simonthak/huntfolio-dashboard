@@ -13,6 +13,7 @@ interface ReportFormProps {
     animals: Array<{
       animal_type_id: number;
       animal_subtype_id?: number;
+      animal_sub_subtype_id?: number;
       quantity: number;
     }>;
   };
@@ -24,6 +25,7 @@ interface ReportFormProps {
     animals: Array<{
       animal_type_id: number;
       animal_subtype_id?: number;
+      animal_sub_subtype_id?: number;
       quantity: number;
     }>;
   }) => Promise<void>;
