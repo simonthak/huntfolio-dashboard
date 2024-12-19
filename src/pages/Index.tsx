@@ -103,7 +103,7 @@ const Index = () => {
       change: null 
     },
     { 
-      label: "Fällt Vilt", 
+      label: "Jaktlycka", 
       value: stats.totalGame.toString(), 
       icon: Trophy, 
       change: null 
