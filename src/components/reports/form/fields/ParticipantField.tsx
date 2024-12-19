@@ -9,7 +9,7 @@ interface ParticipantFieldProps {
 const ParticipantField = ({ value, onChange }: ParticipantFieldProps) => {
   return (
     <div className="space-y-2">
-      <Label htmlFor="participantCount">Number of Participants</Label>
+      <Label htmlFor="participantCount">Antal deltagare</Label>
       <Input
         id="participantCount"
         type="number"
@@ -17,7 +17,7 @@ const ParticipantField = ({ value, onChange }: ParticipantFieldProps) => {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required
-        placeholder="Enter number of participants"
+        placeholder="Ange antal deltagare"
         className="no-spinner"
       />
     </div>

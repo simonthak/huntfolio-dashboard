@@ -24,7 +24,7 @@ const AnimalsField = ({
 }: AnimalsFieldProps) => {
   return (
     <div className="space-y-2">
-      <Label>Animals</Label>
+      <Label>Djur</Label>
       <AnimalEntriesList
         animals={animals}
         animalTypes={animalTypes}

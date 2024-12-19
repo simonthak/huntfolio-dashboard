@@ -9,12 +9,12 @@ interface DescriptionFieldProps {
 const DescriptionField = ({ value, onChange }: DescriptionFieldProps) => {
   return (
     <div className="space-y-2">
-      <Label htmlFor="description">Description (Optional)</Label>
+      <Label htmlFor="description">Beskrivning (Valfritt)</Label>
       <Textarea
         id="description"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Add details about the hunt..."
+        placeholder="Lägg till detaljer om jakten..."
         rows={3}
       />
     </div>
