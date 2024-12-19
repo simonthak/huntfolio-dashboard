@@ -1,6 +1,7 @@
 export interface ReportAnimal {
   animal_type: { name: string };
   animal_subtype?: { name: string };
+  animal_sub_subtype?: { name: string };
   quantity: number;
 }
 
