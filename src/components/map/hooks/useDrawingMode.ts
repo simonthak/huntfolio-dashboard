@@ -25,8 +25,8 @@ export const useDrawingMode = ({ map, draw, onFeatureCreate }: UseDrawingModePro
       setDrawMode(null);
       draw.current.changeMode('simple_select');
       map.current.getCanvas().style.cursor = 'grab';
-      if (map.current.listens('click', handleMapClick)) {
-        map.current.off('click', handleMapClick);
+      if (map.current.listens('click')) {
+        map.current.off('click');
       }
       return;
     }
@@ -79,7 +79,7 @@ export const useDrawingMode = ({ map, draw, onFeatureCreate }: UseDrawingModePro
     
     // Clean up and reset cursor
     if (map.current) {
-      map.current.off('click', handleMapClick);
+      map.current.off('click');
       map.current.getCanvas().style.cursor = 'grab';
     }
   };
@@ -92,8 +92,8 @@ export const useDrawingMode = ({ map, draw, onFeatureCreate }: UseDrawingModePro
     map.current.getCanvas().style.cursor = 'crosshair';
     
     // Remove any existing click handlers
-    if (map.current.listens('click', handleMapClick)) {
-      map.current.off('click', handleMapClick);
+    if (map.current.listens('click')) {
+      map.current.off('click');
     }
     
     map.current.once('click', handleMapClick);

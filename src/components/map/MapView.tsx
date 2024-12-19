@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { Feature } from 'geojson';
 import MapToolbar from './MapToolbar';
 import CreateAreaDialog from './CreateAreaDialog';
@@ -10,6 +8,7 @@ import { useMapInitialization } from './hooks/useMapInitialization';
 import { useMapLayers } from './hooks/useMapLayers';
 import { useMapData } from './hooks/useMapData';
 import { useDrawingMode } from './hooks/useDrawingMode';
+import { useMapboxToken } from './hooks/useMapboxToken';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 const MapView = () => {
@@ -19,19 +18,7 @@ const MapView = () => {
   const [drawMode, setDrawMode] = useState<'area' | 'pass' | null>(null);
   const [drawnFeature, setDrawnFeature] = useState<Feature | null>(null);
 
-  const { data: mapboxToken, isError, error } = useQuery({
-    queryKey: ['mapbox-token'],
-    queryFn: async () => {
-      console.log('Fetching Mapbox token...');
-      const { data, error } = await supabase.functions.invoke('get-mapbox-token');
-      if (error) {
-        console.error('Error fetching Mapbox token:', error);
-        throw error;
-      }
-      console.log('Mapbox token fetched successfully');
-      return data.token;
-    },
-  });
+  const { data: mapboxToken, isError, error } = useMapboxToken();
 
   const { areas, passes } = useMapData(currentTeamId);
 
