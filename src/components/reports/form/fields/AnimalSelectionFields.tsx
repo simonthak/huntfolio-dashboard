@@ -43,8 +43,17 @@ const AnimalSelectionFields = ({
         animal_subtype_id: animalSubtypeId ? parseInt(animalSubtypeId) : undefined,
         animal_sub_subtype_id: animalSubSubtypeId ? parseInt(animalSubSubtypeId) : undefined,
       });
+
+      // Only log when values actually change
+      console.log("Animal selection updated:", {
+        animalTypeId,
+        animalSubtypeId,
+        animalSubSubtypeId,
+        availableSubtypes: animalTypeId ? animalSubtypes[parseInt(animalTypeId)] : [],
+        availableSubSubtypes: animalSubtypeId ? animalSubSubtypes[parseInt(animalSubtypeId)] : [],
+      });
     }
-  }, [animalTypeId, animalSubtypeId, animalSubSubtypeId, onChange]);
+  }, [animalTypeId, animalSubtypeId, animalSubSubtypeId, onChange, animalSubtypes, animalSubSubtypes]);
 
   const handleAnimalTypeChange = (value: string) => {
     setAnimalTypeId(value);
@@ -56,15 +65,6 @@ const AnimalSelectionFields = ({
     setAnimalSubtypeId(value);
     setAnimalSubSubtypeId("");
   };
-
-  // Add debug logging
-  console.log("Animal selection state:", {
-    animalTypeId,
-    animalSubtypeId,
-    animalSubSubtypeId,
-    availableSubSubtypes: animalSubtypeId ? animalSubSubtypes[parseInt(animalSubtypeId)] : [],
-    fullSubSubtypesObject: animalSubSubtypes
-  });
 
   return (
     <div className="space-y-2">
