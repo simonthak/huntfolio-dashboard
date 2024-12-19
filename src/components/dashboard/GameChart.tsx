@@ -66,7 +66,7 @@ const GameChart = ({ teamId }: GameChartProps) => {
   return (
     <Card className="col-span-4">
       <CardHeader>
-        <CardTitle>Fällt Vilt Översikt</CardTitle>
+        <CardTitle>Fällt vilt</CardTitle>
         <CardDescription>Antal fällt vilt per månad</CardDescription>
       </CardHeader>
       <CardContent className="pb-4">
