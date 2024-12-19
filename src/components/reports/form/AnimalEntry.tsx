@@ -8,14 +8,17 @@ interface AnimalEntryProps {
   initialData?: {
     animal_type_id: number;
     animal_subtype_id?: number;
+    animal_sub_subtype_id?: number;
     quantity: number;
   };
   animalTypes: Array<{ id: number; name: string }>;
   animalSubtypes: Record<number, Array<{ id: number; name: string }>>;
+  animalSubSubtypes: Record<number, Array<{ id: number; name: string }>>;
   onRemove: () => void;
   onChange: (data: {
     animal_type_id: number;
     animal_subtype_id?: number;
+    animal_sub_subtype_id?: number;
     quantity: number;
   }) => void;
 }
@@ -24,6 +27,7 @@ const AnimalEntry = ({
   initialData,
   animalTypes,
   animalSubtypes,
+  animalSubSubtypes,
   onRemove,
   onChange,
 }: AnimalEntryProps) => {
@@ -32,6 +36,9 @@ const AnimalEntry = ({
   );
   const [animalSubtypeId, setAnimalSubtypeId] = useState<string>(
     initialData?.animal_subtype_id?.toString() || ""
+  );
+  const [animalSubSubtypeId, setAnimalSubSubtypeId] = useState<string>(
+    initialData?.animal_sub_subtype_id?.toString() || ""
   );
   const [quantity, setQuantity] = useState<string>(
     initialData?.quantity ? initialData.quantity.toString() : ""
@@ -42,14 +49,21 @@ const AnimalEntry = ({
       onChange({
         animal_type_id: parseInt(animalTypeId),
         animal_subtype_id: animalSubtypeId ? parseInt(animalSubtypeId) : undefined,
+        animal_sub_subtype_id: animalSubSubtypeId ? parseInt(animalSubSubtypeId) : undefined,
         quantity: quantity ? parseInt(quantity) : 0,
       });
     }
-  }, [animalTypeId, animalSubtypeId, quantity, onChange]);
+  }, [animalTypeId, animalSubtypeId, animalSubSubtypeId, quantity, onChange]);
 
   const handleAnimalTypeChange = (value: string) => {
     setAnimalTypeId(value);
     setAnimalSubtypeId(""); // Reset subtype when type changes
+    setAnimalSubSubtypeId(""); // Reset sub-subtype when type changes
+  };
+
+  const handleAnimalSubtypeChange = (value: string) => {
+    setAnimalSubtypeId(value);
+    setAnimalSubSubtypeId(""); // Reset sub-subtype when subtype changes
   };
 
   return (
@@ -57,7 +71,7 @@ const AnimalEntry = ({
       <div className="flex-1 space-y-2">
         <Select value={animalTypeId} onValueChange={handleAnimalTypeChange}>
           <SelectTrigger>
-            <SelectValue placeholder="Select animal type" />
+            <SelectValue placeholder="Välj djurtyp" />
           </SelectTrigger>
           <SelectContent>
             {animalTypes.map((type) => (
@@ -69,9 +83,9 @@ const AnimalEntry = ({
         </Select>
 
         {animalTypeId && animalSubtypes[parseInt(animalTypeId)] && (
-          <Select value={animalSubtypeId} onValueChange={setAnimalSubtypeId}>
+          <Select value={animalSubtypeId} onValueChange={handleAnimalSubtypeChange}>
             <SelectTrigger>
-              <SelectValue placeholder="Select subtype (optional)" />
+              <SelectValue placeholder="Välj underkategori" />
             </SelectTrigger>
             <SelectContent>
               {animalSubtypes[parseInt(animalTypeId)].map((subtype) => (
@@ -83,12 +97,27 @@ const AnimalEntry = ({
           </Select>
         )}
 
+        {animalSubtypeId && animalSubSubtypes[parseInt(animalSubtypeId)] && (
+          <Select value={animalSubSubtypeId} onValueChange={setAnimalSubSubtypeId}>
+            <SelectTrigger>
+              <SelectValue placeholder="Välj detaljerad kategori" />
+            </SelectTrigger>
+            <SelectContent>
+              {animalSubSubtypes[parseInt(animalSubtypeId)].map((subSubtype) => (
+                <SelectItem key={subSubtype.id} value={subSubtype.id.toString()}>
+                  {subSubtype.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
         <Input
           type="number"
           min="1"
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
-          placeholder="Quantity"
+          placeholder="Antal"
           className="no-spinner"
         />
       </div>

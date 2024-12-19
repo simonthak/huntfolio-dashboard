@@ -9,6 +9,35 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      animal_sub_subtypes: {
+        Row: {
+          animal_subtype_id: number
+          created_at: string
+          id: number
+          name: string
+        }
+        Insert: {
+          animal_subtype_id: number
+          created_at?: string
+          id?: number
+          name: string
+        }
+        Update: {
+          animal_subtype_id?: number
+          created_at?: string
+          id?: number
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "animal_sub_subtypes_animal_subtype_id_fkey"
+            columns: ["animal_subtype_id"]
+            isOneToOne: false
+            referencedRelation: "animal_subtypes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       animal_subtypes: {
         Row: {
           animal_type_id: number | null
