@@ -10,24 +10,18 @@ interface UseDrawingModeProps {
 }
 
 export const useDrawingMode = ({ map, draw, onFeatureCreate }: UseDrawingModeProps) => {
-  const [drawMode, setDrawMode] = useState<'area' | 'pass' | null>(null);
+  const [drawMode, setDrawMode] = useState<'drag' | 'area' | 'pass'>('drag');
   const [showDrawInstructions, setShowDrawInstructions] = useState(false);
 
-  const handleToolClick = (mode: 'area' | 'pass') => {
+  const handleToolClick = (mode: 'drag' | 'area' | 'pass') => {
     console.log('DrawingMode: Tool clicked:', mode);
     if (!draw.current || !map.current) {
       console.error('Draw or map not initialized');
       return;
     }
 
-    // If clicking the same mode again, disable it
+    // If clicking the same mode again, do nothing
     if (mode === drawMode) {
-      setDrawMode(null);
-      draw.current.changeMode('simple_select');
-      map.current.getCanvas().style.cursor = 'grab';
-      if (map.current.listens('click')) {
-        map.current.off('click', handleMapClick);
-      }
       return;
     }
 
@@ -37,11 +31,27 @@ export const useDrawingMode = ({ map, draw, onFeatureCreate }: UseDrawingModePro
     draw.current.deleteAll();
     console.log('Deleted existing features');
 
-    if (mode === 'area') {
+    // Remove any existing click handlers
+    if (map.current.listens('click')) {
+      map.current.off('click', handleMapClick);
+    }
+
+    if (mode === 'drag') {
+      handleDragMode();
+    } else if (mode === 'area') {
       handleAreaMode();
     } else if (mode === 'pass') {
       handlePassMode();
     }
+  };
+
+  const handleDragMode = () => {
+    if (!draw.current || !map.current) return;
+
+    console.log('Enabling drag mode');
+    draw.current.changeMode('simple_select');
+    map.current.getCanvas().style.cursor = 'grab';
+    setShowDrawInstructions(false);
   };
 
   const handleAreaMode = () => {
@@ -75,7 +85,7 @@ export const useDrawingMode = ({ map, draw, onFeatureCreate }: UseDrawingModePro
     };
     
     onFeatureCreate(JSON.parse(JSON.stringify(feature)));
-    setDrawMode(null);
+    setDrawMode('drag');
     
     // Clean up and reset cursor
     if (map.current) {

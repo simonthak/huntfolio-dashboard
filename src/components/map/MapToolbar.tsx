@@ -1,13 +1,14 @@
 import { Button } from "@/components/ui/button";
-import { MapPin, Pencil } from "lucide-react";
+import { MapPin, Pencil, Hand } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface MapToolbarProps {
-  onToolClick: (mode: 'area' | 'pass') => void;
+  onToolClick: (mode: 'drag' | 'area' | 'pass') => void;
+  activeMode: 'drag' | 'area' | 'pass';
 }
 
-const MapToolbar = ({ onToolClick }: MapToolbarProps) => {
-  const handleToolClick = (mode: 'area' | 'pass') => {
+const MapToolbar = ({ onToolClick, activeMode }: MapToolbarProps) => {
+  const handleToolClick = (mode: 'drag' | 'area' | 'pass') => {
     console.log('MapToolbar: Tool clicked:', mode);
     onToolClick(mode);
   };
@@ -17,7 +18,26 @@ const MapToolbar = ({ onToolClick }: MapToolbarProps) => {
       <Tooltip delayDuration={0}>
         <TooltipTrigger asChild>
           <Button 
-            variant="outline" 
+            variant={activeMode === 'drag' ? 'default' : 'outline'} 
+            size="icon"
+            onClick={() => handleToolClick('drag')}
+          >
+            <Hand className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent 
+          side="bottom" 
+          className="bg-secondary text-secondary-foreground"
+          sideOffset={5}
+        >
+          Panorera kartan
+        </TooltipContent>
+      </Tooltip>
+
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          <Button 
+            variant={activeMode === 'area' ? 'default' : 'outline'} 
             size="icon"
             onClick={() => handleToolClick('area')}
           >
@@ -36,7 +56,7 @@ const MapToolbar = ({ onToolClick }: MapToolbarProps) => {
       <Tooltip delayDuration={0}>
         <TooltipTrigger asChild>
           <Button 
-            variant="outline" 
+            variant={activeMode === 'pass' ? 'default' : 'outline'} 
             size="icon"
             onClick={() => handleToolClick('pass')}
           >

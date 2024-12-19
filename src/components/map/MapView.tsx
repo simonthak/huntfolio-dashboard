@@ -15,11 +15,9 @@ const MapView = () => {
   const [searchParams] = useSearchParams();
   const currentTeamId = searchParams.get('team');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [drawMode, setDrawMode] = useState<'area' | 'pass' | null>(null);
   const [drawnFeature, setDrawnFeature] = useState<Feature | null>(null);
 
   const { data: mapboxToken, isError, error } = useMapboxToken();
-
   const { areas, passes } = useMapData(currentTeamId);
 
   const handleFeatureCreate = (feature: Feature) => {
@@ -34,7 +32,7 @@ const MapView = () => {
     areas: areas || [],
   });
 
-  const { showDrawInstructions, handleToolClick } = useDrawingMode({
+  const { drawMode, showDrawInstructions, handleToolClick } = useDrawingMode({
     map,
     draw,
     onFeatureCreate: handleFeatureCreate,
@@ -57,14 +55,14 @@ const MapView = () => {
   return (
     <div className="relative h-[calc(100vh-12rem)] w-full">
       <DrawingInstructions show={showDrawInstructions} />
-      <MapToolbar onToolClick={handleToolClick} />
+      <MapToolbar onToolClick={handleToolClick} activeMode={drawMode} />
       <div ref={mapContainer} className="absolute inset-0 bg-gray-100" />
       
       <CreateAreaDialog
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
         feature={drawnFeature}
-        type={drawMode}
+        type={drawMode === 'area' ? 'area' : drawMode === 'pass' ? 'pass' : null}
         teamId={currentTeamId}
       />
     </div>
