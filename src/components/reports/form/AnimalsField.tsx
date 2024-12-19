@@ -1,5 +1,5 @@
 import { Label } from "@/components/ui/label";
-import AnimalEntriesList from "../AnimalEntriesList";
+import AnimalEntriesList from "./AnimalEntriesList";
 
 interface AnimalsFieldProps {
   animals: Array<{
