@@ -14,9 +14,9 @@ const NoTeam = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#13B67F]/10">
             <Users className="w-8 h-8 text-[#13B67F]" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Join a Team</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Gå med i ett jaktlag</h1>
           <p className="text-gray-500">
-            You need to be part of a team to use this app. Create your own team or join an existing one.
+            Du behöver vara med i ett jaktlag för att använda appen. Skapa ditt eget lag eller gå med i ett befintligt.
           </p>
         </div>
 
@@ -31,7 +31,7 @@ const NoTeam = () => {
             onClick={() => setShowJoinTeamDialog(true)}
           >
             <Plus className="w-4 h-4 mr-2" />
-            Join Existing Team
+            Gå med i befintligt lag
           </Button>
         </div>
       </div>
