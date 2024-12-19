@@ -15,7 +15,7 @@ const LogoHeader = () => {
   }, []);
 
   return (
-    <div className="flex items-center gap-2 mb-6">
+    <div className="flex items-center justify-center gap-2 mb-6">
       {isLoading ? (
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       ) : (
