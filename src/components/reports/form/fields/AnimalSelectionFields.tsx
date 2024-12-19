@@ -48,13 +48,13 @@ const AnimalSelectionFields = ({
 
   const handleAnimalTypeChange = (value: string) => {
     setAnimalTypeId(value);
-    setAnimalSubtypeId(""); // Reset subtype when type changes
-    setAnimalSubSubtypeId(""); // Reset sub-subtype when type changes
+    setAnimalSubtypeId("");
+    setAnimalSubSubtypeId("");
   };
 
   const handleAnimalSubtypeChange = (value: string) => {
     setAnimalSubtypeId(value);
-    setAnimalSubSubtypeId(""); // Reset sub-subtype when subtype changes
+    setAnimalSubSubtypeId("");
   };
 
   console.log("Animal selection state:", {
@@ -76,7 +76,7 @@ const AnimalSelectionFields = ({
         <AnimalSubtypeSelect
           value={animalSubtypeId}
           subtypes={animalSubtypes[parseInt(animalTypeId)]}
-          onChange={handleAnimalSubtypeChange}
+          onChange={setAnimalSubtypeId}
         />
       )}
 

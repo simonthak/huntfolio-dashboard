@@ -4,6 +4,12 @@ import { Trash } from "lucide-react";
 import AnimalSelectionFields from "./fields/AnimalSelectionFields";
 import QuantityInput from "./fields/QuantityInput";
 
+interface AnimalData {
+  animal_type_id: number;
+  animal_subtype_id?: number | undefined;
+  animal_sub_subtype_id?: number | undefined;
+}
+
 interface AnimalEntryProps {
   initialData?: {
     animal_type_id: number;
@@ -34,11 +40,16 @@ const AnimalEntry = ({
   const [quantity, setQuantity] = useState<string>(
     initialData?.quantity ? initialData.quantity.toString() : ""
   );
-  const [animalData, setAnimalData] = useState({
+  
+  const [animalData, setAnimalData] = useState<AnimalData>({
     animal_type_id: initialData?.animal_type_id || 0,
     animal_subtype_id: initialData?.animal_subtype_id,
     animal_sub_subtype_id: initialData?.animal_sub_subtype_id,
   });
+
+  const handleAnimalDataChange = (data: AnimalData) => {
+    setAnimalData(data);
+  };
 
   useEffect(() => {
     if (animalData.animal_type_id) {
@@ -57,7 +68,7 @@ const AnimalEntry = ({
           animalTypes={animalTypes}
           animalSubtypes={animalSubtypes}
           animalSubSubtypes={animalSubSubtypes}
-          onChange={setAnimalData}
+          onChange={handleAnimalDataChange}
         />
         <QuantityInput value={quantity} onChange={setQuantity} />
       </div>
