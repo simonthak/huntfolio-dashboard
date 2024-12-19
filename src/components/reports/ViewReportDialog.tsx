@@ -29,33 +29,33 @@ const ViewReportDialog = ({ report, open, onOpenChange }: ViewReportDialogProps)
 
   const fullName = report.created_by_profile?.firstname && report.created_by_profile?.lastname
     ? `${report.created_by_profile.firstname} ${report.created_by_profile.lastname}`
-    : "Unknown";
+    : "Okänd";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Hunting Report Details</DialogTitle>
+          <DialogTitle>Jaktrapportdetaljer</DialogTitle>
         </DialogHeader>
         <ScrollArea className="h-[60vh] pr-4">
           <div className="space-y-6">
             <div>
-              <h3 className="font-semibold mb-2">Basic Information</h3>
+              <h3 className="font-semibold mb-2">Grundinformation</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500">Date</p>
+                  <p className="text-sm text-gray-500">Datum</p>
                   <p>{format(new Date(report.date), "MMMM d, yyyy")}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Hunt Type</p>
+                  <p className="text-sm text-gray-500">Jakttyp</p>
                   <p>{report.hunt_type.name}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Participants</p>
+                  <p className="text-sm text-gray-500">Deltagare</p>
                   <p>{report.participant_count}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Reported By</p>
+                  <p className="text-sm text-gray-500">Rapporterad av</p>
                   <p>{fullName}</p>
                 </div>
               </div>
@@ -63,14 +63,14 @@ const ViewReportDialog = ({ report, open, onOpenChange }: ViewReportDialogProps)
 
             {report.description && (
               <div>
-                <h3 className="font-semibold mb-2">Description</h3>
+                <h3 className="font-semibold mb-2">Beskrivning</h3>
                 <p className="text-gray-700">{report.description}</p>
               </div>
             )}
 
             {report.report_animals.length > 0 && (
               <div>
-                <h3 className="font-semibold mb-2">Animals</h3>
+                <h3 className="font-semibold mb-2">Djur</h3>
                 <div className="space-y-2">
                   {report.report_animals.map((animal, index) => (
                     <div key={index} className="flex items-center gap-2">
