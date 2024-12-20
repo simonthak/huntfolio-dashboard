@@ -31,24 +31,9 @@ export const useAuthCheck = () => {
           return;
         }
 
-        // Only try to refresh if we have a session
-        try {
-          console.log("Attempting to refresh session...");
-          const { error: refreshError } = await supabase.auth.refreshSession();
-          if (refreshError) {
-            console.error("Session refresh error:", refreshError);
-            // If refresh fails, clear the session and redirect to login
-            await supabase.auth.signOut();
-            if (location.pathname !== '/login') {
-              navigate("/login");
-            }
-            if (isSubscribed) setIsLoading(false);
-            return;
-          }
-          console.log("Session refreshed successfully");
-        } catch (refreshError) {
-          console.error("Error refreshing session:", refreshError);
-          // Handle refresh errors by clearing session and redirecting
+        // Check if refresh token exists before attempting refresh
+        if (!session.refresh_token) {
+          console.log("No refresh token found, signing out...");
           await supabase.auth.signOut();
           if (location.pathname !== '/login') {
             navigate("/login");
@@ -57,7 +42,32 @@ export const useAuthCheck = () => {
           return;
         }
 
-        console.log("Session found, checking team membership...");
+        try {
+          console.log("Valid refresh token found, attempting to refresh session...");
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+          
+          if (refreshError || !refreshData.session) {
+            console.error("Session refresh failed:", refreshError);
+            await supabase.auth.signOut();
+            if (location.pathname !== '/login') {
+              navigate("/login");
+            }
+            if (isSubscribed) setIsLoading(false);
+            return;
+          }
+          
+          console.log("Session refreshed successfully");
+        } catch (refreshError) {
+          console.error("Error during session refresh:", refreshError);
+          await supabase.auth.signOut();
+          if (location.pathname !== '/login') {
+            navigate("/login");
+          }
+          if (isSubscribed) setIsLoading(false);
+          return;
+        }
+
+        console.log("Session valid, checking team membership...");
         const { data: teamMemberships, error: teamError } = await supabase
           .from('team_members')
           .select('team_id')
@@ -72,7 +82,6 @@ export const useAuthCheck = () => {
           return;
         }
 
-        // If we're on a team-optional route, we don't need to check for team membership
         const TEAM_OPTIONAL_ROUTES = ['/profile', '/settings', '/no-team', '/login', '/notifications'];
         if (!teamMemberships && !TEAM_OPTIONAL_ROUTES.includes(location.pathname)) {
           console.log("No team membership found, redirecting to no-team");
