@@ -16,7 +16,7 @@ const TeamDropdown = () => {
   const [showJoinTeamDialog, setShowJoinTeamDialog] = useState(false);
   const { teams, currentTeamId, selectTeam } = useTeamSelection();
 
-  const currentTeam = teams.find(team => team.id === currentTeamId);
+  const currentTeam = teams.find(team => team.teams.id === currentTeamId);
 
   return (
     <DropdownMenu>
@@ -28,7 +28,7 @@ const TeamDropdown = () => {
         >
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-[#13B67F]" />
-            <span>{currentTeam?.name || "Välj lag"}</span>
+            <span>{currentTeam?.teams.name || "Välj lag"}</span>
           </div>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
@@ -36,12 +36,12 @@ const TeamDropdown = () => {
       <DropdownMenuContent className="w-56" align="start" side="right">
         {teams?.map((team) => (
           <DropdownMenuItem 
-            key={team.id}
-            onClick={() => selectTeam(team.id)}
-            className={currentTeamId === team.id ? "bg-primary/10" : ""}
+            key={team.teams.id}
+            onClick={() => selectTeam(team.teams.id)}
+            className={currentTeamId === team.teams.id ? "bg-primary/10" : ""}
           >
             <div className="flex items-center gap-2 w-full">
-              <span className="flex-1">{team.name}</span>
+              <span className="flex-1">{team.teams.name}</span>
               <span className="text-xs text-muted-foreground capitalize">
                 {team.role}
               </span>
