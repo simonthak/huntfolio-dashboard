@@ -31,7 +31,18 @@ export const useAuthCheck = () => {
           return;
         }
 
-        console.log("Session found, checking team membership...");
+        // Check if refresh token exists and refresh session if needed
+        if (session.refresh_token) {
+          console.log("Attempting to refresh session...");
+          const { error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError) {
+            console.error("Error refreshing session:", refreshError);
+            throw refreshError;
+          }
+          console.log("Session refreshed successfully");
+        }
+
+        console.log("Session valid, checking team membership...");
         const { data: teamMemberships, error: teamError } = await supabase
           .from('team_members')
           .select('team_id')
