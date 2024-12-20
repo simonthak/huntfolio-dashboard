@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -81,13 +81,15 @@ const TeamDropdown = () => {
     }
   });
 
-  // Auto-select first team if no team is selected and teams are available
-  if (teams.length > 0 && !currentTeamId && !location.pathname.includes('/no-team')) {
-    console.log("No team selected, auto-selecting first team:", teams[0].id);
-    const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.set('team', teams[0].id);
-    navigate(`${location.pathname}?${newSearchParams.toString()}`);
-  }
+  useEffect(() => {
+    // Auto-select first team if no team is selected, teams are available, and not on a team-optional route
+    if (teams.length > 0 && !currentTeamId && !location.pathname.includes('/no-team') && location.pathname !== '/login') {
+      console.log("No team selected, auto-selecting first team:", teams[0].id);
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set('team', teams[0].id);
+      navigate(`${location.pathname}?${newSearchParams.toString()}`);
+    }
+  }, [teams, currentTeamId, location.pathname, navigate, searchParams]);
 
   const handleTeamClick = (teamId: string) => {
     console.log("Switching to team:", teamId);
