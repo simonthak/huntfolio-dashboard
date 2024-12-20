@@ -1,7 +1,4 @@
 import { useState } from "react";
-import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Plus, Users } from "lucide-react";
 import {
@@ -13,80 +10,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import CreateTeamDialog from "../teams/CreateTeamDialog";
 import JoinTeamDialog from "../teams/JoinTeamDialog";
-import { toast } from "sonner";
+import { useTeamSelection } from "@/hooks/useTeamSelection";
 
 const TeamDropdown = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams] = useSearchParams();
-  const currentTeamId = searchParams.get('team');
   const [showJoinTeamDialog, setShowJoinTeamDialog] = useState(false);
-
-  const { data: teams = [], isError } = useQuery({
-    queryKey: ["user-teams"],
-    queryFn: async () => {
-      try {
-        console.log("Starting to fetch user teams...");
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        
-        if (authError) {
-          console.error("Auth error:", authError);
-          throw new Error("Authentication error");
-        }
-
-        if (!user) {
-          console.log("No authenticated user found");
-          throw new Error("Not authenticated");
-        }
-
-        console.log("Fetching team memberships for user:", user.id);
-        const { data: teamMemberships, error: membershipError } = await supabase
-          .from('team_members')
-          .select(`
-            role,
-            teams (
-              id,
-              name,
-              location
-            )
-          `)
-          .eq('user_id', user.id);
-
-        if (membershipError) {
-          console.error("Error fetching team memberships:", membershipError);
-          throw membershipError;
-        }
-
-        if (!teamMemberships?.length) {
-          console.log("No team memberships found, redirecting to no-team page");
-          navigate("/no-team");
-          return [];
-        }
-
-        console.log("Successfully fetched teams:", teamMemberships);
-        return teamMemberships.map(tm => ({
-          ...tm.teams,
-          role: tm.role
-        }));
-      } catch (error) {
-        console.error("Error in team fetch:", error);
-        throw error;
-      }
-    },
-    meta: {
-      onError: (error: Error) => {
-        console.error("Query error:", error);
-        toast.error("Kunde inte hämta lag");
-      }
-    }
-  });
-
-  const handleTeamClick = (teamId: string) => {
-    console.log("Switching to team:", teamId);
-    const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.set('team', teamId);
-    navigate(`${location.pathname}?${newSearchParams.toString()}`);
-  };
+  const { teams, currentTeamId, selectTeam } = useTeamSelection();
 
   const currentTeam = teams.find(team => team.id === currentTeamId);
 
@@ -109,7 +37,7 @@ const TeamDropdown = () => {
         {teams?.map((team) => (
           <DropdownMenuItem 
             key={team.id}
-            onClick={() => handleTeamClick(team.id)}
+            onClick={() => selectTeam(team.id)}
             className={currentTeamId === team.id ? "bg-primary/10" : ""}
           >
             <div className="flex items-center gap-2 w-full">
