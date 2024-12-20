@@ -31,10 +31,25 @@ export const useAuthCheck = () => {
           return;
         }
 
-        // Verify the session is still valid
-        const { error: refreshError } = await supabase.auth.refreshSession();
-        if (refreshError) {
-          console.error("Session refresh error:", refreshError);
+        // Only try to refresh if we have a session
+        try {
+          console.log("Attempting to refresh session...");
+          const { error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError) {
+            console.error("Session refresh error:", refreshError);
+            // If refresh fails, clear the session and redirect to login
+            await supabase.auth.signOut();
+            if (location.pathname !== '/login') {
+              navigate("/login");
+            }
+            if (isSubscribed) setIsLoading(false);
+            return;
+          }
+          console.log("Session refreshed successfully");
+        } catch (refreshError) {
+          console.error("Error refreshing session:", refreshError);
+          // Handle refresh errors by clearing session and redirecting
+          await supabase.auth.signOut();
           if (location.pathname !== '/login') {
             navigate("/login");
           }
