@@ -57,11 +57,11 @@ export const useAuthCheck = () => {
           return;
         }
 
-        if (!teamMemberships) {
+        // If we're on a team-optional route, we don't need to check for team membership
+        const TEAM_OPTIONAL_ROUTES = ['/profile', '/settings', '/no-team', '/login', '/notifications'];
+        if (!teamMemberships && !TEAM_OPTIONAL_ROUTES.includes(location.pathname)) {
           console.log("No team membership found, redirecting to no-team");
           navigate("/no-team");
-          if (isSubscribed) setIsLoading(false);
-          return;
         }
 
         if (isSubscribed) setIsLoading(false);
