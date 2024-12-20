@@ -81,6 +81,14 @@ const TeamDropdown = () => {
     }
   });
 
+  // Auto-select first team if no team is selected and teams are available
+  if (teams.length > 0 && !currentTeamId && !location.pathname.includes('/no-team')) {
+    console.log("No team selected, auto-selecting first team:", teams[0].id);
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('team', teams[0].id);
+    navigate(`${location.pathname}?${newSearchParams.toString()}`);
+  }
+
   const handleTeamClick = (teamId: string) => {
     console.log("Switching to team:", teamId);
     const newSearchParams = new URLSearchParams(searchParams);
