@@ -25,12 +25,12 @@ export const useTeamSelection = () => {
         
         if (authError) {
           console.error("Auth error:", authError);
-          throw new Error("Authentication error");
+          return [];
         }
 
         if (!user) {
           console.log("No authenticated user found");
-          throw new Error("Not authenticated");
+          return [];
         }
 
         console.log("Fetching team memberships for user:", user.id);
@@ -48,22 +48,20 @@ export const useTeamSelection = () => {
 
         if (membershipError) {
           console.error("Error fetching team memberships:", membershipError);
-          throw membershipError;
+          return [];
         }
 
         console.log("Successfully fetched teams:", teamMemberships);
-        return teamMemberships.map(tm => ({
-          ...tm.teams,
-          role: tm.role
-        }));
+        return teamMemberships;
       } catch (error) {
         console.error("Error in team fetch:", error);
-        throw error;
+        return [];
       }
     },
+    enabled: !isTeamOptionalRoute, // Only fetch teams if we're not on a team-optional route
   });
 
-  const shouldAutoSelectTeam = teams?.length > 0 && !currentTeamId && !isTeamOptionalRoute;
+  const shouldAutoSelectTeam = teams.length > 0 && !currentTeamId && !isTeamOptionalRoute;
   
   const selectTeam = (teamId: string) => {
     console.log("Selecting team:", teamId);

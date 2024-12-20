@@ -5,27 +5,32 @@ import LoadingSpinner from "./LoadingSpinner";
 import NoTeamSelected from "./NoTeamSelected";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
-  const { isLoading } = useAuthCheck();
+  const { isLoading: isAuthLoading } = useAuthCheck();
   const { 
     teams, 
     currentTeamId, 
-    isTeamOptionalRoute, 
-    shouldAutoSelectTeam 
+    isTeamOptionalRoute,
+    shouldAutoSelectTeam,
+    selectTeam,
+    isLoading: isTeamLoading 
   } = useTeamSelection();
 
-  if (isLoading) {
+  // Show loading state while checking auth or fetching teams
+  if (isAuthLoading || isTeamLoading) {
+    console.log("Layout: Loading state - Auth loading:", isAuthLoading, "Team loading:", isTeamLoading);
     return <LoadingSpinner />;
   }
 
   // Auto-select first team if needed
-  if (shouldAutoSelectTeam) {
-    console.log("Layout: No team selected, auto-selecting first team:", teams[0].id);
+  if (shouldAutoSelectTeam && teams.length > 0) {
+    console.log("Layout: Auto-selecting first team:", teams[0].teams.id);
+    selectTeam(teams[0].teams.id);
     return <LoadingSpinner />;
   }
 
   // Only show NoTeamSelected if we're not on a team-optional route and no team is selected
   if (!currentTeamId && !isTeamOptionalRoute) {
-    console.log("No team selected and not on team-optional route, showing NoTeamSelected");
+    console.log("Layout: No team selected and not on team-optional route");
     return <NoTeamSelected />;
   }
 
