@@ -4,7 +4,6 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import AuthCard from "@/components/auth/AuthCard";
-import { handleAuthError } from "@/components/auth/AuthErrorHandler";
 import { handleAuthEvent } from "@/components/auth/AuthEventHandler";
 
 const Login = () => {
@@ -12,7 +11,11 @@ const Login = () => {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Error checking session:", error);
+        return;
+      }
       if (session) {
         console.log("Active session found, redirecting to home");
         navigate("/");

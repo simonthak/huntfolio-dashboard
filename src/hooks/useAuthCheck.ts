@@ -30,19 +30,26 @@ export const useAuthCheck = () => {
           throw sessionError;
         }
 
-        if (!session) {
-          console.log("No session found, redirecting to login");
-          if (location.pathname !== '/login') {
-            navigate("/login");
-          }
+        // If we're on the login page and have a session, redirect to home
+        if (session && location.pathname === '/login') {
+          console.log("User already logged in, redirecting to home");
+          navigate("/");
           if (isMounted) setIsLoading(false);
           return;
         }
 
-        console.log("User signed in, checking team membership");
+        // If we don't have a session and we're not on login page, redirect to login
+        if (!session && location.pathname !== '/login') {
+          console.log("No session found, redirecting to login");
+          navigate("/login");
+          if (isMounted) setIsLoading(false);
+          return;
+        }
 
-        // Only check team membership if we're not on a team-optional route
-        if (!TEAM_OPTIONAL_ROUTES.includes(location.pathname)) {
+        // If we have a session and we're not on a team-optional route, check team membership
+        if (session && !TEAM_OPTIONAL_ROUTES.includes(location.pathname)) {
+          console.log("User signed in, checking team membership");
+          
           const { data: teamMemberships, error: teamError } = await supabase
             .from('team_members')
             .select('team_id')
@@ -74,18 +81,11 @@ export const useAuthCheck = () => {
       }
     };
 
-    // Initial check
     checkUserAndTeam();
 
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event);
-      if (event === 'SIGNED_OUT') {
-        console.log("User signed out");
-        if (location.pathname !== '/login') {
-          navigate("/login");
-        }
-      }
+      checkUserAndTeam();
     });
 
     return () => {

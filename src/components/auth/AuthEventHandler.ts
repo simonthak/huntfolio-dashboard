@@ -25,9 +25,16 @@ export const handleAuthEvent = (
       break;
     case 'INITIAL_SESSION':
       console.log("Initial session loaded");
-      // Don't navigate if we're already on a valid route
+      // Only redirect if we're on the login page and have a session
       if (window.location.pathname === '/login') {
-        navigate("/");
+        const checkSession = async () => {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            console.log("Active session found, redirecting to home");
+            navigate("/");
+          }
+        };
+        checkSession();
       }
       break;
     case 'MFA_CHALLENGE_VERIFIED':
