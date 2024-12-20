@@ -21,7 +21,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   }
 
   const currentTeamId = searchParams.get('team');
-  if (!currentTeamId && !TEAM_OPTIONAL_ROUTES.includes(location.pathname)) {
+  const isTeamOptionalRoute = TEAM_OPTIONAL_ROUTES.includes(location.pathname);
+
+  // Only show NoTeamSelected if we're not on a team-optional route and no team is selected
+  if (!currentTeamId && !isTeamOptionalRoute) {
+    console.log("No team selected and not on team-optional route, showing NoTeamSelected");
     return <NoTeamSelected />;
   }
 
