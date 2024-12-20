@@ -46,8 +46,7 @@ const AnimalSelectionFields = ({
     console.log("Animal selection changed:", {
       typeId: animalTypeId,
       subtypeId: animalSubtypeId,
-      subSubtypeId: animalSubSubtypeId,
-      availableSubSubtypes
+      subSubtypeId: animalSubSubtypeId
     });
 
     const typeId = parseInt(animalTypeId);
@@ -58,7 +57,7 @@ const AnimalSelectionFields = ({
         animal_sub_subtype_id: animalSubSubtypeId ? parseInt(animalSubSubtypeId) : undefined,
       });
     }
-  }, [animalTypeId, animalSubtypeId, animalSubSubtypeId, onChange, availableSubSubtypes]);
+  }, [animalTypeId, animalSubtypeId, animalSubSubtypeId, onChange]);
 
   const handleAnimalTypeChange = (value: string) => {
     setAnimalTypeId(value);
