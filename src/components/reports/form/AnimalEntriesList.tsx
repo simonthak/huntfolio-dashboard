@@ -53,7 +53,7 @@ const AnimalEntriesList = ({
         style={{ borderColor: '#13B67F', color: '#13B67F' }}
       >
         <Plus className="h-4 w-4 mr-2" />
-        Lägg till djur
+        Nytt djur
       </Button>
     </div>
   );
