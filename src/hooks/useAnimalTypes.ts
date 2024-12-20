@@ -7,51 +7,30 @@ export const useAnimalTypes = () => {
     queryFn: async () => {
       console.log("Fetching animal types...");
       
-      // Fetch animal types
-      const { data: types, error: typesError } = await supabase
-        .from("animal_types")
-        .select("*")
-        .order("name");
+      // Fetch all data in parallel
+      const [typesResponse, subtypesResponse, subSubtypesResponse] = await Promise.all([
+        supabase.from("animal_types").select("*").order("name"),
+        supabase.from("animal_subtypes").select("*").order("name"),
+        supabase.from("animal_sub_subtypes").select("*").order("name")
+      ]);
 
-      if (typesError) {
-        console.error("Error fetching animal types:", typesError);
-        throw typesError;
+      if (typesResponse.error) {
+        console.error("Error fetching animal types:", typesResponse.error);
+        throw typesResponse.error;
       }
 
-      // Fetch subtypes
-      const { data: subtypes, error: subtypesError } = await supabase
-        .from("animal_subtypes")
-        .select(`
-          id,
-          name,
-          animal_type_id
-        `)
-        .order("name");
-
-      if (subtypesError) {
-        console.error("Error fetching animal subtypes:", subtypesError);
-        throw subtypesError;
+      if (subtypesResponse.error) {
+        console.error("Error fetching animal subtypes:", subtypesResponse.error);
+        throw subtypesResponse.error;
       }
 
-      // Fetch sub-subtypes
-      const { data: subSubtypes, error: subSubtypesError } = await supabase
-        .from("animal_sub_subtypes")
-        .select(`
-          id,
-          name,
-          animal_subtype_id
-        `)
-        .order("name");
-
-      if (subSubtypesError) {
-        console.error("Error fetching animal sub-subtypes:", subSubtypesError);
-        throw subSubtypesError;
+      if (subSubtypesResponse.error) {
+        console.error("Error fetching animal sub-subtypes:", subSubtypesResponse.error);
+        throw subSubtypesResponse.error;
       }
-
-      console.log("Fetched sub-subtypes:", subSubtypes);
 
       // Organize subtypes by type
-      const subtypesByType = subtypes.reduce((acc: Record<number, any[]>, subtype) => {
+      const subtypesByType = subtypesResponse.data.reduce((acc: Record<number, any[]>, subtype) => {
         if (subtype.animal_type_id) {
           acc[subtype.animal_type_id] = [
             ...(acc[subtype.animal_type_id] || []),
@@ -62,7 +41,7 @@ export const useAnimalTypes = () => {
       }, {});
 
       // Organize sub-subtypes by subtype
-      const subSubtypesBySubtype = subSubtypes.reduce((acc: Record<number, any[]>, subSubtype) => {
+      const subSubtypesBySubtype = subSubtypesResponse.data.reduce((acc: Record<number, any[]>, subSubtype) => {
         if (subSubtype.animal_subtype_id) {
           acc[subSubtype.animal_subtype_id] = [
             ...(acc[subSubtype.animal_subtype_id] || []),
@@ -72,14 +51,14 @@ export const useAnimalTypes = () => {
         return acc;
       }, {});
 
-      console.log("Successfully fetched animal types, subtypes, and sub-subtypes", {
-        types,
+      console.log("Successfully fetched animal types data:", {
+        types: typesResponse.data,
         subtypesByType,
         subSubtypesBySubtype
       });
 
       return {
-        types,
+        types: typesResponse.data,
         subtypesByType,
         subSubtypesBySubtype
       };

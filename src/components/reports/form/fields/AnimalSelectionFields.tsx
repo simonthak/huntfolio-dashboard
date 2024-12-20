@@ -43,6 +43,13 @@ const AnimalSelectionFields = ({
   const availableSubSubtypes = animalSubtypeId ? animalSubSubtypes[parseInt(animalSubtypeId)] || [] : [];
 
   useEffect(() => {
+    console.log("Animal selection changed:", {
+      typeId: animalTypeId,
+      subtypeId: animalSubtypeId,
+      subSubtypeId: animalSubSubtypeId,
+      availableSubSubtypes
+    });
+
     const typeId = parseInt(animalTypeId);
     if (!isNaN(typeId) && typeId !== 0) {
       onChange({
@@ -51,7 +58,7 @@ const AnimalSelectionFields = ({
         animal_sub_subtype_id: animalSubSubtypeId ? parseInt(animalSubSubtypeId) : undefined,
       });
     }
-  }, [animalTypeId, animalSubtypeId, animalSubSubtypeId, onChange]);
+  }, [animalTypeId, animalSubtypeId, animalSubSubtypeId, onChange, availableSubSubtypes]);
 
   const handleAnimalTypeChange = (value: string) => {
     setAnimalTypeId(value);
