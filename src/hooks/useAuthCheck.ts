@@ -31,49 +31,11 @@ export const useAuthCheck = () => {
           return;
         }
 
-        // Check if refresh token exists before attempting refresh
-        if (!session.refresh_token) {
-          console.log("No refresh token found, signing out...");
-          await supabase.auth.signOut();
-          if (location.pathname !== '/login') {
-            navigate("/login");
-          }
-          if (isSubscribed) setIsLoading(false);
-          return;
-        }
-
-        try {
-          console.log("Valid refresh token found, attempting to refresh session...");
-          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-          
-          if (refreshError || !refreshData.session) {
-            console.error("Session refresh failed:", refreshError);
-            await supabase.auth.signOut();
-            if (location.pathname !== '/login') {
-              navigate("/login");
-            }
-            if (isSubscribed) setIsLoading(false);
-            return;
-          }
-          
-          console.log("Session refreshed successfully");
-        } catch (refreshError) {
-          console.error("Error during session refresh:", refreshError);
-          await supabase.auth.signOut();
-          if (location.pathname !== '/login') {
-            navigate("/login");
-          }
-          if (isSubscribed) setIsLoading(false);
-          return;
-        }
-
-        console.log("Session valid, checking team membership...");
+        console.log("Session found, checking team membership...");
         const { data: teamMemberships, error: teamError } = await supabase
           .from('team_members')
           .select('team_id')
-          .eq('user_id', session.user.id)
-          .limit(1)
-          .maybeSingle();
+          .eq('user_id', session.user.id);
 
         if (teamError) {
           console.error('Error checking team membership:', teamError);
@@ -83,8 +45,10 @@ export const useAuthCheck = () => {
         }
 
         const TEAM_OPTIONAL_ROUTES = ['/profile', '/settings', '/no-team', '/login', '/notifications'];
-        if (!teamMemberships && !TEAM_OPTIONAL_ROUTES.includes(location.pathname)) {
-          console.log("No team membership found, redirecting to no-team");
+        const isTeamOptionalRoute = TEAM_OPTIONAL_ROUTES.includes(location.pathname);
+
+        if (!teamMemberships?.length && !isTeamOptionalRoute) {
+          console.log("No team memberships found, redirecting to no-team");
           navigate("/no-team");
         }
 
@@ -105,9 +69,9 @@ export const useAuthCheck = () => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
-      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-        console.log("User signed out or token refreshed");
-        if (!session && location.pathname !== '/login') {
+      if (event === 'SIGNED_OUT') {
+        console.log("User signed out");
+        if (location.pathname !== '/login') {
           navigate("/login");
         }
       } else if (event === 'SIGNED_IN' && session) {
