@@ -59,24 +59,22 @@ const FeaturebaseWidget = () => {
       (window.Featurebase.q = window.Featurebase.q || []).push(arguments);
     };
 
-    // Add the SDK script
+    // Add the SDK script using their recommended pattern
     const script = document.createElement('script');
     script.id = 'featurebase-sdk';
     script.src = 'https://do.featurebase.app/js/sdk.js';
-    
-    script.onload = () => {
-      console.log("Featurebase SDK loaded, initializing widget");
-      window.Featurebase('initialize_feedback_widget', {
-        organization: 'antlers',
-        theme: 'light',
-        placement: 'right',
-        locale: 'sv',
-      });
-    };
+    document.getElementsByTagName('script')[0].parentNode?.insertBefore(
+      script,
+      document.getElementsByTagName('script')[0]
+    );
 
-    if (!document.getElementById('featurebase-sdk')) {
-      document.head.appendChild(script);
-    }
+    // Initialize the widget
+    window.Featurebase('initialize_feedback_widget', {
+      organization: 'antlers',
+      theme: 'light',
+      placement: 'right',
+      locale: 'sv',
+    });
 
     return () => {
       const existingScript = document.getElementById('featurebase-sdk');
