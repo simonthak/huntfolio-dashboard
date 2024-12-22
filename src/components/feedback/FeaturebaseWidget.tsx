@@ -68,13 +68,14 @@ const FeaturebaseWidget = () => {
       document.getElementsByTagName('script')[0]
     );
 
-    // Initialize the widget with hideButton set to true
+    // Initialize the widget with hideButton and hideWidget set to true
     window.Featurebase('initialize_feedback_widget', {
       organization: 'antlers',
       theme: 'light',
       placement: 'right',
       locale: 'sv',
-      hideButton: true, // This hides the default button
+      hideButton: true,
+      hideWidget: true, // This ensures the default widget is completely hidden
     });
 
     return () => {
