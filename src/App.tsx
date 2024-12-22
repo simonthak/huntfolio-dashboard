@@ -15,7 +15,6 @@ import Settings from "./pages/Settings";
 import Documents from "./pages/Documents";
 import Contacts from "./pages/Contacts";
 import Map from "./pages/Map";
-import FeaturebaseWidget from "./components/feedback/FeaturebaseWidget";
 
 const queryClient = new QueryClient();
 
@@ -25,7 +24,6 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <SonnerToaster />
-        <FeaturebaseWidget />
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
