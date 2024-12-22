@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { MessageSquarePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 declare global {
@@ -84,21 +82,7 @@ const FeaturebaseWidget = () => {
     };
   }, [orgId, isLoading]);
 
-  if (isLoading || !orgId) {
-    return null;
-  }
-
-  return (
-    <Button
-      variant="outline"
-      size="sm"
-      className="fixed bottom-4 right-4 z-50"
-      data-featurebase-feedback
-    >
-      <MessageSquarePlus className="w-4 h-4 mr-2" />
-      Feedback
-    </Button>
-  );
+  return null;
 };
 
 export default FeaturebaseWidget;
