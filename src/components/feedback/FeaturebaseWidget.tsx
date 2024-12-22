@@ -19,6 +19,7 @@ const FeaturebaseWidget = () => {
   useEffect(() => {
     const fetchOrgId = async () => {
       try {
+        console.log("Fetching Featurebase organization ID...");
         const { data, error } = await supabase.functions.invoke('get-secret', {
           body: { key: 'FEATUREBASE_ORG_ID' }
         });
@@ -33,8 +34,9 @@ const FeaturebaseWidget = () => {
           return;
         }
 
-        console.log("Retrieved Featurebase org ID:", data.FEATUREBASE_ORG_ID);
-        setOrgId(data.FEATUREBASE_ORG_ID);
+        const cleanOrgId = data.FEATUREBASE_ORG_ID.trim();
+        console.log("Retrieved Featurebase org ID:", cleanOrgId);
+        setOrgId(cleanOrgId);
       } catch (error) {
         console.error("Failed to fetch Featurebase organization ID:", error);
       } finally {
@@ -50,6 +52,8 @@ const FeaturebaseWidget = () => {
       return;
     }
 
+    console.log("Starting Featurebase widget initialization...");
+
     // Initialize Featurebase queue
     window.Featurebase = window.Featurebase || function() {
       (window.Featurebase.q = window.Featurebase.q || []).push(arguments);
@@ -62,13 +66,18 @@ const FeaturebaseWidget = () => {
     script.async = true;
     
     script.onload = () => {
-      console.log("Featurebase SDK loaded, initializing widget");
-      window.Featurebase('initialize_feedback_widget', {
-        organization: orgId,
-        theme: 'light',
-        placement: 'right',
-        locale: 'sv',
-      });
+      console.log("Featurebase SDK loaded, initializing widget with org ID:", orgId);
+      try {
+        window.Featurebase('initialize_feedback_widget', {
+          organization: orgId,
+          theme: 'light',
+          placement: 'right',
+          locale: 'sv',
+        });
+        console.log("Featurebase widget initialized successfully");
+      } catch (error) {
+        console.error("Error initializing Featurebase widget:", error);
+      }
     };
 
     script.onerror = (error) => {
@@ -77,12 +86,16 @@ const FeaturebaseWidget = () => {
 
     // Only append if the script doesn't already exist
     if (!document.getElementById('featurebase-sdk')) {
+      console.log("Adding Featurebase SDK script to document");
       document.head.appendChild(script);
+    } else {
+      console.log("Featurebase SDK script already exists");
     }
 
     return () => {
       const existingScript = document.getElementById('featurebase-sdk');
       if (existingScript) {
+        console.log("Cleaning up Featurebase SDK script");
         existingScript.remove();
       }
     };
