@@ -1,8 +1,13 @@
 import { useEffect } from 'react';
+import { Button } from "@/components/ui/button";
+import { MessageSquarePlus } from "lucide-react";
 
 declare global {
   interface Window {
-    Featurebase: (...args: any[]) => void;
+    Featurebase: {
+      (...args: any[]): void;
+      q?: any[];
+    };
   }
 }
 
@@ -51,7 +56,17 @@ const FeaturebaseWidget = () => {
     };
   }, []);
 
-  return null;
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      className="fixed bottom-4 right-4 z-50"
+      data-featurebase-feedback
+    >
+      <MessageSquarePlus className="w-4 h-4 mr-2" />
+      Feedback
+    </Button>
+  );
 };
 
 export default FeaturebaseWidget;
