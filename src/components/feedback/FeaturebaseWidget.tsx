@@ -20,9 +20,16 @@ const FeaturebaseWidget = () => {
       const { data: { FEATUREBASE_ORG_ID } } = await supabase.functions.invoke('get-secret', {
         body: { key: 'FEATUREBASE_ORG_ID' }
       });
-      // Remove any 'iv_' prefix if present
-      const cleanOrgId = FEATUREBASE_ORG_ID?.replace(/^iv_/, '');
-      console.log("Retrieved and cleaned Featurebase org ID");
+      
+      if (!FEATUREBASE_ORG_ID) {
+        console.error("No Featurebase organization ID found");
+        return;
+      }
+
+      // Remove any 'iv_' prefix and clean the ID
+      const cleanOrgId = FEATUREBASE_ORG_ID.replace(/^iv_/i, '').trim();
+      console.log("Original Featurebase org ID:", FEATUREBASE_ORG_ID);
+      console.log("Cleaned Featurebase org ID:", cleanOrgId);
       setOrgId(cleanOrgId);
     };
 
@@ -75,7 +82,7 @@ const FeaturebaseWidget = () => {
         return;
       }
 
-      console.log("Initializing Featurebase widget");
+      console.log("Initializing Featurebase widget with configuration");
       window.Featurebase('initialize_feedback_widget', {
         organization: orgId,
         theme: 'light',
