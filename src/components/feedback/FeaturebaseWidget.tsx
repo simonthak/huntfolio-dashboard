@@ -64,8 +64,6 @@ const FeaturebaseWidget = () => {
     script.id = 'featurebase-sdk';
     script.src = 'https://do.featurebase.app/js/sdk.js';
     script.async = true;
-    script.integrity = 'sha256-e0d617e2b10801c2d4b635e837e1b38a88f782e260dc38781add11705974fc4c';
-    script.crossOrigin = 'anonymous';
     
     script.onload = () => {
       console.log("Featurebase SDK loaded, initializing widget with org ID:", orgId);
