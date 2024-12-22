@@ -68,12 +68,13 @@ const FeaturebaseWidget = () => {
       document.getElementsByTagName('script')[0]
     );
 
-    // Initialize the widget
+    // Initialize the widget with hideButton set to true
     window.Featurebase('initialize_feedback_widget', {
       organization: 'antlers',
       theme: 'light',
       placement: 'right',
       locale: 'sv',
+      hideButton: true, // This hides the default button
     });
 
     return () => {
@@ -96,7 +97,7 @@ const FeaturebaseWidget = () => {
       data-featurebase-feedback
     >
       <MessageSquare className="w-4 h-4 mr-2" />
-      Feedback
+      Återkoppling
     </Button>
   );
 };
