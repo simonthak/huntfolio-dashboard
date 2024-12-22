@@ -20,8 +20,10 @@ const FeaturebaseWidget = () => {
       const { data: { FEATUREBASE_ORG_ID } } = await supabase.functions.invoke('get-secret', {
         body: { key: 'FEATUREBASE_ORG_ID' }
       });
-      console.log("Retrieved Featurebase org ID from Supabase");
-      setOrgId(FEATUREBASE_ORG_ID);
+      // Remove any 'iv_' prefix if present
+      const cleanOrgId = FEATUREBASE_ORG_ID?.replace(/^iv_/, '');
+      console.log("Retrieved and cleaned Featurebase org ID");
+      setOrgId(cleanOrgId);
     };
 
     fetchOrgId();
