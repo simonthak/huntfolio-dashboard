@@ -59,14 +59,27 @@ const FeaturebaseWidget = () => {
       (window.Featurebase.q = window.Featurebase.q || []).push(arguments);
     };
 
-    // Create and load the SDK script
-    const script = document.createElement('script');
-    script.id = 'featurebase-sdk';
-    script.src = 'https://do.featurebase.app/js/sdk.js';
-    script.async = true;
-    
-    script.onload = () => {
-      console.log("Featurebase SDK loaded, initializing widget with org ID:", orgId);
+    // Create and append the SDK script
+    const initializeScript = () => {
+      if (!document.getElementById('featurebase-sdk')) {
+        const script = document.createElement('script');
+        script.id = 'featurebase-sdk';
+        script.src = 'https://do.featurebase.app/js/sdk.js';
+        document.getElementsByTagName('script')[0].parentNode?.insertBefore(
+          script,
+          document.getElementsByTagName('script')[0]
+        );
+      }
+    };
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      initializeScript();
+    } else {
+      document.addEventListener('DOMContentLoaded', initializeScript);
+    }
+
+    // Initialize the widget once the script is loaded
+    const initializeWidget = () => {
       try {
         window.Featurebase('initialize_feedback_widget', {
           organization: orgId,
@@ -80,24 +93,17 @@ const FeaturebaseWidget = () => {
       }
     };
 
-    script.onerror = (error) => {
-      console.error("Failed to load Featurebase SDK:", error);
-    };
-
-    // Only append if the script doesn't already exist
-    if (!document.getElementById('featurebase-sdk')) {
-      console.log("Adding Featurebase SDK script to document");
-      document.head.appendChild(script);
+    // Check if script is already loaded
+    const existingScript = document.getElementById('featurebase-sdk');
+    if (existingScript) {
+      initializeWidget();
     } else {
-      console.log("Featurebase SDK script already exists");
+      document.addEventListener('load', initializeWidget, { once: true });
     }
 
     return () => {
-      const existingScript = document.getElementById('featurebase-sdk');
-      if (existingScript) {
-        console.log("Cleaning up Featurebase SDK script");
-        existingScript.remove();
-      }
+      document.removeEventListener('DOMContentLoaded', initializeScript);
+      document.removeEventListener('load', initializeWidget);
     };
   }, [orgId, isLoading]);
 
