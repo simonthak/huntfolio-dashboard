@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { MessageSquarePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,8 +13,26 @@ declare global {
 }
 
 const FeaturebaseWidget = () => {
+  const [orgId, setOrgId] = useState<string | null>(null);
+
   useEffect(() => {
-    const orgId = import.meta.env.VITE_FEATUREBASE_ORG_ID;
+    const fetchOrgId = async () => {
+      const { data: { FEATUREBASE_ORG_ID } } = await supabase.functions.invoke('get-secret', {
+        body: { key: 'FEATUREBASE_ORG_ID' }
+      });
+      console.log("Retrieved Featurebase org ID from Supabase");
+      setOrgId(FEATUREBASE_ORG_ID);
+    };
+
+    fetchOrgId();
+  }, []);
+
+  useEffect(() => {
+    if (!orgId) {
+      console.log("Waiting for Featurebase org ID...");
+      return;
+    }
+
     console.log("Initializing Featurebase with org ID:", orgId);
 
     // Initialize Featurebase SDK
@@ -51,7 +69,7 @@ const FeaturebaseWidget = () => {
     // Initialize widget with configuration
     const initializeWidget = () => {
       if (!orgId) {
-        console.error("Featurebase organization ID is not set in environment variables");
+        console.error("Featurebase organization ID is not available");
         return;
       }
 
@@ -79,7 +97,7 @@ const FeaturebaseWidget = () => {
         script.remove();
       }
     };
-  }, []);
+  }, [orgId]);
 
   return (
     <Button
