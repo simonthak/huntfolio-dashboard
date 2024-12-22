@@ -14,89 +14,83 @@ declare global {
 
 const FeaturebaseWidget = () => {
   const [orgId, setOrgId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchOrgId = async () => {
-      const { data: { FEATUREBASE_ORG_ID } } = await supabase.functions.invoke('get-secret', {
-        body: { key: 'FEATUREBASE_ORG_ID' }
-      });
-      
-      if (!FEATUREBASE_ORG_ID) {
-        console.error("No Featurebase organization ID found");
-        return;
-      }
+      try {
+        const { data, error } = await supabase.functions.invoke('get-secret', {
+          body: { key: 'FEATUREBASE_ORG_ID' }
+        });
+        
+        if (error) {
+          console.error("Error fetching Featurebase organization ID:", error);
+          return;
+        }
 
-      // Just use the ID as is, without any modifications
-      console.log("Retrieved Featurebase org ID:", FEATUREBASE_ORG_ID);
-      setOrgId(FEATUREBASE_ORG_ID);
+        if (!data?.FEATUREBASE_ORG_ID) {
+          console.error("No Featurebase organization ID found in response");
+          return;
+        }
+
+        console.log("Retrieved Featurebase org ID:", data.FEATUREBASE_ORG_ID);
+        setOrgId(data.FEATUREBASE_ORG_ID);
+      } catch (error) {
+        console.error("Failed to fetch Featurebase organization ID:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchOrgId();
   }, []);
 
   useEffect(() => {
-    if (!orgId) {
-      console.log("Waiting for Featurebase org ID...");
+    if (!orgId || isLoading) {
       return;
     }
 
-    console.log("Initializing Featurebase with org ID:", orgId);
-
-    // Initialize Featurebase SDK
-    const initializeFeaturebase = () => {
-      if (!document.getElementById('featurebase-sdk')) {
-        console.log("Creating Featurebase SDK script");
-        const script = document.createElement('script');
-        script.id = 'featurebase-sdk';
-        script.src = 'https://do.featurebase.app/js/sdk.js';
-        script.async = true;
-        script.onload = () => {
-          console.log("Featurebase SDK loaded successfully");
-          initializeWidget();
-        };
-        script.onerror = (error) => {
-          console.error("Error loading Featurebase SDK:", error);
-        };
-        document.head.appendChild(script);
-      } else {
-        console.log("Featurebase SDK already exists");
-        initializeWidget();
-      }
-    };
-
-    // Initialize SDK queue
+    // Initialize Featurebase queue
     window.Featurebase = window.Featurebase || function() {
       (window.Featurebase.q = window.Featurebase.q || []).push(arguments);
     };
 
-    // Initialize widget with configuration
-    const initializeWidget = () => {
-      if (!orgId) {
-        console.error("Featurebase organization ID is not available");
-        return;
-      }
-
-      console.log("Initializing Featurebase widget with configuration");
+    // Create and load the SDK script
+    const script = document.createElement('script');
+    script.id = 'featurebase-sdk';
+    script.src = 'https://do.featurebase.app/js/sdk.js';
+    script.async = true;
+    
+    script.onload = () => {
+      console.log("Featurebase SDK loaded, initializing widget");
       window.Featurebase('initialize_feedback_widget', {
         organization: orgId,
         theme: 'light',
         placement: 'right',
-        locale: 'sv', // Swedish locale since the app is in Swedish
+        locale: 'sv',
       });
     };
 
-    // Initialize on component mount
-    initializeFeaturebase();
+    script.onerror = (error) => {
+      console.error("Failed to load Featurebase SDK:", error);
+    };
 
-    // Cleanup
+    // Only append if the script doesn't already exist
+    if (!document.getElementById('featurebase-sdk')) {
+      document.head.appendChild(script);
+    }
+
     return () => {
-      const script = document.getElementById('featurebase-sdk');
-      if (script) {
-        console.log("Cleaning up Featurebase SDK");
-        script.remove();
+      const existingScript = document.getElementById('featurebase-sdk');
+      if (existingScript) {
+        existingScript.remove();
       }
     };
-  }, [orgId]);
+  }, [orgId, isLoading]);
+
+  if (isLoading || !orgId) {
+    return null;
+  }
 
   return (
     <Button
