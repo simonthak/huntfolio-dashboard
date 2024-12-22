@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { MessageSquarePlus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 declare global {
   interface Window {
@@ -41,7 +42,7 @@ const FeaturebaseWidget = () => {
 
     // Initialize feedback widget
     window.Featurebase('initialize_feedback_widget', {
-      organization: 'yourorg', // Replace with your organization name
+      organization: import.meta.env.VITE_FEATUREBASE_ORG_ID, // Using the environment variable
       theme: 'light',
       placement: 'right',
       locale: 'sv', // Swedish locale since the app is in Swedish
