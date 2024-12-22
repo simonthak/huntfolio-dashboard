@@ -59,51 +59,30 @@ const FeaturebaseWidget = () => {
       (window.Featurebase.q = window.Featurebase.q || []).push(arguments);
     };
 
-    // Create and append the SDK script
-    const initializeScript = () => {
-      if (!document.getElementById('featurebase-sdk')) {
-        const script = document.createElement('script');
-        script.id = 'featurebase-sdk';
-        script.src = 'https://do.featurebase.app/js/sdk.js';
-        document.getElementsByTagName('script')[0].parentNode?.insertBefore(
-          script,
-          document.getElementsByTagName('script')[0]
-        );
-      }
+    // Add the SDK script
+    const script = document.createElement('script');
+    script.id = 'featurebase-sdk';
+    script.src = 'https://do.featurebase.app/js/sdk.js';
+    
+    script.onload = () => {
+      console.log("Featurebase SDK loaded, initializing widget");
+      window.Featurebase('initialize_feedback_widget', {
+        organization: 'antlers',
+        theme: 'light',
+        placement: 'right',
+        locale: 'sv',
+      });
     };
 
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-      initializeScript();
-    } else {
-      document.addEventListener('DOMContentLoaded', initializeScript);
-    }
-
-    // Initialize the widget once the script is loaded
-    const initializeWidget = () => {
-      try {
-        window.Featurebase('initialize_feedback_widget', {
-          organization: orgId,
-          theme: 'light',
-          placement: 'right',
-          locale: 'sv',
-        });
-        console.log("Featurebase widget initialized successfully");
-      } catch (error) {
-        console.error("Error initializing Featurebase widget:", error);
-      }
-    };
-
-    // Check if script is already loaded
-    const existingScript = document.getElementById('featurebase-sdk');
-    if (existingScript) {
-      initializeWidget();
-    } else {
-      document.addEventListener('load', initializeWidget, { once: true });
+    if (!document.getElementById('featurebase-sdk')) {
+      document.head.appendChild(script);
     }
 
     return () => {
-      document.removeEventListener('DOMContentLoaded', initializeScript);
-      document.removeEventListener('load', initializeWidget);
+      const existingScript = document.getElementById('featurebase-sdk');
+      if (existingScript) {
+        existingScript.remove();
+      }
     };
   }, [orgId, isLoading]);
 
