@@ -86,6 +86,11 @@ const FeaturebaseWidget = () => {
     };
   }, [orgId, isLoading]);
 
+  const handleFeedbackClick = () => {
+    console.log("Opening Featurebase feedback widget...");
+    window.Featurebase('open_feedback_widget');
+  };
+
   if (isLoading || !orgId) {
     return null;
   }
@@ -95,7 +100,7 @@ const FeaturebaseWidget = () => {
       variant="outline"
       size="sm"
       className="fixed bottom-4 right-4 z-50 bg-[#13B67F] text-white hover:bg-[#13B67F]/90"
-      data-featurebase-feedback
+      onClick={handleFeedbackClick}
     >
       <MessageSquare className="w-4 h-4 mr-2" />
       Återkoppling
