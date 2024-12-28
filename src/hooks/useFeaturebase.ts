@@ -15,6 +15,7 @@ export const useFeaturebase = () => {
   const [orgId, setOrgId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [initializationAttempted, setInitializationAttempted] = useState(false);
 
   useEffect(() => {
     const fetchOrgId = async () => {
@@ -48,11 +49,12 @@ export const useFeaturebase = () => {
   }, []);
 
   useEffect(() => {
-    if (!orgId || isLoading || isInitialized) {
+    if (!orgId || isLoading || isInitialized || initializationAttempted) {
       return;
     }
 
     console.log("Starting Featurebase widget initialization...");
+    setInitializationAttempted(true);
 
     // Initialize Featurebase queue
     window.Featurebase = window.Featurebase || function() {
@@ -81,6 +83,7 @@ export const useFeaturebase = () => {
     script.onerror = (error) => {
       console.error("Failed to load Featurebase SDK:", error);
       setIsInitialized(false);
+      setInitializationAttempted(false); // Allow retry on error
     };
 
     document.head.appendChild(script);
@@ -91,8 +94,9 @@ export const useFeaturebase = () => {
         existingScript.remove();
       }
       setIsInitialized(false);
+      setInitializationAttempted(false);
     };
-  }, [orgId, isLoading, isInitialized]);
+  }, [orgId, isLoading, isInitialized, initializationAttempted]);
 
   return { orgId, isLoading, isInitialized };
 };

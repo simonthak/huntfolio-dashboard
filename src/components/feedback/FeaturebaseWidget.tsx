@@ -1,5 +1,6 @@
 import { useFeaturebase } from "@/hooks/useFeaturebase";
 import FeedbackButton from "./FeedbackButton";
+import { toast } from "sonner";
 
 const FeaturebaseWidget = () => {
   const { orgId, isLoading, isInitialized } = useFeaturebase();
@@ -11,6 +12,7 @@ const FeaturebaseWidget = () => {
       console.log("Feedback widget command sent");
     } else {
       console.error("Featurebase is not initialized yet");
+      toast.error("Feedback-funktionen är inte tillgänglig just nu. Försök igen om en stund.");
     }
   };
 
