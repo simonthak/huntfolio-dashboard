@@ -62,20 +62,20 @@ const FeaturebaseWidget = () => {
     // Add the SDK script using their recommended pattern
     const script = document.createElement('script');
     script.id = 'featurebase-sdk';
-    script.src = 'https://do.featurebase.app/js/sdk.js';
+    script.src = `https://${orgId}.featurebase.app/js/sdk.js`;
     document.getElementsByTagName('script')[0].parentNode?.insertBefore(
       script,
       document.getElementsByTagName('script')[0]
     );
 
-    // Initialize the widget with hideButton and hideWidget set to true
+    // Initialize the widget
     window.Featurebase('initialize_feedback_widget', {
-      organization: orgId, // Use the fetched organization ID instead of hardcoded value
+      organization: orgId,
       theme: 'light',
       placement: 'right',
       locale: 'sv',
       hideButton: true,
-      hideWidget: true, // This ensures the default widget is completely hidden
+      hideWidget: true,
     });
 
     return () => {
