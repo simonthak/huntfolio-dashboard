@@ -70,7 +70,7 @@ const FeaturebaseWidget = () => {
 
     // Initialize the widget with hideButton and hideWidget set to true
     window.Featurebase('initialize_feedback_widget', {
-      organization: 'antlers',
+      organization: orgId, // Use the fetched organization ID instead of hardcoded value
       theme: 'light',
       placement: 'right',
       locale: 'sv',
