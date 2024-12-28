@@ -75,6 +75,12 @@ export const useFeaturebase = () => {
         hideButton: true
       });
       setIsInitialized(true);
+      console.log("Featurebase widget initialized successfully");
+    };
+
+    script.onerror = (error) => {
+      console.error("Failed to load Featurebase SDK:", error);
+      setIsInitialized(false);
     };
 
     document.head.appendChild(script);

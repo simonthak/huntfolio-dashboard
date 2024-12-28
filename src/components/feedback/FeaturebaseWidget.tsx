@@ -8,6 +8,7 @@ const FeaturebaseWidget = () => {
     console.log("Opening Featurebase feedback widget...");
     if (window.Featurebase && isInitialized) {
       window.Featurebase('feedback');
+      console.log("Feedback widget command sent");
     } else {
       console.error("Featurebase is not initialized yet");
     }
