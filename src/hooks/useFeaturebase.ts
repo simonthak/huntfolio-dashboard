@@ -12,6 +12,7 @@ declare global {
 }
 
 export const useFeaturebase = () => {
+  // Initialize all state at once to ensure consistent hook calls
   const [state, setState] = useState({
     orgId: null as string | null,
     isLoading: true,
@@ -19,6 +20,7 @@ export const useFeaturebase = () => {
     initializationAttempted: false
   });
 
+  // First effect: Fetch organization ID
   useEffect(() => {
     const fetchOrgId = async () => {
       try {
@@ -29,11 +31,13 @@ export const useFeaturebase = () => {
         
         if (error) {
           console.error("Error fetching Featurebase organization ID:", error);
+          setState(prev => ({ ...prev, isLoading: false }));
           return;
         }
 
         if (!data?.FEATUREBASE_ORG_ID) {
           console.error("No Featurebase organization ID found in response");
+          setState(prev => ({ ...prev, isLoading: false }));
           return;
         }
 
@@ -42,15 +46,16 @@ export const useFeaturebase = () => {
         setState(prev => ({ ...prev, orgId: cleanOrgId, isLoading: false }));
       } catch (error) {
         console.error("Failed to fetch Featurebase organization ID:", error);
-      } finally {
         setState(prev => ({ ...prev, isLoading: false }));
       }
     };
 
     fetchOrgId();
-  }, []);
+  }, []); // Only run once on mount
 
+  // Second effect: Initialize Featurebase
   useEffect(() => {
+    // Early return if conditions aren't met, but after hook is declared
     if (!state.orgId || state.isLoading || state.isInitialized || state.initializationAttempted) {
       return;
     }
@@ -93,6 +98,7 @@ export const useFeaturebase = () => {
 
     document.head.appendChild(script);
 
+    // Cleanup function
     return () => {
       const existingScript = document.getElementById('featurebase-sdk');
       if (existingScript) {
@@ -106,6 +112,7 @@ export const useFeaturebase = () => {
     };
   }, [state.orgId, state.isLoading, state.isInitialized, state.initializationAttempted]);
 
+  // Always return the same shape of object
   return {
     orgId: state.orgId,
     isLoading: state.isLoading,

@@ -16,6 +16,7 @@ const FeaturebaseWidget = () => {
     }
   };
 
+  // Always render the component, but conditionally show the button
   if (isLoading || !orgId) {
     return null;
   }
