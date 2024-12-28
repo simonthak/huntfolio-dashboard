@@ -6,7 +6,9 @@ const FeaturebaseWidget = () => {
 
   const handleFeedbackClick = () => {
     console.log("Opening Featurebase feedback widget...");
-    window.Featurebase('open_feedback_widget');
+    if (window.Featurebase) {
+      window.Featurebase('show_feedback_widget');
+    }
   };
 
   if (isLoading || !orgId) {

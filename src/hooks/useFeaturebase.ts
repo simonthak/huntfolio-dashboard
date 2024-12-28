@@ -6,6 +6,7 @@ declare global {
     Featurebase: {
       (...args: any[]): void;
       q?: any[];
+      initialized?: boolean;
     };
   }
 }
@@ -52,26 +53,28 @@ export const useFeaturebase = () => {
 
     console.log("Starting Featurebase widget initialization...");
 
+    // Initialize Featurebase queue
     window.Featurebase = window.Featurebase || function() {
       (window.Featurebase.q = window.Featurebase.q || []).push(arguments);
     };
 
+    // Create and append script
     const script = document.createElement('script');
     script.id = 'featurebase-sdk';
+    script.async = true;
     script.src = `https://${orgId}.featurebase.app/js/sdk.js`;
-    document.getElementsByTagName('script')[0].parentNode?.insertBefore(
-      script,
-      document.getElementsByTagName('script')[0]
-    );
+    
+    script.onload = () => {
+      console.log("Featurebase SDK loaded, initializing widget...");
+      window.Featurebase('initialize', {
+        organization: orgId,
+        theme: 'light',
+        placement: 'right',
+        locale: 'sv',
+      });
+    };
 
-    window.Featurebase('initialize_feedback_widget', {
-      organization: orgId,
-      theme: 'light',
-      placement: 'right',
-      locale: 'sv',
-      hideButton: true,
-      hideWidget: true,
-    });
+    document.head.appendChild(script);
 
     return () => {
       const existingScript = document.getElementById('featurebase-sdk');
