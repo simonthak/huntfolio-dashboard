@@ -14,6 +14,7 @@ declare global {
 export const useFeaturebase = () => {
   const [orgId, setOrgId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const fetchOrgId = async () => {
@@ -47,7 +48,7 @@ export const useFeaturebase = () => {
   }, []);
 
   useEffect(() => {
-    if (!orgId || isLoading) {
+    if (!orgId || isLoading || isInitialized) {
       return;
     }
 
@@ -66,12 +67,14 @@ export const useFeaturebase = () => {
     
     script.onload = () => {
       console.log("Featurebase SDK loaded, initializing widget...");
-      window.Featurebase('initialize', {
+      window.Featurebase('init', {
         organization: orgId,
         theme: 'light',
         placement: 'right',
         locale: 'sv',
+        hideButton: true
       });
+      setIsInitialized(true);
     };
 
     document.head.appendChild(script);
@@ -81,8 +84,9 @@ export const useFeaturebase = () => {
       if (existingScript) {
         existingScript.remove();
       }
+      setIsInitialized(false);
     };
-  }, [orgId, isLoading]);
+  }, [orgId, isLoading, isInitialized]);
 
-  return { orgId, isLoading };
+  return { orgId, isLoading, isInitialized };
 };
