@@ -1,32 +1,46 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { format } from "date-fns";
-import EventTypeSelector from "./EventTypeSelector";
 import { toast } from "sonner";
+import EventTypeSelector from "./EventTypeSelector";
+import DateTimeFields from "./fields/DateTimeFields";
+import DescriptionField from "./fields/DescriptionField";
+import ParticipantFields from "./fields/ParticipantFields";
 
 interface EventFormProps {
-  selectedDate?: Date;
+  initialDate?: Date;
   onSubmit: (data: {
     hunt_type_id: number;
     description: string;
     participantLimit: number;
+    dogHandlersLimit: number;
+    endDate?: string;
+    startTime?: string;
+    date: Date;
   }) => Promise<void>;
   onCancel: () => void;
   isSubmitting: boolean;
 }
 
 const EventForm = ({ 
-  selectedDate, 
+  initialDate, 
   onSubmit, 
   onCancel, 
   isSubmitting 
 }: EventFormProps) => {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialDate);
   const [huntTypeId, setHuntTypeId] = useState<number>(0);
   const [description, setDescription] = useState("");
   const [participantLimit, setParticipantLimit] = useState("");
+  const [dogHandlersLimit, setDogHandlersLimit] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [startTime, setStartTime] = useState("");
+
+  useEffect(() => {
+    if (initialDate) {
+      console.log("EventForm - Initial date received:", initialDate);
+      setSelectedDate(initialDate);
+    }
+  }, [initialDate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,55 +56,58 @@ const EventForm = ({
       return;
     }
 
+    const dogLimit = parseInt(dogHandlersLimit) || 0;
+    if (dogLimit < 0) {
+      toast.error("Antalet hundförare kan inte vara negativt");
+      return;
+    }
+
     if (!huntTypeId) {
       toast.error("Vänligen välj en jakttyp");
       return;
     }
 
-    console.log("Skickar formulär med jakttyp-id:", huntTypeId);
+    if (endDate && new Date(endDate) < selectedDate) {
+      toast.error("Slutdatum måste vara efter startdatum");
+      return;
+    }
+
+    console.log("EventForm - Submitting with date:", selectedDate);
     await onSubmit({
       hunt_type_id: huntTypeId,
       description,
       participantLimit: limit,
+      dogHandlersLimit: dogLimit,
+      endDate: endDate || undefined,
+      startTime: startTime || undefined,
+      date: selectedDate,
     });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label>Valt Datum</Label>
-        <Input
-          value={selectedDate ? format(selectedDate, "MMMM d, yyyy") : ""}
-          disabled
-          className="bg-muted"
-        />
-      </div>
+      <DateTimeFields
+        selectedDate={selectedDate}
+        endDate={endDate}
+        startTime={startTime}
+        onEndDateChange={setEndDate}
+        onStartTimeChange={setStartTime}
+        onStartDateChange={setSelectedDate}
+      />
 
       <EventTypeSelector value={huntTypeId} onChange={setHuntTypeId} />
 
-      <div className="space-y-2">
-        <Label htmlFor="description">Beskrivning</Label>
-        <Textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Lägg till detaljer om jakten..."
-          rows={3}
-        />
-      </div>
+      <DescriptionField
+        description={description}
+        onDescriptionChange={setDescription}
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="participantLimit">Deltagargräns</Label>
-        <Input
-          id="participantLimit"
-          type="number"
-          min="1"
-          value={participantLimit}
-          onChange={(e) => setParticipantLimit(e.target.value)}
-          required
-          placeholder="Ange maximalt antal deltagare"
-        />
-      </div>
+      <ParticipantFields
+        participantLimit={participantLimit}
+        dogHandlersLimit={dogHandlersLimit}
+        onParticipantLimitChange={setParticipantLimit}
+        onDogHandlersLimitChange={setDogHandlersLimit}
+      />
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>

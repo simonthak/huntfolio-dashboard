@@ -6,7 +6,7 @@ const Settings = () => {
   return (
     <div className="max-w-2xl mx-auto space-y-8">
       <div>
-        <h2 className="text-2xl font-bold mb-4">Settings</h2>
+        <h2 className="text-2xl font-bold mb-4">Inställningar</h2>
         <div className="space-y-8">
           <EmailForm />
           <PasswordForm />

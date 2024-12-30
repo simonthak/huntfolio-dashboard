@@ -13,6 +13,7 @@ interface ReportFormProps {
     animals: Array<{
       animal_type_id: number;
       animal_subtype_id?: number;
+      animal_sub_subtype_id?: number;
       quantity: number;
     }>;
   };
@@ -24,6 +25,7 @@ interface ReportFormProps {
     animals: Array<{
       animal_type_id: number;
       animal_subtype_id?: number;
+      animal_sub_subtype_id?: number;
       quantity: number;
     }>;
   }) => Promise<void>;
@@ -40,28 +42,27 @@ const ReportForm = ({ initialData, onSubmit, onCancel, isSubmitting }: ReportFor
     e.preventDefault();
     
     if (!formData.date) {
-      toast.error("Please select a date");
+      toast.error("Vänligen välj ett datum");
       return;
     }
 
     if (!formData.hunt_type_id) {
-      toast.error("Please select a hunt type");
+      toast.error("Vänligen välj en jakttyp");
       return;
     }
 
     if (!formData.participant_count || formData.participant_count < 1) {
-      toast.error("Please enter a valid number of participants");
+      toast.error("Vänligen ange ett giltigt antal deltagare");
       return;
     }
 
-    // Only validate animals if there are any
     if (formData.animals.length > 0) {
       const invalidAnimal = formData.animals.find((animal: any) => 
         !animal.animal_type_id || !animal.quantity || animal.quantity < 1
       );
 
       if (invalidAnimal) {
-        toast.error("Please fill in all animal details correctly");
+        toast.error("Vänligen fyll i alla djurdetaljer korrekt");
         return;
       }
     }
@@ -77,14 +78,14 @@ const ReportForm = ({ initialData, onSubmit, onCancel, isSubmitting }: ReportFor
 
       <div className="flex justify-end gap-2 pt-4 border-t">
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
+          Avbryt
         </Button>
         <Button 
           type="submit" 
           disabled={isSubmitting}
           style={{ backgroundColor: '#13B67F' }}
         >
-          {isSubmitting ? "Saving..." : initialData ? "Save Changes" : "Create Report"}
+          {isSubmitting ? "Sparar..." : initialData ? "Spara ändringar" : "Skapa rapport"}
         </Button>
       </div>
     </form>

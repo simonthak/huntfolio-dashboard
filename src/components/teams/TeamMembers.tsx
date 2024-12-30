@@ -30,7 +30,7 @@ const TeamMembers = ({ members }: TeamMembersProps) => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold flex items-center gap-2">
           <Users className="w-5 h-5" />
-          Team Members
+          Medlemmar
         </h2>
       </div>
 

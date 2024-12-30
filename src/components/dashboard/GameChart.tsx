@@ -9,9 +9,9 @@ import {
   Area,
   AreaChart,
   ResponsiveContainer,
-  Tooltip,
   XAxis,
   YAxis,
+  Tooltip,
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,8 +66,8 @@ const GameChart = ({ teamId }: GameChartProps) => {
   return (
     <Card className="col-span-4">
       <CardHeader>
-        <CardTitle>Downed Game Overview</CardTitle>
-        <CardDescription>Number of successful hunts per month</CardDescription>
+        <CardTitle>Fällt vilt</CardTitle>
+        <CardDescription>Antal fällt vilt per månad</CardDescription>
       </CardHeader>
       <CardContent className="pb-4">
         <div className="h-[300px]">
@@ -96,7 +96,16 @@ const GameChart = ({ teamId }: GameChartProps) => {
                 axisLine={false}
                 tickFormatter={(value) => `${value}`}
               />
-              <Tooltip />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "white",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "6px",
+                  padding: "8px",
+                }}
+                formatter={(value: number) => [`${value} st`, "Antal"]}
+                labelFormatter={(label) => `${label}`}
+              />
               <Area
                 type="monotone"
                 dataKey="count"

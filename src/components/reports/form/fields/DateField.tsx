@@ -14,7 +14,7 @@ interface DateFieldProps {
 const DateField = ({ date, onDateChange }: DateFieldProps) => {
   return (
     <div className="space-y-2">
-      <Label>Date</Label>
+      <Label>Datum</Label>
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -26,7 +26,7 @@ const DateField = ({ date, onDateChange }: DateFieldProps) => {
             type="button"
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {date ? format(date, "PPP") : "Pick a date"}
+            {date ? format(date, "PPP") : "Välj ett datum"}
           </Button>
         </PopoverTrigger>
         <PopoverContent 

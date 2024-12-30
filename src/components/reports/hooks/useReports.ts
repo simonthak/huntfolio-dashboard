@@ -48,15 +48,19 @@ export const useReports = () => {
         .from("hunting_reports")
         .select(`
           *,
-          hunt_type:hunt_types(name),
+          hunt_type:hunt_types(id, name),
           created_by_profile:profiles!hunting_reports_created_by_fkey(
             firstname,
             lastname
           ),
           report_animals(
             quantity,
-            animal_type:animal_types(name),
-            animal_subtype:animal_subtypes(name)
+            animal_type_id,
+            animal_subtype_id,
+            animal_sub_subtype_id,
+            animal_type:animal_types(id, name),
+            animal_subtype:animal_subtypes(id, name),
+            animal_sub_subtype:animal_sub_subtypes(id, name)
           )
         `)
         .eq('team_id', teamMember.team_id)

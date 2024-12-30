@@ -1,65 +1,84 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import { Card } from "@/components/ui/card";
+import AuthCard from "@/components/auth/AuthCard";
+import { handleAuthEvent } from "@/components/auth/AuthEventHandler";
 
 const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already logged in
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    const checkSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Error checking session:", error);
+        return;
+      }
       if (session) {
+        console.log("Active session found, redirecting to home");
         navigate("/");
       }
     };
 
-    checkUser();
+    checkSession();
 
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (session) {
-          navigate("/");
-        }
-      }
-    );
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      handleAuthEvent(event, navigate);
+    });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md p-8">
-        <div className="flex flex-col items-center mb-8">
-          <img 
-            src="https://nlxlpxddixvieiwsxdbu.supabase.co/storage/v1/object/public/logos/symbol.svg?t=2024-12-01T17%3A04%3A25.353Z" 
-            alt="Antlers Logo" 
-            className="w-16 h-16 mb-4"
-          />
-          <h1 className="text-2xl font-bold text-center">Welcome to Antlers</h1>
-        </div>
-        <Auth
-          supabaseClient={supabase}
-          appearance={{
-            theme: ThemeSupa,
-            variables: {
-              default: {
-                colors: {
-                  brand: '#13B67F',
-                  brandAccent: '#0ea16f',
-                }
-              }
-            }
-          }}
-          providers={[]}
-          redirectTo={`${window.location.origin}/`}
-        />
-      </Card>
-    </div>
+    <AuthCard>
+      <Auth
+        supabaseClient={supabase}
+        appearance={{
+          theme: ThemeSupa,
+          variables: {
+            default: {
+              colors: {
+                brand: '#13B67F',
+                brandAccent: '#0ea16f',
+              },
+            },
+          },
+          className: {
+            container: 'auth-container',
+            button: 'auth-button',
+            input: 'auth-input',
+          },
+        }}
+        localization={{
+          variables: {
+            sign_in: {
+              email_label: 'E-postadress',
+              password_label: 'Lösenord',
+              button_label: 'Logga in',
+              loading_button_label: 'Loggar in...',
+              link_text: 'Har du redan ett konto? Logga in',
+            },
+            sign_up: {
+              email_label: 'E-postadress',
+              password_label: 'Lösenord',
+              button_label: 'Registrera',
+              loading_button_label: 'Registrerar...',
+              link_text: 'Har du inget konto? Registrera dig',
+            },
+            forgotten_password: {
+              email_label: 'E-postadress',
+              button_label: 'Skicka återställningslänk',
+              loading_button_label: 'Skickar...',
+              link_text: 'Glömt lösenord?',
+            },
+          },
+        }}
+        providers={[]}
+        redirectTo={`${window.location.origin}/`}
+      />
+    </AuthCard>
   );
 };
 

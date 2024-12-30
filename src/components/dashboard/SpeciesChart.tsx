@@ -65,8 +65,8 @@ const SpeciesChart = ({ teamId }: SpeciesChartProps) => {
   return (
     <Card className="col-span-4">
       <CardHeader>
-        <CardTitle>Species Distribution</CardTitle>
-        <CardDescription>Number of successful hunts per species</CardDescription>
+        <CardTitle>Artfördelning</CardTitle>
+        <CardDescription>Antal fällda djur per art</CardDescription>
       </CardHeader>
       <CardContent className="pb-4">
         <div className="h-[300px]">
@@ -89,7 +89,16 @@ const SpeciesChart = ({ teamId }: SpeciesChartProps) => {
                 axisLine={false}
                 tickFormatter={(value) => `${value}`}
               />
-              <Tooltip />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "white",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "6px",
+                  padding: "8px",
+                }}
+                formatter={(value: number) => [`${value} st`, "Antal"]}
+                labelFormatter={(label) => `${label}`}
+              />
               <Bar dataKey="count" fill="#13B67F" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>

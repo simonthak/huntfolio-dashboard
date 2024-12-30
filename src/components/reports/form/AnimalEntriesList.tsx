@@ -6,19 +6,27 @@ interface AnimalEntriesListProps {
   animals: Array<{
     animal_type_id: number;
     animal_subtype_id?: number;
+    animal_sub_subtype_id?: number;
     quantity: number;
   }>;
-  animalTypes: any[];
-  animalSubtypes: Record<number, any[]>;
+  animalTypes: Array<{ id: number; name: string }>;
+  animalSubtypes: Record<number, Array<{ id: number; name: string }>>;
+  animalSubSubtypes: Record<number, Array<{ id: number; name: string }>>;
   onAddAnimal: () => void;
   onRemoveAnimal: (index: number) => void;
-  onAnimalChange: (index: number, data: any) => void;
+  onAnimalChange: (index: number, data: {
+    animal_type_id: number;
+    animal_subtype_id?: number;
+    animal_sub_subtype_id?: number;
+    quantity: number;
+  }) => void;
 }
 
 const AnimalEntriesList = ({
   animals,
   animalTypes,
   animalSubtypes,
+  animalSubSubtypes,
   onAddAnimal,
   onRemoveAnimal,
   onAnimalChange,
@@ -31,6 +39,7 @@ const AnimalEntriesList = ({
           initialData={animal}
           animalTypes={animalTypes}
           animalSubtypes={animalSubtypes}
+          animalSubSubtypes={animalSubSubtypes}
           onRemove={() => onRemoveAnimal(index)}
           onChange={(data) => onAnimalChange(index, data)}
         />
@@ -44,7 +53,7 @@ const AnimalEntriesList = ({
         style={{ borderColor: '#13B67F', color: '#13B67F' }}
       >
         <Plus className="h-4 w-4 mr-2" />
-        Add Animal
+        Nytt djur
       </Button>
     </div>
   );

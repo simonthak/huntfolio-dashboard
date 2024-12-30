@@ -12,7 +12,10 @@ const Contacts = () => {
 
   return (
     <div className="container mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">Kontakter</h1>
+      <div className="space-y-2">
+        <h1 className="text-2xl font-bold">Kontakter</h1>
+        <p className="text-gray-600">Lägg till kontakter som är viktiga för jaktlaget</p>
+      </div>
       <TeamContacts teamId={currentTeamId} />
     </div>
   );

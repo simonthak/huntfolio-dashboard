@@ -57,7 +57,7 @@ const NotificationSettings = () => {
     mutationFn: async (enabled: boolean) => {
       console.log("Updating notifications to:", enabled);
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('No session');
+      if (!session) throw new Error('Ingen session');
 
       const { error } = await supabase
         .from('user_settings')
@@ -76,11 +76,11 @@ const NotificationSettings = () => {
     onSuccess: () => {
       console.log("Notifications updated successfully");
       queryClient.invalidateQueries({ queryKey: ['userSettings'] });
-      toast.success("Notification preferences updated");
+      toast.success("Aviseringsinställningar uppdaterade");
     },
     onError: (error) => {
       console.error("Error updating notifications:", error);
-      toast.error("Failed to update notification preferences");
+      toast.error("Det gick inte att uppdatera aviseringsinställningarna");
     },
   });
 
@@ -97,12 +97,12 @@ const NotificationSettings = () => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow">
-      <h3 className="text-lg font-semibold mb-4">Notification Preferences</h3>
+      <h3 className="text-lg font-semibold mb-4">Aviseringsinställningar</h3>
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h4 className="font-medium">Email Notifications</h4>
+          <h4 className="font-medium">E-postaviseringar</h4>
           <p className="text-sm text-gray-500">
-            Receive email notifications about important updates
+            Ta emot e-postaviseringar om viktiga uppdateringar
           </p>
         </div>
         <Switch

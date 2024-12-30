@@ -1,27 +1,31 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { useNotifications } from "./useNotifications";
+import { formatEventDate, validateEventDate } from "@/utils/dateUtils";
 
 interface CreateEventData {
   hunt_type_id: number;
   description: string;
   participantLimit: number;
+  dogHandlersLimit: number;
+  endDate?: string;
+  startTime?: string;
+  date: Date;
 }
 
 export const useCreateEvent = (
-  selectedDate: Date | undefined,
-  currentTeamId: string | null,
   onEventCreated: () => void,
   onSuccess: () => void
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { sendNotification } = useNotifications();
 
-  const createEvent = async (data: CreateEventData) => {
-    if (!selectedDate) {
-      toast.error("Please select a date");
+  const createEvent = async (data: CreateEventData, currentTeamId: string | null) => {
+    console.log("useCreateEvent - Starting event creation with data:", data);
+    
+    if (!validateEventDate(data.date)) {
+      toast.error("Please select a valid future date");
       return;
     }
 
@@ -31,7 +35,8 @@ export const useCreateEvent = (
     }
 
     setIsSubmitting(true);
-    const formattedDate = format(selectedDate, "yyyy-MM-dd");
+    const formattedDate = formatEventDate(data.date);
+    console.log("useCreateEvent - Using formatted date:", formattedDate);
 
     try {
       console.log("Getting authenticated user...");
@@ -69,8 +74,11 @@ export const useCreateEvent = (
         date: formattedDate,
         description: data.description,
         participant_limit: data.participantLimit,
+        dog_handlers_limit: data.dogHandlersLimit,
         created_by: user.id,
-        team_id: currentTeamId
+        team_id: currentTeamId,
+        end_date: data.endDate || null,
+        start_time: data.startTime || null
       };
 
       console.log("Creating event with data:", eventData);
@@ -105,15 +113,13 @@ export const useCreateEvent = (
 
       console.log("Creator added as participant successfully");
       
-      // Call onEventCreated and onSuccess immediately
       await onEventCreated();
       onSuccess();
       toast.success("Event created successfully");
 
-      // Send notifications asynchronously after success
+      // Send notifications asynchronously
       const sendNotifications = async () => {
         try {
-          // Get team members to notify
           const { data: teamMembers, error: membersError } = await supabase
             .from('team_members')
             .select('user_id')
@@ -124,7 +130,6 @@ export const useCreateEvent = (
             return;
           }
 
-          // Send notifications to all team members except creator
           console.log("Sending notifications to team members...");
           const notificationPromises = teamMembers
             .filter(member => member.user_id !== user.id)
@@ -141,7 +146,6 @@ export const useCreateEvent = (
         }
       };
 
-      // Fire and forget notifications
       sendNotifications();
 
     } catch (error) {

@@ -26,7 +26,7 @@ const CreateTeamDialog = () => {
       <DialogTrigger asChild>
         <Button className="w-full bg-[#13B67F] hover:bg-[#0ea16f]">
           <Plus className="w-4 h-4 mr-2" />
-          Create Team
+          Skapa lag
         </Button>
       </DialogTrigger>
       <DialogContent>

@@ -1,21 +1,30 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash } from "lucide-react";
+import AnimalSelectionFields from "./fields/AnimalSelectionFields";
+import QuantityInput from "./fields/QuantityInput";
+
+interface AnimalData {
+  animal_type_id: number;
+  animal_subtype_id?: number | undefined;
+  animal_sub_subtype_id?: number | undefined;
+}
 
 interface AnimalEntryProps {
   initialData?: {
     animal_type_id: number;
     animal_subtype_id?: number;
+    animal_sub_subtype_id?: number;
     quantity: number;
   };
   animalTypes: Array<{ id: number; name: string }>;
   animalSubtypes: Record<number, Array<{ id: number; name: string }>>;
+  animalSubSubtypes: Record<number, Array<{ id: number; name: string }>>;
   onRemove: () => void;
   onChange: (data: {
     animal_type_id: number;
     animal_subtype_id?: number;
+    animal_sub_subtype_id?: number;
     quantity: number;
   }) => void;
 }
@@ -24,72 +33,44 @@ const AnimalEntry = ({
   initialData,
   animalTypes,
   animalSubtypes,
+  animalSubSubtypes,
   onRemove,
   onChange,
 }: AnimalEntryProps) => {
-  const [animalTypeId, setAnimalTypeId] = useState<string>(
-    initialData?.animal_type_id?.toString() || ""
-  );
-  const [animalSubtypeId, setAnimalSubtypeId] = useState<string>(
-    initialData?.animal_subtype_id?.toString() || ""
-  );
   const [quantity, setQuantity] = useState<string>(
     initialData?.quantity ? initialData.quantity.toString() : ""
   );
+  
+  const [animalData, setAnimalData] = useState<AnimalData>({
+    animal_type_id: initialData?.animal_type_id || 0,
+    animal_subtype_id: initialData?.animal_subtype_id,
+    animal_sub_subtype_id: initialData?.animal_sub_subtype_id,
+  });
+
+  const handleAnimalDataChange = (data: AnimalData) => {
+    setAnimalData(data);
+  };
 
   useEffect(() => {
-    if (animalTypeId) {
+    if (animalData.animal_type_id) {
       onChange({
-        animal_type_id: parseInt(animalTypeId),
-        animal_subtype_id: animalSubtypeId ? parseInt(animalSubtypeId) : undefined,
+        ...animalData,
         quantity: quantity ? parseInt(quantity) : 0,
       });
     }
-  }, [animalTypeId, animalSubtypeId, quantity, onChange]);
-
-  const handleAnimalTypeChange = (value: string) => {
-    setAnimalTypeId(value);
-    setAnimalSubtypeId(""); // Reset subtype when type changes
-  };
+  }, [animalData, quantity, onChange]);
 
   return (
     <div className="flex gap-2 items-start">
       <div className="flex-1 space-y-2">
-        <Select value={animalTypeId} onValueChange={handleAnimalTypeChange}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select animal type" />
-          </SelectTrigger>
-          <SelectContent>
-            {animalTypes.map((type) => (
-              <SelectItem key={type.id} value={type.id.toString()}>
-                {type.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {animalTypeId && animalSubtypes[parseInt(animalTypeId)] && (
-          <Select value={animalSubtypeId} onValueChange={setAnimalSubtypeId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select subtype (optional)" />
-            </SelectTrigger>
-            <SelectContent>
-              {animalSubtypes[parseInt(animalTypeId)].map((subtype) => (
-                <SelectItem key={subtype.id} value={subtype.id.toString()}>
-                  {subtype.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-
-        <Input
-          type="number"
-          min="1"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-          placeholder="Quantity"
+        <AnimalSelectionFields
+          initialData={initialData}
+          animalTypes={animalTypes}
+          animalSubtypes={animalSubtypes}
+          animalSubSubtypes={animalSubSubtypes}
+          onChange={handleAnimalDataChange}
         />
+        <QuantityInput value={quantity} onChange={setQuantity} />
       </div>
 
       <Button

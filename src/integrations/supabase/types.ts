@@ -9,6 +9,35 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      animal_sub_subtypes: {
+        Row: {
+          animal_subtype_id: number
+          created_at: string
+          id: number
+          name: string
+        }
+        Insert: {
+          animal_subtype_id: number
+          created_at?: string
+          id?: number
+          name: string
+        }
+        Update: {
+          animal_subtype_id?: number
+          created_at?: string
+          id?: number
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "animal_sub_subtypes_animal_subtype_id_fkey"
+            columns: ["animal_subtype_id"]
+            isOneToOne: false
+            referencedRelation: "animal_subtypes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       animal_subtypes: {
         Row: {
           animal_type_id: number | null
@@ -104,6 +133,48 @@ export type Database = {
           },
         ]
       }
+      drive_areas: {
+        Row: {
+          boundary: Json
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          team_id: string
+        }
+        Insert: {
+          boundary: Json
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          team_id: string
+        }
+        Update: {
+          boundary?: Json
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drive_areas_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drive_areas_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_notification_history: {
         Row: {
           id: string
@@ -132,16 +203,19 @@ export type Database = {
         Row: {
           event_id: string
           joined_at: string
+          participant_type: string
           user_id: string
         }
         Insert: {
           event_id: string
           joined_at?: string
+          participant_type?: string
           user_id: string
         }
         Update: {
           event_id?: string
           joined_at?: string
+          participant_type?: string
           user_id?: string
         }
         Relationships: [
@@ -167,9 +241,12 @@ export type Database = {
           created_by: string
           date: string
           description: string | null
+          dog_handlers_limit: number
+          end_date: string | null
           hunt_type_id: number
           id: string
           participant_limit: number
+          start_time: string | null
           team_id: string | null
         }
         Insert: {
@@ -177,9 +254,12 @@ export type Database = {
           created_by: string
           date: string
           description?: string | null
+          dog_handlers_limit?: number
+          end_date?: string | null
           hunt_type_id: number
           id?: string
           participant_limit: number
+          start_time?: string | null
           team_id?: string | null
         }
         Update: {
@@ -187,9 +267,12 @@ export type Database = {
           created_by?: string
           date?: string
           description?: string | null
+          dog_handlers_limit?: number
+          end_date?: string | null
           hunt_type_id?: number
           id?: string
           participant_limit?: number
+          start_time?: string | null
           team_id?: string | null
         }
         Relationships: [
@@ -233,6 +316,61 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      hunting_passes: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          drive_area_id: string
+          id: string
+          location: Json
+          name: string
+          team_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          drive_area_id: string
+          id?: string
+          location: Json
+          name: string
+          team_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          drive_area_id?: string
+          id?: string
+          location?: Json
+          name?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hunting_passes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hunting_passes_drive_area_id_fkey"
+            columns: ["drive_area_id"]
+            isOneToOne: false
+            referencedRelation: "drive_areas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hunting_passes_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       hunting_reports: {
         Row: {
@@ -327,6 +465,7 @@ export type Database = {
       }
       report_animals: {
         Row: {
+          animal_sub_subtype_id: number | null
           animal_subtype_id: number | null
           animal_type_id: number
           created_at: string
@@ -335,6 +474,7 @@ export type Database = {
           report_id: string
         }
         Insert: {
+          animal_sub_subtype_id?: number | null
           animal_subtype_id?: number | null
           animal_type_id: number
           created_at?: string
@@ -343,6 +483,7 @@ export type Database = {
           report_id: string
         }
         Update: {
+          animal_sub_subtype_id?: number | null
           animal_subtype_id?: number | null
           animal_type_id?: number
           created_at?: string
@@ -351,6 +492,13 @@ export type Database = {
           report_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "report_animals_animal_sub_subtype_id_fkey"
+            columns: ["animal_sub_subtype_id"]
+            isOneToOne: false
+            referencedRelation: "animal_sub_subtypes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "report_animals_animal_subtype_id_fkey"
             columns: ["animal_subtype_id"]

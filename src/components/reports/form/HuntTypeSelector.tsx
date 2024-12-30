@@ -14,7 +14,7 @@ const HuntTypeSelector = ({ value, onChange }: HuntTypeSelectorProps) => {
 
   useEffect(() => {
     const fetchHuntTypes = async () => {
-      console.log("Fetching hunt types for report form...");
+      console.log("Hämtar jakttyper för rapportformulär...");
       const { data, error } = await supabase
         .from('hunt_types')
         .select('*')
@@ -22,11 +22,11 @@ const HuntTypeSelector = ({ value, onChange }: HuntTypeSelectorProps) => {
         .order('name');
       
       if (error) {
-        console.error('Error fetching hunt types:', error);
-        toast.error('Failed to load hunt types');
+        console.error('Fel vid hämtning av jakttyper:', error);
+        toast.error('Kunde inte ladda jakttyper');
         return;
       }
-      console.log("Fetched hunt types for report form:", data);
+      console.log("Hämtade jakttyper för rapportformulär:", data);
       setHuntTypes(data || []);
     };
 
@@ -35,10 +35,10 @@ const HuntTypeSelector = ({ value, onChange }: HuntTypeSelectorProps) => {
 
   return (
     <div className="space-y-2">
-      <Label>Hunt Type</Label>
+      <Label>Jakttyp</Label>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger>
-          <SelectValue placeholder="Select hunt type" />
+          <SelectValue placeholder="Välj jakttyp" />
         </SelectTrigger>
         <SelectContent>
           {huntTypes.map((type) => (

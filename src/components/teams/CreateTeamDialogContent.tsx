@@ -11,7 +11,7 @@ const CreateTeamDialogContent = ({ onSubmit, isCreating }: CreateTeamDialogConte
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Create New Team</DialogTitle>
+        <DialogTitle>Skapa nytt jaktlag</DialogTitle>
       </DialogHeader>
       <TeamForm onSubmit={onSubmit} isCreating={isCreating} />
     </>
