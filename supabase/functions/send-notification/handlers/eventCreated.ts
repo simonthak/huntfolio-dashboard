@@ -30,6 +30,9 @@ export async function handleEventCreated(
     <p><strong>Skapad av:</strong> ${event.created_by_profile.firstname} ${event.created_by_profile.lastname}</p>
     ${event.description ? `<p><strong>Beskrivning:</strong> ${event.description}</p>` : ''}
     <p><strong>Deltagargräns:</strong> ${event.participant_limit}</p>
+    <p style="margin-top: 24px; color: #666;">
+      Besök <a href="https://antlers.app" style="color: #13B67F; text-decoration: none;">antlers.app</a> för mer information.
+    </p>
   `;
 
   return await sendEmail(userEmail, subject, html);

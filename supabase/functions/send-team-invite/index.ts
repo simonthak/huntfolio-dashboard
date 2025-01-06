@@ -47,6 +47,9 @@ const handler = async (req: Request): Promise<Response> => {
             <div style="background-color: #f3f4f6; padding: 12px; margin: 16px 0; border-radius: 4px; text-align: center;">
               <code style="font-size: 18px;">${inviteCode}</code>
             </div>
+            <p style="margin-top: 24px; color: #666;">
+              Besök <a href="https://antlers.app" style="color: #13B67F; text-decoration: none;">antlers.app</a> för att gå med i laget.
+            </p>
           </div>
         `,
       }),

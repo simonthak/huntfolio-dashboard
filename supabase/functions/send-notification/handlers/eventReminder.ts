@@ -7,10 +7,13 @@ export async function handleEventReminder(
   data: { eventId?: string }
 ) {
   if (!data.eventId) throw new Error("Event ID is required");
-  
+
   const { data: event } = await supabase
     .from("events")
-    .select("*, hunt_type:hunt_types(name)")
+    .select(`
+      *,
+      hunt_type:hunt_types(name)
+    `)
     .eq("id", data.eventId)
     .single();
 
@@ -22,6 +25,9 @@ export async function handleEventReminder(
     <p>Du har en kommande jakt schemalagd för ${event.date}.</p>
     <p><strong>Typ:</strong> ${event.hunt_type.name}</p>
     ${event.description ? `<p><strong>Beskrivning:</strong> ${event.description}</p>` : ''}
+    <p style="margin-top: 24px; color: #666;">
+      Besök <a href="https://antlers.app" style="color: #13B67F; text-decoration: none;">antlers.app</a> för mer information.
+    </p>
   `;
 
   return await sendEmail(userEmail, subject, html);
