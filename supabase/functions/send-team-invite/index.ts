@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const APP_URL = Deno.env.get("APP_URL") || "http://localhost:5173";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,7 +17,6 @@ interface InviteRequest {
 const handler = async (req: Request): Promise<Response> => {
   console.log("Processing team invite request");
   
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -31,9 +29,6 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("RESEND_API_KEY is not set");
       throw new Error("RESEND_API_KEY is not set");
     }
-
-    const joinUrl = `${APP_URL}/teams?inviteCode=${inviteCode}`;
-    console.log("Join URL:", joinUrl);
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -48,15 +43,10 @@ const handler = async (req: Request): Promise<Response> => {
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #333;">Du har blivit inbjuden till ${teamName}</h2>
-            <p>För att gå med i laget, klicka på länken nedan:</p>
-            <a href="${joinUrl}" 
-               style="display: inline-block; background-color: #13B67F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin-top: 16px;">
-              Gå med i laget
-            </a>
-            <p style="margin-top: 24px; color: #666;">
-              Om knappen inte fungerar kan du kopiera och klistra in denna länk i din webbläsare:<br>
-              <span style="color: #13B67F;">${joinUrl}</span>
-            </p>
+            <p>För att gå med i laget, använd följande kod:</p>
+            <div style="background-color: #f3f4f6; padding: 12px; margin: 16px 0; border-radius: 4px; text-align: center;">
+              <code style="font-size: 18px;">${inviteCode}</code>
+            </div>
           </div>
         `,
       }),

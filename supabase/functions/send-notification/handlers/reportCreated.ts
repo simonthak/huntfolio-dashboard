@@ -30,9 +30,6 @@ export async function handleReportCreated(
     <p><strong>Jakttyp:</strong> ${report.hunt_type.name}</p>
     <p><strong>Datum:</strong> ${report.date}</p>
     ${report.description ? `<p><strong>Beskrivning:</strong> ${report.description}</p>` : ''}
-    <div style="margin-top: 24px;">
-      <a href="https://antlers.app/reports?report=${report.id}" style="background-color: #13B67F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Visa rapport</a>
-    </div>
   `;
 
   return await sendEmail(userEmail, subject, html);
