@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const APP_URL = Deno.env.get("APP_URL") || "http://localhost:5173"; // Fallback to localhost for development
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -49,7 +50,7 @@ const handler = async (req: Request): Promise<Response> => {
               <code style="font-size: 18px;">${inviteCode}</code>
             </div>
             <p>Eller klicka på länken nedan för att gå med direkt:</p>
-            <a href="https://antlers.app/teams?inviteCode=${inviteCode}" 
+            <a href="${APP_URL}/teams?inviteCode=${inviteCode}" 
                style="display: inline-block; background-color: #13B67F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin-top: 16px;">
               Gå med i laget
             </a>
