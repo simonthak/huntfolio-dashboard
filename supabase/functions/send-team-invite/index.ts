@@ -49,7 +49,7 @@ const handler = async (req: Request): Promise<Response> => {
               <code style="font-size: 18px;">${inviteCode}</code>
             </div>
             <p>Eller klicka på länken nedan för att gå med direkt:</p>
-            <a href="https://huntfolio-dashboard.lovable.app/join-team?code=${inviteCode}" style="display: inline-block; background-color: #13B67F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin-top: 16px;">
+            <a href="https://antlers.app/join-team?code=${inviteCode}" style="display: inline-block; background-color: #13B67F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin-top: 16px;">
               Gå med i laget
             </a>
           </div>
