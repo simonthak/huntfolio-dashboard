@@ -21,21 +21,27 @@ interface EmailRequest {
 const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log("Received request:", req.method);
+  console.log("Received notification request:", req.method);
   
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { userId, type, data }: EmailRequest = await req.json();
-    console.log("Processing notification request:", { userId, type, data });
+    const requestData = await req.json();
+    console.log("Processing notification request:", requestData);
+
+    const { userId, type, data }: EmailRequest = requestData;
+    console.log("Parsed request data:", { userId, type, data });
 
     const userEmail = await getUserEmail(userId);
     if (!userEmail) {
-      console.error("User email not found");
+      console.error("User email not found for userId:", userId);
       throw new Error("User email not found");
     }
+
+    console.log("Found user email:", userEmail);
+    console.log("Processing notification type:", type);
 
     let result;
     switch (type) {
@@ -49,9 +55,11 @@ const handler = async (req: Request): Promise<Response> => {
         result = await handleReportCreated(supabase, userEmail, data);
         break;
       default:
+        console.error("Unknown notification type:", type);
         throw new Error(`Unknown notification type: ${type}`);
     }
 
+    console.log("Notification processed successfully:", result);
     await logEmailNotification(userId, type);
 
     return new Response(JSON.stringify(result), {
@@ -92,6 +100,8 @@ async function logEmailNotification(userId: string, type: string) {
 
   if (error) {
     console.error("Error logging email notification:", error);
+  } else {
+    console.log("Successfully logged email notification");
   }
 }
 

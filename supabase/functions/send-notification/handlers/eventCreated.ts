@@ -6,20 +6,36 @@ export async function handleEventCreated(
   userEmail: string,
   data: { eventId?: string }
 ) {
+  console.log("Starting handleEventCreated with data:", { userEmail, eventId: data.eventId });
+  
   if (!data.eventId) throw new Error("Event ID is required");
-
-  const { data: event } = await supabase
+  
+  console.log("Fetching event details for:", data.eventId);
+  const { data: event, error } = await supabase
     .from("events")
     .select(`
       *,
       hunt_type:hunt_types(name),
       team:teams(name),
-      created_by_profile:profiles!events_created_by_fkey(firstname, lastname)
+      created_by_profile:profiles!events_created_by_fkey(
+        firstname,
+        lastname
+      )
     `)
     .eq("id", data.eventId)
     .single();
 
-  if (!event) throw new Error("Event not found");
+  if (error) {
+    console.error("Error fetching event:", error);
+    throw error;
+  }
+
+  if (!event) {
+    console.error("Event not found:", data.eventId);
+    throw new Error("Event not found");
+  }
+
+  console.log("Successfully fetched event:", event);
 
   const subject = `Ny jakt skapad - ${event.hunt_type.name}`;
   const html = `
@@ -36,5 +52,8 @@ export async function handleEventCreated(
     </a>
   `;
 
-  return await sendEmail(userEmail, subject, html);
+  console.log("Attempting to send email with subject:", subject);
+  const result = await sendEmail(userEmail, subject, html);
+  console.log("Email send result:", result);
+  return result;
 }

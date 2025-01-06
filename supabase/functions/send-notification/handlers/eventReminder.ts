@@ -6,15 +6,28 @@ export async function handleEventReminder(
   userEmail: string,
   data: { eventId?: string }
 ) {
-  if (!data.eventId) throw new Error("Event ID is required");
+  console.log("Starting handleEventReminder with data:", { userEmail, eventId: data.eventId });
   
-  const { data: event } = await supabase
+  if (!data.eventId) throw new Error("Event ID is required");
+
+  console.log("Fetching event details for:", data.eventId);
+  const { data: event, error } = await supabase
     .from("events")
     .select("*, hunt_type:hunt_types(name)")
     .eq("id", data.eventId)
     .single();
 
-  if (!event) throw new Error("Event not found");
+  if (error) {
+    console.error("Error fetching event:", error);
+    throw error;
+  }
+
+  if (!event) {
+    console.error("Event not found:", data.eventId);
+    throw new Error("Event not found");
+  }
+
+  console.log("Successfully fetched event:", event);
 
   const subject = `Påminnelse: Kommande jakt - ${event.hunt_type.name}`;
   const html = `
@@ -28,5 +41,8 @@ export async function handleEventReminder(
     </a>
   `;
 
-  return await sendEmail(userEmail, subject, html);
+  console.log("Attempting to send email with subject:", subject);
+  const result = await sendEmail(userEmail, subject, html);
+  console.log("Email send result:", result);
+  return result;
 }

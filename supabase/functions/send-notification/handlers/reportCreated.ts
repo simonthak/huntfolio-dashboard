@@ -6,9 +6,12 @@ export async function handleReportCreated(
   userEmail: string,
   data: { reportId?: string }
 ) {
+  console.log("Starting handleReportCreated with data:", { userEmail, reportId: data.reportId });
+  
   if (!data.reportId) throw new Error("Report ID is required");
 
-  const { data: report } = await supabase
+  console.log("Fetching report details for:", data.reportId);
+  const { data: report, error } = await supabase
     .from("hunting_reports")
     .select(`
       *,
@@ -21,7 +24,17 @@ export async function handleReportCreated(
     .eq("id", data.reportId)
     .single();
 
-  if (!report) throw new Error("Report not found");
+  if (error) {
+    console.error("Error fetching report:", error);
+    throw error;
+  }
+
+  if (!report) {
+    console.error("Report not found:", data.reportId);
+    throw new Error("Report not found");
+  }
+
+  console.log("Successfully fetched report:", report);
 
   const subject = `Ny jaktrapport - ${report.hunt_type.name}`;
   const html = `
@@ -36,5 +49,8 @@ export async function handleReportCreated(
     </a>
   `;
 
-  return await sendEmail(userEmail, subject, html);
+  console.log("Attempting to send email with subject:", subject);
+  const result = await sendEmail(userEmail, subject, html);
+  console.log("Email send result:", result);
+  return result;
 }
