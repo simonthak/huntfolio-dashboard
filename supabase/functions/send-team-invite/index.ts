@@ -38,14 +38,14 @@ const handler = async (req: Request): Promise<Response> => {
         subject: `Du har blivit inbjuden till ${teamName}`,
         text: `Du har blivit inbjuden till ${teamName}. Använd koden: ${inviteCode}`,
         html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #333;">Du har blivit inbjuden till ${teamName}</h2>
+          <div style="font-family: sans-serif;">
+            <h2>Du har blivit inbjuden till ${teamName}</h2>
             <p>För att gå med i laget, använd följande kod:</p>
             <div style="background-color: #f3f4f6; padding: 12px; margin: 16px 0; border-radius: 4px; text-align: center;">
               <code style="font-size: 18px;">${inviteCode}</code>
             </div>
             <p style="margin-top: 24px; color: #666;">
-              Besök https://antlers.app för att gå med i laget.
+              Besök <a href="https://antlers.app" style="color: #13B67F; text-decoration: none;">antlers.app</a> för att gå med i laget.
             </p>
           </div>
         `,

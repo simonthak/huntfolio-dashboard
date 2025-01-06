@@ -23,16 +23,18 @@ export async function handleEventCreated(
 
   const subject = `Ny jakt skapad - ${event.hunt_type.name}`;
   const html = `
-    <h2>Ny jakt skapad</h2>
-    <p>En ny jakt har schemalagts för ${event.date}.</p>
-    <p><strong>Typ:</strong> ${event.hunt_type.name}</p>
-    <p><strong>Lag:</strong> ${event.team.name}</p>
-    <p><strong>Skapad av:</strong> ${event.created_by_profile.firstname} ${event.created_by_profile.lastname}</p>
-    ${event.description ? `<p><strong>Beskrivning:</strong> ${event.description}</p>` : ''}
-    <p><strong>Deltagargräns:</strong> ${event.participant_limit}</p>
-    <p style="margin-top: 24px; color: #666;">
-      Besök <a href="https://antlers.app" style="color: #13B67F; text-decoration: none;">antlers.app</a> för mer information.
-    </p>
+    <div style="font-family: sans-serif;">
+      <h2>Ny jakt skapad</h2>
+      <p>En ny jakt har schemalagts för ${event.date}.</p>
+      <p><strong>Typ:</strong> ${event.hunt_type.name}</p>
+      <p><strong>Lag:</strong> ${event.team.name}</p>
+      <p><strong>Skapad av:</strong> ${event.created_by_profile.firstname} ${event.created_by_profile.lastname}</p>
+      ${event.description ? `<p><strong>Beskrivning:</strong> ${event.description}</p>` : ''}
+      <p><strong>Deltagargräns:</strong> ${event.participant_limit}</p>
+      <p style="margin-top: 24px; color: #666;">
+        Besök <a href="https://antlers.app" style="color: #13B67F; text-decoration: none;">antlers.app</a> för mer information.
+      </p>
+    </div>
   `;
 
   return await sendEmail(userEmail, subject, html);

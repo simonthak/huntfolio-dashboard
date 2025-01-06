@@ -21,13 +21,15 @@ export async function handleEventReminder(
 
   const subject = `Påminnelse: Kommande jakt - ${event.hunt_type.name}`;
   const html = `
-    <h2>Påminnelse om kommande jakt</h2>
-    <p>Du har en kommande jakt schemalagd för ${event.date}.</p>
-    <p><strong>Typ:</strong> ${event.hunt_type.name}</p>
-    ${event.description ? `<p><strong>Beskrivning:</strong> ${event.description}</p>` : ''}
-    <p style="margin-top: 24px; color: #666;">
-      Besök <a href="https://antlers.app" style="color: #13B67F; text-decoration: none;">antlers.app</a> för mer information.
-    </p>
+    <div style="font-family: sans-serif;">
+      <h2>Påminnelse om kommande jakt</h2>
+      <p>Du har en kommande jakt schemalagd för ${event.date}.</p>
+      <p><strong>Typ:</strong> ${event.hunt_type.name}</p>
+      ${event.description ? `<p><strong>Beskrivning:</strong> ${event.description}</p>` : ''}
+      <p style="margin-top: 24px; color: #666;">
+        Besök <a href="https://antlers.app" style="color: #13B67F; text-decoration: none;">antlers.app</a> för mer information.
+      </p>
+    </div>
   `;
 
   return await sendEmail(userEmail, subject, html);
