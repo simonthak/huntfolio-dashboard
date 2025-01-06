@@ -21,15 +21,18 @@ export async function handleEventCreated(
 
   if (!event) throw new Error("Event not found");
 
-  const subject = `New Hunt Event Created - ${event.hunt_type.name}`;
+  const subject = `Ny jakt skapad - ${event.hunt_type.name}`;
   const html = `
-    <h2>New Hunt Event Created</h2>
-    <p>A new hunt has been scheduled for ${event.date}.</p>
-    <p><strong>Type:</strong> ${event.hunt_type.name}</p>
-    <p><strong>Team:</strong> ${event.team.name}</p>
-    <p><strong>Created by:</strong> ${event.created_by_profile.firstname} ${event.created_by_profile.lastname}</p>
-    ${event.description ? `<p><strong>Description:</strong> ${event.description}</p>` : ''}
-    <p><strong>Participant Limit:</strong> ${event.participant_limit}</p>
+    <h2>Ny jakt skapad</h2>
+    <p>En ny jakt har schemalagts för ${event.date}.</p>
+    <p><strong>Typ:</strong> ${event.hunt_type.name}</p>
+    <p><strong>Lag:</strong> ${event.team.name}</p>
+    <p><strong>Skapad av:</strong> ${event.created_by_profile.firstname} ${event.created_by_profile.lastname}</p>
+    ${event.description ? `<p><strong>Beskrivning:</strong> ${event.description}</p>` : ''}
+    <p><strong>Deltagargräns:</strong> ${event.participant_limit}</p>
+    <div style="margin-top: 24px;">
+      <a href="https://antlers.app/calendar?event=${event.id}" style="background-color: #13B67F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Visa jakt</a>
+    </div>
   `;
 
   return await sendEmail(userEmail, subject, html);

@@ -23,13 +23,16 @@ export async function handleReportCreated(
 
   if (!report) throw new Error("Report not found");
 
-  const subject = `New Hunting Report - ${report.hunt_type.name}`;
+  const subject = `Ny jaktrapport - ${report.hunt_type.name}`;
   const html = `
-    <h2>New Hunting Report</h2>
-    <p>A new hunting report has been created by ${report.created_by_profile.firstname} ${report.created_by_profile.lastname}.</p>
-    <p><strong>Hunt Type:</strong> ${report.hunt_type.name}</p>
-    <p><strong>Date:</strong> ${report.date}</p>
-    ${report.description ? `<p><strong>Description:</strong> ${report.description}</p>` : ''}
+    <h2>Ny jaktrapport</h2>
+    <p>En ny jaktrapport har skapats av ${report.created_by_profile.firstname} ${report.created_by_profile.lastname}.</p>
+    <p><strong>Jakttyp:</strong> ${report.hunt_type.name}</p>
+    <p><strong>Datum:</strong> ${report.date}</p>
+    ${report.description ? `<p><strong>Beskrivning:</strong> ${report.description}</p>` : ''}
+    <div style="margin-top: 24px;">
+      <a href="https://antlers.app/reports?report=${report.id}" style="background-color: #13B67F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Visa rapport</a>
+    </div>
   `;
 
   return await sendEmail(userEmail, subject, html);
