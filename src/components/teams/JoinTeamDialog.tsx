@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
   inviteCode: z.string().min(1, "Inbjudningskod krävs"),
@@ -37,6 +38,7 @@ interface JoinTeamDialogProps {
 const JoinTeamDialog = ({ open, onOpenChange }: JoinTeamDialogProps) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -59,10 +61,11 @@ const JoinTeamDialog = ({ open, onOpenChange }: JoinTeamDialogProps) => {
         return;
       }
 
+      // First, check if the team exists with this invite code
       const { data: team, error: teamError } = await supabase
         .from("teams")
         .select("id, name")
-        .eq("invite_code", data.inviteCode)
+        .eq("invite_code", data.inviteCode.trim())
         .single();
 
       if (teamError) {
@@ -76,6 +79,26 @@ const JoinTeamDialog = ({ open, onOpenChange }: JoinTeamDialogProps) => {
         return;
       }
 
+      // Check if user is already a member
+      const { data: existingMember, error: memberCheckError } = await supabase
+        .from("team_members")
+        .select("*")
+        .eq("team_id", team.id)
+        .eq("user_id", user.id)
+        .single();
+
+      if (existingMember) {
+        toast.error("Du är redan medlem i detta lag");
+        return;
+      }
+
+      if (memberCheckError && memberCheckError.code !== "PGRST116") {
+        console.error("Error checking membership:", memberCheckError);
+        toast.error("Ett fel uppstod när medlemskapet kontrollerades");
+        return;
+      }
+
+      // Join the team
       const { error: joinError } = await supabase
         .from("team_members")
         .insert({
@@ -86,15 +109,12 @@ const JoinTeamDialog = ({ open, onOpenChange }: JoinTeamDialogProps) => {
 
       if (joinError) {
         console.error("Error joining team:", joinError);
-        if (joinError.code === "23505") {
-          toast.error("Du är redan medlem i detta lag");
-        } else {
-          toast.error("Ett fel uppstod när du försökte gå med i laget");
-        }
+        toast.error("Ett fel uppstod när du försökte gå med i laget");
         return;
       }
 
       console.log("Successfully joined team:", team.name);
+      await queryClient.invalidateQueries({ queryKey: ["user-teams"] });
       toast.success(`Du har gått med i ${team.name}`);
       onOpenChange(false);
       navigate(`/?team=${team.id}`);
