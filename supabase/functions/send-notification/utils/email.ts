@@ -19,6 +19,7 @@ export async function sendEmail(to: string, subject: string, html: string) {
       to: [to],
       subject,
       html,
+      text: subject, // Adding plain text version without any HTML or images
     }),
   });
 

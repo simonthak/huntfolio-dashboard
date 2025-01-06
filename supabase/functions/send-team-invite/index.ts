@@ -40,6 +40,7 @@ const handler = async (req: Request): Promise<Response> => {
         from: "Antlers <notifications@antlers.app>",
         to: [to],
         subject: `Du har blivit inbjuden till ${teamName}`,
+        text: `Du har blivit inbjuden till ${teamName}. Använd koden: ${inviteCode}`, // Plain text version
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #333;">Du har blivit inbjuden till ${teamName}</h2>
