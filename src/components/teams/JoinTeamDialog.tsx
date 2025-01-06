@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -32,18 +32,26 @@ type FormData = z.infer<typeof formSchema>;
 interface JoinTeamDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultInviteCode?: string | null;
 }
 
-const JoinTeamDialog = ({ open, onOpenChange }: JoinTeamDialogProps) => {
+const JoinTeamDialog = ({ open, onOpenChange, defaultInviteCode }: JoinTeamDialogProps) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      inviteCode: "",
+      inviteCode: defaultInviteCode || "",
     },
   });
+
+  // Update form value when defaultInviteCode changes
+  useEffect(() => {
+    if (defaultInviteCode) {
+      form.setValue('inviteCode', defaultInviteCode);
+    }
+  }, [defaultInviteCode, form]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -62,7 +70,7 @@ const JoinTeamDialog = ({ open, onOpenChange }: JoinTeamDialogProps) => {
       const { data: team, error: teamError } = await supabase
         .from("teams")
         .select("id, name")
-        .eq("invite_code", data.inviteCode)
+        .eq("invite_code", data.inviteCode.trim())
         .single();
 
       if (teamError) {
@@ -97,7 +105,7 @@ const JoinTeamDialog = ({ open, onOpenChange }: JoinTeamDialogProps) => {
       console.log("Successfully joined team:", team.name);
       toast.success(`Du har gått med i ${team.name}`);
       onOpenChange(false);
-      navigate(`/?team=${team.id}`);
+      navigate(`/teams?team=${team.id}`);
     } catch (error) {
       console.error("Error in join team process:", error);
       toast.error("Ett fel uppstod när du försökte gå med i laget");
