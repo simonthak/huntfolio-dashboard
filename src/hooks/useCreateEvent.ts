@@ -103,6 +103,7 @@ export const useCreateEvent = (
         .insert({
           event_id: createdEvent.id,
           user_id: user.id,
+          participant_type: 'shooter'
         });
 
       if (participantError) {
@@ -117,36 +118,41 @@ export const useCreateEvent = (
       onSuccess();
       toast.success("Event created successfully");
 
-      // Send notifications asynchronously
-      const sendNotifications = async () => {
-        try {
-          const { data: teamMembers, error: membersError } = await supabase
-            .from('team_members')
-            .select('user_id')
-            .eq('team_id', currentTeamId);
+      // Send notifications
+      try {
+        console.log("Fetching team members for notifications...");
+        const { data: teamMembers, error: membersError } = await supabase
+          .from('team_members')
+          .select('user_id, profiles:profiles(email)')
+          .eq('team_id', currentTeamId);
 
-          if (membersError) {
-            console.error("Error fetching team members:", membersError);
-            return;
-          }
-
-          console.log("Sending notifications to team members...");
-          const notificationPromises = teamMembers
-            .filter(member => member.user_id !== user.id)
-            .map(member => 
-              sendNotification(member.user_id, "event_created", {
-                eventId: createdEvent.id
-              })
-            );
-
-          await Promise.all(notificationPromises);
-          console.log("All notifications sent successfully");
-        } catch (error) {
-          console.error("Error sending notifications:", error);
+        if (membersError) {
+          console.error("Error fetching team members:", membersError);
+          return;
         }
-      };
 
-      sendNotifications();
+        console.log("Team members found:", teamMembers);
+
+        const notificationPromises = teamMembers
+          .filter(member => member.user_id !== user.id)
+          .map(async member => {
+            console.log("Sending notification to member:", member);
+            try {
+              await sendNotification(member.user_id, "event_created", {
+                eventId: createdEvent.id,
+                teamId: currentTeamId
+              });
+              console.log("Notification sent successfully to:", member.user_id);
+            } catch (error) {
+              console.error("Failed to send notification to member:", member.user_id, error);
+            }
+          });
+
+        await Promise.all(notificationPromises);
+        console.log("All notifications processed");
+      } catch (error) {
+        console.error("Error in notification process:", error);
+      }
 
     } catch (error) {
       console.error("Error in event creation process:", error);
