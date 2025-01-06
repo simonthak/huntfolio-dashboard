@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import TeamInformation from "@/components/teams/TeamInformation";
 import TeamMembers from "@/components/teams/TeamMembers";
