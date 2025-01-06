@@ -42,14 +42,15 @@ const handler = async (req: Request): Promise<Response> => {
         to: [to],
         subject: `Du har blivit inbjuden till ${teamName}`,
         html: `
-          <div>
-            <h2>Du har blivit inbjuden till ${teamName}</h2>
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #333;">Du har blivit inbjuden till ${teamName}</h2>
             <p>För att gå med i laget, använd följande kod:</p>
             <div style="background-color: #f3f4f6; padding: 12px; margin: 16px 0; border-radius: 4px; text-align: center;">
               <code style="font-size: 18px;">${inviteCode}</code>
             </div>
             <p>Eller klicka på länken nedan för att gå med direkt:</p>
-            <a href="https://antlers.app/teams?inviteCode=${inviteCode}" style="display: inline-block; background-color: #13B67F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin-top: 16px;">
+            <a href="https://antlers.app/teams?inviteCode=${inviteCode}" 
+               style="display: inline-block; background-color: #13B67F; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin-top: 16px;">
               Gå med i laget
             </a>
           </div>

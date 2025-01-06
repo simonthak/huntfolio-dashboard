@@ -14,19 +14,18 @@ const Teams = () => {
   const inviteCode = searchParams.get('inviteCode');
   
   const { teamData, teamMembers, isLoading } = useTeamData(currentTeamId);
-
   const [showJoinTeamDialog, setShowJoinTeamDialog] = useState(false);
 
   useEffect(() => {
     if (inviteCode) {
+      console.log("Invite code found in URL:", inviteCode);
       setShowJoinTeamDialog(true);
       // Remove the inviteCode from URL after opening dialog
-      setSearchParams(params => {
-        params.delete('inviteCode');
-        return params;
-      });
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('inviteCode');
+      setSearchParams(newParams);
     }
-  }, [inviteCode, setSearchParams]);
+  }, [inviteCode, setSearchParams, searchParams]);
 
   if (!currentTeamId && !inviteCode) {
     return <NoTeamSelected />;

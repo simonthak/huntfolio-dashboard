@@ -42,13 +42,14 @@ const JoinTeamDialog = ({ open, onOpenChange, defaultInviteCode }: JoinTeamDialo
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      inviteCode: defaultInviteCode || "",
+      inviteCode: "",
     },
   });
 
   // Update form value when defaultInviteCode changes
   useEffect(() => {
     if (defaultInviteCode) {
+      console.log("Setting default invite code:", defaultInviteCode);
       form.setValue('inviteCode', defaultInviteCode);
     }
   }, [defaultInviteCode, form]);
